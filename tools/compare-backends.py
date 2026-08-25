@@ -16,6 +16,7 @@ SKIPPED = {
     "parts": "borrowed by another file rather than run on its own",
     "drawing": "draws, and drawing is not in the JavaScript backend yet",
     "errand": "a game wanting a hundred and thirty commands",
+    "discord": "wants a network and a token, and the reference runner has neither",
 }
 UNSTEADY = ("a random", "random whole", "the time now", "shuffle")
 

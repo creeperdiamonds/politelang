@@ -1,0 +1,116 @@
+-- A DISCORD BOT, WRITTEN IN POLITELANG
+--
+-- A bot is a loop. It listens, looks at what was said, and answers. That is the whole shape of it,
+-- and writing it that way means there are no handlers, no callbacks and nothing to register --
+-- only a program that reads from the top downwards.
+--
+-- This does not run in the reference runner, which has no network and does not want one. Write it
+-- out as JavaScript and run it with node:
+--
+--     polite build examples/discord/hello-bot.polite
+--     cd examples/discord
+--     npm install discord.js
+--     node hello-bot.mjs
+--
+-- The token is never written in here. It is read from the surroundings the program was started in,
+-- so this file can be shown to anybody without handing them the keys to the bot.
+--
+-- Written in PoliteLang by Creeperdiamonds Studios.
+
+
+-- The greetings worth answering. Kept in one place, so that adding one is adding a line.
+please define a greeting with a said:
+    remember greetings is an empty list
+    add "hello" to greetings
+    add "hi" to greetings
+    add "hey" to greetings
+    add "good morning" to greetings
+    add "good evening" to greetings
+    give back greetings contains said
+thank you for defining
+
+
+please define the help:
+    remember lines is an empty list
+    add "Here is everything I know how to do:" to lines
+    add "" to lines
+    add "  hello           I will say hello back" to lines
+    add "  !ping           I will say pong" to lines
+    add "  !where          I will say which channel and server we are in" to lines
+    add "  !say <words>    I will say those words" to lines
+    add "  !count <words>  I will count the words" to lines
+    add "  !help           this" to lines
+    add "  !goodbye        I will stop" to lines
+    give back the join of lines with "\n"
+thank you for defining
+
+
+please show ""
+please show "  A POLITE BOT"
+please show ""
+
+-- Starting is the one part that has to work. If it does not, there is no bot to run.
+please try to:
+    log in to discord with the secret called "DISCORD_TOKEN"
+    let my status be "listening politely"
+otherwise if it does not work out:
+    show "  I could not start, because {what went wrong}"
+    show ""
+    stop everything
+thank you for trying
+
+please show "  Waiting to be spoken to. Press control and C to stop."
+please show ""
+
+please remember answered is 0
+please remember going is yes
+
+please keep going forever:
+    check if not going:
+        stop repeating
+    thanks
+
+    -- Everything to do with one message sits inside here, so that a message the bot cannot
+    -- answer -- because it was not allowed to speak, or because the connection hiccuped -- costs
+    -- that one message and not the whole evening.
+    try to:
+        listen for the next message
+
+        remember spoken is what they said
+        remember said is the small letters of the trimmed version of spoken
+        show "  {their name} in {the channel it came from}: {spoken}"
+
+        check if they are a bot:
+            show "    (a bot, so I left it alone)"
+        otherwise if a greeting with said:
+            reply with "Hello, {their name}. I hope your day is going well."
+            change answered to answered plus 1
+        otherwise if said is "!ping":
+            reply with "Pong."
+            change answered to answered plus 1
+        otherwise if said is "!help":
+            reply with the help
+            change answered to answered plus 1
+        otherwise if said is "!where":
+            reply with "We are in {the channel it came from}, on {the server it came from}."
+            change answered to answered plus 1
+        otherwise if said starts with "!say ":
+            send the piece of spoken from 6 to (the length of spoken)
+            change answered to answered plus 1
+        otherwise if said starts with "!count ":
+            remember rest is the piece of spoken from 8 to (the length of spoken)
+            remember many is the number of items in the words in rest
+            reply with "That is {many} words."
+            change answered to answered plus 1
+        otherwise if said is "!goodbye":
+            reply with "Goodbye. Thank you for having me."
+            change going to no
+        thank you for checking
+    otherwise if it does not work out:
+        show "    (that one did not work out: {what went wrong})"
+    thank you for trying
+thank you for repeating
+
+please show ""
+please show "  The bot has stopped, after answering {answered} times."
+please show ""

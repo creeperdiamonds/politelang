@@ -433,6 +433,33 @@ expr  full      colour_at      :: the colour at {where}
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
+# Discord
+#
+# A bot waits to be spoken to, and answers. It is written as a loop rather than as a pile of
+# handlers, because a loop is what it is: listen, look at what was said, say something back.
+#
+# None of this works in the reference runner, which has no network and does not want one. Write the
+# program out as JavaScript with `polite build` and run it with node, where a world full of
+# libraries is already sitting there.
+#
+# A token is not written in the program. `the secret called "..."` reads it from the surroundings,
+# so a bot can be shown to anybody without handing them the keys to it.
+# ---------------------------------------------------------------------------
+
+stmt  working   discord_log_in :: log in to discord with {token} :: risky
+stmt  working   discord_next   :: listen for the next message :: risky
+stmt  working   discord_reply  :: reply with {text} :: risky
+stmt  working   discord_send   :: send {text} :: risky
+stmt  working   discord_status :: let my status be {text} :: risky
+
+expr  working   discord_said     :: what they said
+expr  working   discord_name     :: their name
+expr  working   discord_is_bot   :: they are a bot
+expr  working   discord_channel  :: the channel it came from
+expr  working   discord_server   :: the server it came from
+expr  working   secret_called    :: the secret called {which} :: risky
+
+# ---------------------------------------------------------------------------
 # Text that hides what it says
 #
 # Writing kept in base sixty-four, in hexadecimal, or in backslash escapes says nothing to the
@@ -953,6 +980,17 @@ english point          :: noun         :: One exact place, with no size of its o
 english red            :: noun         :: The colour of blood, and one of the three a screen mixes.
 english reveal         :: verb         :: To let something be seen that was hidden.
 english width          :: noun         :: How far something reaches from one side to the other.
+explain discord_log_in :: This joins Discord as the bot the token belongs to, and waits until it is properly connected before going on. It might not work out, because the token may be wrong or the network may not be there.
+explain discord_next   :: This waits, doing nothing, until somebody says something the bot can see, and then goes on. What they said and who said it can be asked for afterwards. The bot never hears itself, so it cannot end up talking to itself forever.
+explain discord_reply  :: This answers the message that was just heard, as a reply attached to it, so it is clear what is being answered. It might not work out, because the bot may not be allowed to speak there.
+explain discord_send   :: This says something in the same place the last message came from, without attaching it to anything. It might not work out, because the bot may not be allowed to speak there.
+explain discord_status :: This is the line people see under the bot's name in the member list.
+explain discord_said     :: The words of the message that was just heard.
+explain discord_name     :: The name of whoever said it, as it is shown on the server.
+explain discord_is_bot   :: Whether whoever said it is a bot rather than a person. Worth checking before answering, so that two bots do not talk to each other all night.
+explain discord_channel  :: The name of the channel the message was said in.
+explain discord_server   :: The name of the server the message was said in.
+explain secret_called    :: A secret kept outside the program, such as a password or a token, read from the surroundings the program was started in. It might not work out, because there may be no secret of that name. Keeping it out here is what lets a program be shown to somebody without handing them the keys to it.
 explain not_decoded    :: Writing that hides what it says is decoded on sight, so that a program means what it looks like it means. This says that one piece of writing is to be left exactly as it is, letter for letter. It is the only way to keep something unreadable, and it shows in the file, which is the point of it.
 explain write_text     :: This writes words onto the canvas itself, so a picture can say something without the terminal saying it. Where the letter leaves a dot blank, the picture underneath still shows.
 explain letter_size    :: A letter is five dots across and seven down. This says how many dots across each of those dots should be drawn, so writing can be made bigger without a second set of letters.
@@ -974,3 +1012,21 @@ english force          :: verb         :: To make something happen whether or no
 english decode         :: verb         :: To turn something written in a code back into what it really says.
 english leave          :: verb         :: To let something stay as it is, without touching it.
 english exactly        :: adverb       :: In every detail, with nothing altered.
+english discord        :: noun         :: A place where people talk to each other in groups, over the internet.
+english log            :: verb         :: To record something; to log in is to identify yourself to a machine.
+english listen         :: verb         :: To pay attention to sound, waiting for something to be said.
+english reply          :: verb         :: To answer something that was said to you.
+english send           :: verb         :: To make something go from where you are to somewhere else.
+english status         :: noun         :: How things stand with somebody or something at the moment.
+english their          :: determiner   :: Belonging to them.
+english token          :: noun         :: A thing that stands for something else; here, a secret that proves who a bot is.
+english secret         :: noun         :: Something kept from everyone but the few who need it.
+english bot            :: noun         :: A program that behaves as though it were a person talking.
+english server         :: noun         :: A machine that others connect to; on Discord, one community of people.
+english channel        :: noun         :: A way through which things travel; on Discord, one room of a server.
+english came           :: verb         :: Moved towards, or arrived from.
+english message        :: noun         :: Something said or written, sent from one person to another.
+english my             :: determiner   :: Belonging to me.
+english they           :: pronoun      :: The people or person being spoken about.
+english said           :: verb         :: Spoke; put into words. Also, the words themselves.
+english name           :: noun         :: What somebody or something is called.

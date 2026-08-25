@@ -221,6 +221,18 @@ forms! {
     MatrixInverse => "matrix_inverse",
     IdentityMatrix => "identity_matrix",
 
+    DiscordLogIn => "discord_log_in",
+    DiscordNext => "discord_next",
+    DiscordReply => "discord_reply",
+    DiscordSend => "discord_send",
+    DiscordStatus => "discord_status",
+    DiscordSaid => "discord_said",
+    DiscordName => "discord_name",
+    DiscordIsBot => "discord_is_bot",
+    DiscordChannel => "discord_channel",
+    DiscordServer => "discord_server",
+    SecretCalled => "secret_called",
+
     NotDecoded => "not_decoded",
 
     WriteText => "write_text",

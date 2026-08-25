@@ -106,6 +106,18 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    DiscordLogIn,
+    DiscordNext,
+    DiscordReply,
+    DiscordSend,
+    DiscordStatus,
+    DiscordSaid,
+    DiscordName,
+    DiscordIsBot,
+    DiscordChannel,
+    DiscordServer,
+    SecretCalled,
+
     WriteText,
     LetterSize,
     WrittenWidth,
@@ -285,6 +297,12 @@ impl Builtin {
                 | Builtin::NamedColour
                 | Builtin::SaveCanvas
                 | Builtin::PutInWindow
+                | Builtin::DiscordLogIn
+                | Builtin::DiscordNext
+                | Builtin::DiscordReply
+                | Builtin::DiscordSend
+                | Builtin::DiscordStatus
+                | Builtin::SecretCalled
         )
     }
 }

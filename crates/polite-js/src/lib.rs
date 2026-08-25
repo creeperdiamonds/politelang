@@ -440,6 +440,60 @@ pub fn cannot_carry(program: &Program) -> Vec<Builtin> {
 mod tests {
     use super::*;
 
+    /// Every builtin the emitter can name has to exist on the other side.
+    ///
+    /// The two halves of this backend are `runtime_name` here and the exports in
+    /// `runtime/polite.mjs`, and the only way they part company is quietly: somebody adds a
+    /// builtin to the middle language, wires it through the checker and the lowering, and never
+    /// touches the runtime. The program then emits a call to something that is not there and
+    /// fails with a JavaScript error rather than a sentence. So both files are read here and set
+    /// against each other.
+    #[test]
+    fn the_runtime_has_every_builtin_the_emitter_can_name() {
+        const IR: &str = include_str!("../../polite-ir/src/lib.rs");
+        const RUNTIME: &str = include_str!("../../../runtime/polite.mjs");
+
+        let block = IR
+            .split("pub enum Builtin {")
+            .nth(1)
+            .expect("the middle language should still have a Builtin")
+            .split("
+}")
+            .next()
+            .unwrap();
+
+        let mut missing: Vec<String> = Vec::new();
+        let mut counted = 0usize;
+        for line in block.lines() {
+            let name = line.trim().trim_end_matches(',');
+            if name.is_empty()
+                || name.starts_with("//")
+                || !name.chars().next().is_some_and(|c| c.is_ascii_uppercase())
+                || !name.chars().all(|c| c.is_ascii_alphanumeric())
+            {
+                continue;
+            }
+            counted += 1;
+            let mut letters = name.chars();
+            let wanted = letters.next().unwrap().to_ascii_lowercase().to_string()
+                + letters.as_str();
+            let exported = RUNTIME.contains(&format!("export function {wanted}("))
+                || RUNTIME.contains(&format!("export const {wanted} ="))
+                || RUNTIME.contains(&format!("export async function {wanted}("));
+            if !exported {
+                missing.push(wanted);
+            }
+        }
+
+        assert!(counted > 150, "only found {counted} builtins, which cannot be right");
+        assert!(
+            missing.is_empty(),
+            "{} builtins have no runtime to call: {:?}",
+            missing.len(),
+            missing
+        );
+    }
+
     #[test]
     fn text_is_quoted_so_that_it_cannot_break_out() {
         assert_eq!(quoted("hello"), "\"hello\"");

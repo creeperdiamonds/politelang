@@ -852,6 +852,16 @@ impl<'a> Checker<'a> {
                 }
             }
 
+            // Talking to Discord. Everything crossing this line is text.
+            Form::DiscordLogIn | Form::DiscordReply | Form::DiscordSend | Form::DiscordStatus => {
+                if let Some(a) = args.first() {
+                    let text = self.types.text;
+                    self.want(*a, arg_ty[0], text, "some text");
+                }
+            }
+
+            Form::DiscordNext => {}
+
             Form::WriteText => {
                 if let Some(w) = args.first() {
                     let text = self.types.text;
@@ -1593,6 +1603,20 @@ impl<'a> Checker<'a> {
                     self.want(e, t, text, "some writing");
                 }
                 text
+            }
+
+            Form::DiscordSaid | Form::DiscordName | Form::DiscordChannel | Form::DiscordServer => {
+                self.types.text
+            }
+
+            Form::DiscordIsBot => self.types.yes_no,
+
+            Form::SecretCalled => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "the name of a secret");
+                }
+                self.types.text
             }
 
             Form::WrittenWidth => {

@@ -10,3 +10,7 @@ polite-window.html
 room.png
 errand.png
 target/js-comparison/
+
+# What `polite build` leaves behind, and what npm brings in for a bot
+node_modules/
+examples/**/*.mjs

@@ -511,6 +511,24 @@ impl Lower<'_, '_> {
                 }
             }
 
+            // Every one of these might not work out: a connection can refuse, drop, or be
+            // told no by the other end, and none of that is the program's fault.
+            Form::DiscordLogIn
+            | Form::DiscordNext
+            | Form::DiscordReply
+            | Form::DiscordSend
+            | Form::DiscordStatus => {
+                let which = match form {
+                    Form::DiscordLogIn => Builtin::DiscordLogIn,
+                    Form::DiscordNext => Builtin::DiscordNext,
+                    Form::DiscordReply => Builtin::DiscordReply,
+                    Form::DiscordSend => Builtin::DiscordSend,
+                    _ => Builtin::DiscordStatus,
+                };
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, which, slots);
+            }
+
             Form::WriteText | Form::LetterSize => {
                 let which = if form == Form::WriteText {
                     Builtin::WriteText
@@ -1359,6 +1377,12 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
 
+        Form::DiscordSaid => Builtin::DiscordSaid,
+        Form::DiscordName => Builtin::DiscordName,
+        Form::DiscordIsBot => Builtin::DiscordIsBot,
+        Form::DiscordChannel => Builtin::DiscordChannel,
+        Form::DiscordServer => Builtin::DiscordServer,
+        Form::SecretCalled => Builtin::SecretCalled,
         Form::WrittenWidth => Builtin::WrittenWidth,
         Form::MakeColour => Builtin::MakeColour,
         Form::NamedColour => Builtin::NamedColour,

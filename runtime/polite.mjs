@@ -935,6 +935,143 @@ export function waitFor(seconds) {
 }
 
 // ---------------------------------------------------------------------------
+// Discord
+//
+// A bot here is a loop rather than a pile of handlers: listen, look at what was said, answer.
+// `listen for the next message` is where it waits, and because everything the emitter writes is
+// awaited anyway, waiting costs nothing and blocks nothing.
+//
+// discord.js is brought in only when a program actually logs in, so a program that never mentions
+// Discord never needs it installed.
+// ---------------------------------------------------------------------------
+
+let bot = null;
+let inbox = [];
+let listeners = [];
+let heard = null;
+
+export function secretCalled(name) {
+  const found = process.env[showable(name)];
+  if (found === undefined || found === "") {
+    nope(
+      `there is no secret called ${showable(name)} here. Set it before running, and it stays out ` +
+        `of the program where it belongs.`
+    );
+  }
+  return found;
+}
+
+export async function discordLogIn(token) {
+  let discordjs;
+  try {
+    discordjs = await import("discord.js");
+  } catch {
+    nope(
+      "discord.js is not installed here. In the folder this program is in, run: npm install discord.js"
+    );
+  }
+  const { Client, GatewayIntentBits, Partials } = discordjs;
+
+  bot = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+      GatewayIntentBits.DirectMessages,
+    ],
+    partials: [Partials.Channel],
+  });
+
+  bot.on("messageCreate", (message) => {
+    // A bot that hears itself answers itself, and then answers that, and so on until somebody
+    // pulls the plug. It never hears itself. Other bots it does hear, so that `they are a bot`
+    // is a question the program can actually answer.
+    if (bot.user && message.author.id === bot.user.id) return;
+    const next = listeners.shift();
+    if (next) next(message);
+    else inbox.push(message);
+  });
+
+  await new Promise((ready, failed) => {
+    bot.once("clientReady", () => ready());
+    bot.once("ready", () => ready());
+    bot.once("error", (e) => failed(e));
+    bot.login(showable(token)).catch((e) => failed(e));
+  }).catch((e) => {
+    const why = e && e.message ? e.message : String(e);
+    if (/token/i.test(why)) {
+      nope("Discord would not take that token. Check it is the bot's token, and the current one.");
+    }
+    nope(`I could not log in to Discord: ${why}`);
+  });
+
+  console.log(`  Logged in to Discord as ${bot.user.tag}.`);
+}
+
+function mustBeLoggedIn() {
+  if (!bot) nope("log in to Discord before trying to talk to it.");
+}
+
+export async function discordNext() {
+  mustBeLoggedIn();
+  heard = inbox.length
+    ? inbox.shift()
+    : await new Promise((arrived) => listeners.push(arrived));
+}
+
+function mustHaveHeard() {
+  mustBeLoggedIn();
+  if (!heard) nope("nothing has been heard yet, so there is nothing to answer.");
+  return heard;
+}
+
+async function trying(what, doing) {
+  try {
+    return await doing();
+  } catch (e) {
+    const why = e && e.message ? e.message : String(e);
+    if (/permission|missing access|forbidden/i.test(why)) {
+      nope(`I am not allowed to ${what} there. The bot needs permission in that channel.`);
+    }
+    nope(`I could not ${what}: ${why}`);
+  }
+}
+
+export async function discordReply(text) {
+  const message = mustHaveHeard();
+  await trying("reply", () => message.reply(showable(text)));
+}
+
+export async function discordSend(text) {
+  const message = mustHaveHeard();
+  await trying("send that", () => message.channel.send(showable(text)));
+}
+
+export async function discordStatus(text) {
+  mustBeLoggedIn();
+  await trying("set my status", async () => bot.user.setActivity(showable(text)));
+}
+
+export function discordSaid() {
+  return heard ? heard.content : "";
+}
+export function discordName() {
+  if (!heard) return "";
+  return heard.member?.displayName ?? heard.author.username;
+}
+export function discordIsBot() {
+  return heard ? heard.author.bot === true : false;
+}
+export function discordChannel() {
+  if (!heard) return "";
+  return heard.channel?.name ?? "a private message";
+}
+export function discordServer() {
+  if (!heard) return "";
+  return heard.guild?.name ?? "no server";
+}
+
+// ---------------------------------------------------------------------------
 // Starting and stopping
 // ---------------------------------------------------------------------------
 
@@ -953,7 +1090,9 @@ export async function begin(main) {
       throw e;
     }
   } finally {
-    // The line reader keeps the program alive if it was ever started.
+    // The line reader keeps the program alive if it was ever started, and so does a bot that is
+    // still connected. Both are let go of here, or the program would sit there having finished.
     process.stdin.pause();
+    if (bot) await bot.destroy();
   }
 }

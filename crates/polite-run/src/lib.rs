@@ -759,6 +759,39 @@ impl Runner<'_> {
                 self.world.show(&picture);
                 None
             }
+            // Talking to Discord means a network, a gateway and a library, none of which this
+            // runner has or wants. It works when the program is written out as JavaScript, and
+            // saying exactly that is more use than a shrug.
+            Builtin::DiscordLogIn
+            | Builtin::DiscordNext
+            | Builtin::DiscordReply
+            | Builtin::DiscordSend
+            | Builtin::DiscordStatus
+            | Builtin::DiscordSaid
+            | Builtin::DiscordName
+            | Builtin::DiscordIsBot
+            | Builtin::DiscordChannel
+            | Builtin::DiscordServer => {
+                return Err(
+                    "talking to Discord only works when the program is written out as JavaScript. \
+                     Try `polite build` on it, and then run it with node."
+                        .to_string(),
+                )
+            }
+
+            Builtin::SecretCalled => {
+                let name = a0().as_text();
+                match std::env::var(&*name) {
+                    Ok(v) => Some(Value::text(v)),
+                    Err(_) => {
+                        return Err(format!(
+                            "there is no secret called {name} here. Set it before running, and it \
+                             stays out of the program where it belongs."
+                        ))
+                    }
+                }
+            }
+
             Builtin::WriteText => {
                 let words = a0().as_text();
                 let (x, y) = as_point(&a1())?;
