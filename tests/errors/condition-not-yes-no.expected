@@ -1,0 +1,12 @@
+In condition-not-yes-no.polite, line 1:
+
+    please check if 3:
+                    ^
+
+I was expecting a yes or no here, and this is a whole number.
+
+A check needs something that is settled one way or the other.
+
+A comparison gives a yes or no:
+
+    score is over 10

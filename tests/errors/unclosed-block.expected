@@ -1,0 +1,14 @@
+In unclosed-block.polite, line 1:
+
+    please repeat 3 times:
+    ^^^^^^
+
+This opens a loop that is never closed.
+
+A block runs until you say thank you. That is what takes the place
+of brackets, and it means the indentation is yours to arrange
+however you like.
+
+Close it at the end:
+
+    thanks

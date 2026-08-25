@@ -1,0 +1,12 @@
+please remember name is "world"
+please remember count is 3
+please remember things is an empty list
+please add "a" to things
+
+please show "hello, {name}"
+please show "there are {count} of them"
+please show "and {count plus 1} after that"
+please show "the list holds {the number of items in things}"
+please show "the first is {item 1 of things or "nothing"}"
+please show "nested {the capitals of "shout"} inside"
+please show "hello, " then name then "!"

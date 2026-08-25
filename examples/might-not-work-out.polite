@@ -1,0 +1,21 @@
+-- Three ways to deal with something that might not work out.
+
+-- One: give it something to fall back on.
+please remember saved is the contents of "save.txt" or "no save yet"
+please show saved
+
+-- Two: handle it properly.
+please try to:
+    remember settings is the contents of "settings.polite"
+    show "Settings are {the length of settings} letters long."
+otherwise if it does not work out:
+    show "I could not read the settings, because {what went wrong}."
+thank you for trying
+
+-- Three: an action that might not work out says so all by itself.
+please define load the score:
+    give back the number in the contents of "score.txt"
+thanks
+
+please remember score is load the score or 0
+please show "The score is {score}."

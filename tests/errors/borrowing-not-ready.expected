@@ -1,0 +1,16 @@
+In borrowing-not-ready.polite, line 1:
+
+    please use helpers
+    ^^^^^^^^^^^^^^^^^^
+
+Borrowing between files is not ready yet.
+
+The language runs one file at a time for now. Sharing words between
+files is designed and written down, and it is the next thing to be
+built.
+
+For now, keep the actions you need in the same file:
+
+    please define greet with a name:
+        give back "hello, {name}!"
+    thanks

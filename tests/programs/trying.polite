@@ -1,0 +1,22 @@
+-- Way two of spec 7.2: handle it properly.
+
+please try to:
+    remember text is the contents of "no-such-file.txt"
+    show text
+otherwise if it does not work out:
+    show "I could not read it, because {what went wrong}."
+thank you for trying
+
+please try to:
+    show "this one works"
+otherwise if it does not work out:
+    show "not reached"
+thanks
+
+-- Anything risky inside a try is looked after by the try.
+please try to:
+    remember things is an empty list
+    show the first item of things
+otherwise if it does not work out:
+    show "as expected: {what went wrong}"
+thanks

@@ -1,0 +1,14 @@
+In stop-outside-loop.polite, line 1:
+
+    please stop repeating
+    ^^^^^^^^^^^^^^^^^^^^^
+
+There is no loop here to `stop repeating` in.
+
+This only makes sense inside something that repeats.
+
+A loop reads like this:
+
+    please repeat 3 times:
+        show "hello"
+    thanks

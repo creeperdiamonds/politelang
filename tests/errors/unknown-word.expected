@@ -1,0 +1,12 @@
+In unknown-word.polite, line 1:
+
+    please dispay "hello"
+    ^^^^^^
+
+I do not know how to `dispay`.
+
+There is no word `dispay` in the language.
+
+Did you mean `display`?
+
+    please display ...

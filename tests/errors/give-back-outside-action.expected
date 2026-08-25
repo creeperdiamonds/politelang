@@ -1,0 +1,13 @@
+In give-back-outside-action.polite, line 1:
+
+    please give back 3
+    ^^^^^^^^^^^^^^^^^^
+
+There is nobody here to give this back to.
+
+Giving back is how an action answers whoever asked it. Out here in
+the main part of the file, nobody has asked for anything.
+
+Perhaps you meant to show it:
+
+    please show ...

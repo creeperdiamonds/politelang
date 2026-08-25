@@ -1,0 +1,13 @@
+-- Way one of spec 7.2: give it something to fall back on.
+
+please remember saved is the contents of "no-such-file.txt" or "nothing saved"
+please show saved
+
+please remember n is the number in "not a number" or 0
+please show n
+
+please remember things is an empty list
+please show item 5 of things or "there is no fifth thing"
+
+-- Fallbacks chain, because a fallback is just a value.
+please show item 5 of things or item 1 of things or "still nothing"

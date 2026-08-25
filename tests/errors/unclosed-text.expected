@@ -1,0 +1,12 @@
+In unclosed-text.polite, line 1:
+
+    please show "hello
+                ^^^^^^
+
+This text opens with a quote mark but never closes.
+
+Text runs from one quote mark to the next, on the same line.
+
+Add the closing quote mark:
+
+    "..."

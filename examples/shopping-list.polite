@@ -1,0 +1,15 @@
+-- Lists, and going through them.
+
+please remember shopping is an empty list
+please add "bread" to shopping
+please add "apples" to shopping
+please add "tea" to shopping
+
+please show "There are {the number of items in shopping} things to buy."
+
+please for every thing in shopping:
+    show "  - {thing}"
+thank you for repeating
+
+please show "In order: {the join of the sorted version of shopping with ", "}"
+please show "The first one is {item 1 of shopping or "nothing at all"}."

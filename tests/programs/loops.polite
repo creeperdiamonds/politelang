@@ -1,0 +1,48 @@
+-- Six ways to write a loop, all landing on the same shape (spec 9.3).
+
+please repeat 3 times:
+    show "count"
+thank you for repeating
+
+please do this 2 times:
+    show "again"
+thanks
+
+please remember n is 0
+please repeat while n is under 3:
+    add 1 to n
+    show n
+thanks
+
+please change n to 0
+please repeat until n is 3:
+    add 1 to n
+    show "up to {n}"
+thanks
+
+please remember names is an empty list
+please add "a" to names
+please add "b" to names
+please for every name in names:
+    show name
+thanks
+
+please repeat for every k from 1 to 3:
+    show "k is {k}"
+thanks
+
+please count j from 5 to 7:
+    show j
+thanks
+
+please keep going forever:
+    show "once"
+    stop repeating
+thanks
+
+please repeat for every m from 1 to 5:
+    check if m is 3:
+        skip to the next one
+    thanks
+    show m
+thanks

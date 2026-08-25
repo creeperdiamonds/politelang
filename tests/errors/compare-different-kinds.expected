@@ -1,0 +1,13 @@
+In compare-different-kinds.polite, line 2:
+
+    please check if score is "three":
+                    ^^^^^^^^^^^^^^^^
+
+I cannot compare a whole number with text.
+
+Two things can only be the same if they are the same kind of thing
+to begin with.
+
+If you meant to compare them as text:
+
+    the text of ... is the text of ...

@@ -1,0 +1,13 @@
+-- FizzBuzz, politely.
+
+please repeat for every n from 1 to 20:
+    check if n divides evenly by 15:
+        show "FizzBuzz"
+    otherwise if n divides evenly by 3:
+        show "Fizz"
+    otherwise if n divides evenly by 5:
+        show "Buzz"
+    otherwise:
+        show n
+    thanks
+thank you for repeating

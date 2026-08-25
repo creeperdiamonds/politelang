@@ -1,0 +1,33 @@
+please remember score is 7
+
+please check if score is over 10:
+    show "high"
+otherwise if score is over 5:
+    show "middling"
+otherwise:
+    show "low"
+thank you for checking
+
+please check if score is at least 7 and score is at most 9:
+    show "in range"
+thanks
+
+please check if score is between 1 and 10:
+    show "between"
+thanks
+
+please check if not (score is 3):
+    show "not three"
+thanks
+
+please check if score is 3 or score is 7:
+    show "one of those"
+thanks
+
+please see whether score is not 3:
+    show "see whether works too"
+thanks
+
+please when score is 7:
+    show "when works too"
+thanks

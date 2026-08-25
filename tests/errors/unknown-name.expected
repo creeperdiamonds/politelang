@@ -1,0 +1,13 @@
+In unknown-name.polite, line 1:
+
+    please show scoer
+                ^^^^^
+
+I do not know a name called `scoer`.
+
+A name has to be remembered before it can be used, so that a
+mistyped name is caught rather than quietly becoming a second thing.
+
+You can remember it like this:
+
+    please remember scoer is 0

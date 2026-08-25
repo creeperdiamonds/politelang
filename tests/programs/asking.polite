@@ -1,0 +1,6 @@
+please ask "What is your name? " as name
+please ask "How old are you? " as age
+please show "Hello {name}, who is {age}."
+please check if age is over 10:
+    show "That is more than ten."
+thanks

@@ -1,0 +1,13 @@
+In rude.polite, line 1:
+
+    show "no please"
+    ^^^^
+
+This is missing a `please`.
+
+Out here at the top of the file, every request asks for itself.
+Inside a block you only have to ask once, when you open it.
+
+Ask, and I will happily do it:
+
+    please show ...

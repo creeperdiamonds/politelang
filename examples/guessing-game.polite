@@ -1,0 +1,22 @@
+-- A guessing game.
+
+please define play:
+    remember secret is a random whole number from 1 to 100
+    remember guesses is 0
+
+    keep going forever:
+        ask "What is your guess? " as guess
+        add 1 to guesses
+
+        check if guess is secret:
+            show "Got it in {guesses} guesses!"
+            stop repeating
+        otherwise if guess is under secret:
+            show "A little higher."
+        otherwise:
+            show "A little lower."
+        thanks
+    thank you for repeating
+thank you for defining
+
+please play

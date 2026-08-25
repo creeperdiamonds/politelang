@@ -1,0 +1,14 @@
+In wrong-closer.polite, line 3:
+
+    thank you for checking
+              ^^^^^^^^^^^^
+
+This closes a loop, but it says `thank you for checking`.
+
+Naming what you are closing is optional, and I check it when you do,
+so that crossed blocks are caught here rather than puzzled over
+later.
+
+Either name it to match, or simply say thanks:
+
+    thank you for repeating

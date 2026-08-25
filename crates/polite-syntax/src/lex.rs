@@ -91,12 +91,20 @@ pub fn lex(src: &str, words: &mut Interner) -> (Lexed, Vec<Diagnostic>) {
             i += 1;
             let mut value = String::new();
             let mut closed = false;
+            // How deep inside `{ ... }` we are. A quote mark inside braces belongs to whatever is
+            // being worked out in there, so it does not end the text.
+            let mut depth = 0usize;
             while i < bytes.len() {
                 let b = bytes[i];
-                if b == b'"' {
+                if b == b'"' && depth == 0 {
                     i += 1;
                     closed = true;
                     break;
+                }
+                if b == b'{' {
+                    depth += 1;
+                } else if b == b'}' && depth > 0 {
+                    depth -= 1;
                 }
                 if b == b'\n' {
                     break;
@@ -130,8 +138,12 @@ pub fn lex(src: &str, words: &mut Interner) -> (Lexed, Vec<Diagnostic>) {
                                 )
                                 .because(
                                     "A backslash inside text introduces something special. \
-                                     I understand \\n for a new line, \\t for a tab, \\\" for a \
-                                     quote mark, \\\\ for a backslash, and \\{ or \\} for a brace.",
+                                     I understand n for a new line, t for a tab, a quote mark, \
+                                     another backslash, and a brace.",
+                                )
+                                .suggest(
+                                    "For a backslash on its own, write two of them:",
+                                    "\"a backslash looks like \\\\\"",
                                 ),
                             );
                             i += 2;
@@ -185,10 +197,14 @@ pub fn lex(src: &str, words: &mut Interner) -> (Lexed, Vec<Diagnostic>) {
                 match raw.parse::<f64>() {
                     Ok(v) => Tok::Dec(v),
                     Err(_) => {
-                        problems.push(Diagnostic::problem(
-                            span,
-                            format!("I could not read `{raw}` as a number."),
-                        ));
+                        problems.push(
+                            Diagnostic::problem(
+                                span,
+                                format!("I could not read `{raw}` as a number."),
+                            )
+                            .because("Decimal numbers are written with a single dot in them.")
+                            .suggest("Like this:", "3.5"),
+                        );
                         Tok::Dec(0.0)
                     }
                 }
@@ -203,6 +219,11 @@ pub fn lex(src: &str, words: &mut Interner) -> (Lexed, Vec<Diagnostic>) {
                             )
                             .because(
                                 "Whole numbers here go up to about 9 million million million.",
+                            )
+                            .suggest(
+                                "A decimal number reaches much further, if you can spare the \
+                                 exactness:",
+                                "9000000000000000000.0",
                             ),
                         );
                         Tok::Int(0)
@@ -255,6 +276,10 @@ pub fn lex(src: &str, words: &mut Interner) -> (Lexed, Vec<Diagnostic>) {
                         "PoliteLang is written in words. The only marks it uses are quotes for \
                          text, a colon to open a block, brackets for grouping, a comma, and the \
                          arithmetic signs + - * / > < >= <=.",
+                    )
+                    .suggest(
+                        "If you meant it as part of some text, put it in quotes:",
+                        format!("please show \"{ch}\""),
                     ),
                 );
                 i += ch_len;

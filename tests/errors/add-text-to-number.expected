@@ -1,0 +1,12 @@
+In add-text-to-number.polite, line 2:
+
+    please add "hello" to score
+               ^^^^^^^
+
+I was expecting a number here, and this is text.
+
+This place wants what is being added.
+
+You can read a number out of text:
+
+    the number in ...

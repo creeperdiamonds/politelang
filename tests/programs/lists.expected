@@ -1,0 +1,15 @@
+3
+apples
+bread
+tea
+bread, apples, tea
+apples, bread, tea
+tea, apples, bread
+yes
+3
+15
+5
+1
+toast, apples, tea
+apples, tea
+as expected: there is no item 99, because the list holds 2 items

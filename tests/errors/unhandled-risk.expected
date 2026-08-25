@@ -1,0 +1,20 @@
+In unhandled-risk.polite, line 1:
+
+    please show the contents of "somewhere.txt"
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This might not work out, because `the contents of {path}` might not.
+
+I will not crash on you, and I will not quietly invent an answer. So
+tell me what should happen if it does not work out, and I will do
+that instead.
+
+Give me something to fall back on, or handle it properly:
+
+    ... or 0
+
+    please try to:
+        ...
+    otherwise if it does not work out:
+        show "Oh dear: {what went wrong}"
+    thanks

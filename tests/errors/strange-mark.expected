@@ -1,0 +1,42 @@
+In strange-mark.polite, line 1:
+
+    please show 1 @ 2
+                  ^
+
+I do not know what to do with `@` here.
+
+PoliteLang is written in words. The only marks it uses are quotes
+for text, a colon to open a block, brackets for grouping, a comma,
+and the arithmetic signs + - * / > < >= <=.
+
+If you meant it as part of some text, put it in quotes:
+
+    please show "@"
+
+In strange-mark.polite, line 1:
+
+    please show 1 @ 2
+                    ^
+
+This is missing a `please`.
+
+Out here at the top of the file, every request asks for itself.
+Inside a block you only have to ask once, when you open it.
+
+Ask, and I will happily do it:
+
+    please ...
+
+In strange-mark.polite, line 1:
+
+    please show 1 @ 2
+                    ^
+
+I do not know what is being asked for here.
+
+Every request starts with a word I know. `polite words` lists them
+all, and `polite explain "..."` says what one means.
+
+The everyday words are a good place to start:
+
+    please show "hello"

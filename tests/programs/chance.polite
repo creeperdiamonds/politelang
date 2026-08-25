@@ -1,0 +1,4 @@
+-- Chance, with the same seed every time so the corpus stays repeatable.
+please repeat 5 times:
+    show a random whole number from 1 to 6
+thanks

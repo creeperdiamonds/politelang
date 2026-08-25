@@ -71,6 +71,7 @@ keys! {
     i => "i",
     am => "am",
     sure => "sure",
+    then => "then",
     a => "a",
     an => "an",
     the => "the",
@@ -564,7 +565,15 @@ impl<'a> Parser<'a> {
         // Rule 3: a courtesy word covers everything inside the block it opened, so only the
         // outermost level has to ask.
         if !polite && self.depth == 0 {
-            let words = self.here_words(3);
+            let mut words = self.here_words(3);
+            if !words.is_empty()
+                && !matches!(
+                    self.toks.get(self.pos + words.split(' ').count()).map(|t| t.tok),
+                    Some(Tok::Newline) | Some(Tok::End) | None
+                )
+            {
+                words.push_str(" ...");
+            }
             self.problems.push(
                 Diagnostic::problem(start, "This is missing a `please`.")
                     .because(
@@ -601,11 +610,13 @@ impl<'a> Parser<'a> {
             return self.parse_try(start, polite);
         }
 
-        if let Some(stmt) = self.parse_phrase_statement(start, polite) {
+        // An action you defined yourself wins over the shipped vocabulary. You taught me that
+        // word on purpose, so it is the one you meant.
+        if let Some(stmt) = self.parse_call_statement(start, polite) {
             return Some(stmt);
         }
 
-        if let Some(stmt) = self.parse_call_statement(start, polite) {
+        if let Some(stmt) = self.parse_phrase_statement(start, polite) {
             return Some(stmt);
         }
 
@@ -637,10 +648,15 @@ impl<'a> Parser<'a> {
             }
         }
         if d.because.is_none() {
-            d = d.because(
-                "Every request starts with a word I know. `polite words` lists them all, and \
-                 `polite explain \"...\"` says what one means.",
-            );
+            d = d
+                .because(
+                    "Every request starts with a word I know. `polite words` lists them all, and \
+                     `polite explain \"...\"` says what one means.",
+                )
+                .suggest(
+                    "The everyday words are a good place to start:",
+                    "please show \"hello\"",
+                );
         }
         self.problems.push(d);
         self.skip_to_end_of_line();
@@ -1107,6 +1123,7 @@ impl<'a> Parser<'a> {
                 Tok::Minus => BinOp::Sub,
                 Tok::Word(w) if w == self.keys.plus && !stops.contains(&w) => BinOp::Add,
                 Tok::Word(w) if w == self.keys.minus && !stops.contains(&w) => BinOp::Sub,
+                Tok::Word(w) if w == self.keys.then && !stops.contains(&w) => BinOp::Then,
                 _ => break,
             };
             self.bump();
@@ -1348,7 +1365,10 @@ impl<'a> Parser<'a> {
         self.ast.push_expr(ExprKind::Binary { op, lhs, rhs }, span)
     }
 
-    /// Split `"Got it in {guesses} guesses!"` into its pieces.
+    /// Split text into its pieces.
+    ///
+    /// Whatever sits between the braces is a value like any other, so it is worked out with the
+    /// ordinary expression grammar rather than being limited to a bare name.
     fn build_text(&mut self, id: u32, span: Span) -> ExprId {
         let raw = self.ast.texts[id as usize].clone();
         if !raw.contains('{') {
@@ -1359,55 +1379,125 @@ impl<'a> Parser<'a> {
 
         let mut parts: Vec<InterpPart> = Vec::new();
         let mut literal = String::new();
-        let mut chars = raw.chars().peekable();
-        while let Some(c) = chars.next() {
-            if c == '{' {
-                let mut inner = String::new();
-                let mut closed = false;
-                for c2 in chars.by_ref() {
-                    if c2 == '}' {
-                        closed = true;
-                        break;
+        let chars: Vec<char> = raw.chars().collect();
+        let mut i = 0usize;
+
+        while i < chars.len() {
+            if chars[i] != '{' {
+                literal.push(chars[i]);
+                i += 1;
+                continue;
+            }
+            i += 1;
+
+            // Collect up to the matching close brace, stepping over any text written inside.
+            let mut inner = String::new();
+            let mut depth = 1usize;
+            let mut in_text = false;
+            let mut closed = false;
+            while i < chars.len() {
+                let c = chars[i];
+                if in_text {
+                    if c == '"' {
+                        in_text = false;
                     }
-                    inner.push(c2);
+                    inner.push(c);
+                    i += 1;
+                    continue;
                 }
-                if !closed {
-                    self.problems.push(
-                        Diagnostic::problem(span, "This text opens a brace but never closes it.")
-                            .because(
-                                "Braces inside text drop a value in, as in \"hello, {name}\". \
-                                 To show a brace itself, write \\{ or \\}.",
-                            )
-                            .suggest("Close it:", "\"hello, {name}\""),
-                    );
+                match c {
+                    '"' => {
+                        in_text = true;
+                        inner.push(c);
+                    }
+                    '{' => {
+                        depth += 1;
+                        inner.push(c);
+                    }
+                    '}' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            closed = true;
+                            i += 1;
+                            break;
+                        }
+                        inner.push(c);
+                    }
+                    _ => inner.push(c),
                 }
-                if !literal.is_empty() {
-                    self.ast.texts.push(undo_brace_escapes(&literal));
-                    parts.push(InterpPart::Text(self.ast.texts.len() as u32 - 1));
-                    literal.clear();
-                }
-                let name = inner.trim().to_string();
-                if name.is_empty() {
-                    self.problems.push(
-                        Diagnostic::problem(span, "There is nothing between these braces.")
-                            .because("Braces inside text are for dropping a value in.")
-                            .suggest("Name what goes there:", "\"hello, {name}\""),
-                    );
-                } else {
-                    let sym = self.ast.words.intern(&name);
-                    let e = self.ast.push_expr(ExprKind::Name(sym), span);
-                    parts.push(InterpPart::Value(e));
-                }
+                i += 1;
+            }
+
+            if !closed {
+                self.problems.push(
+                    Diagnostic::problem(span, "This text opens a brace but never closes it.")
+                        .because(
+                            "Braces inside text drop a value in, as in \"hello, {name}\". To show                              a brace itself, write a backslash before it.",
+                        )
+                        .suggest("Close it:", "\"hello, {name}\""),
+                );
+            }
+
+            if !literal.is_empty() {
+                self.ast.texts.push(undo_brace_escapes(&literal));
+                parts.push(InterpPart::Text(self.ast.texts.len() as u32 - 1));
+                literal.clear();
+            }
+
+            let trimmed = inner.trim().to_string();
+            if trimmed.is_empty() {
+                self.problems.push(
+                    Diagnostic::problem(span, "There is nothing between these braces.")
+                        .because("Braces inside text are for dropping a value in.")
+                        .suggest("Name what goes there:", "\"hello, {name}\""),
+                );
             } else {
-                literal.push(c);
+                let e = self.parse_inside_braces(&trimmed, span);
+                parts.push(InterpPart::Value(e));
             }
         }
+
         if !literal.is_empty() {
             self.ast.texts.push(undo_brace_escapes(&literal));
             parts.push(InterpPart::Text(self.ast.texts.len() as u32 - 1));
         }
         let range = self.ast.push_interp(&parts);
         self.ast.push_expr(ExprKind::Interp(range), span)
+    }
+
+    /// Work out the value written between a pair of braces.
+    ///
+    /// The words in there are read with the same lexer and the same grammar as everywhere else,
+    /// so anything that is a value in ordinary code is a value in here too.
+    fn parse_inside_braces(&mut self, inner: &str, span: Span) -> ExprId {
+        let mut words = std::mem::take(&mut self.ast.words);
+        let (lexed, problems) = crate::lex::lex(inner, &mut words);
+        self.ast.words = words;
+        self.problems.extend(problems);
+
+        let base = self.ast.texts.len() as u32;
+        self.ast.texts.extend(lexed.texts);
+
+        // Everything in here points at the text it was written inside, which is where a person
+        // would look for it.
+        let toks: Vec<Token> = lexed
+            .tokens
+            .into_iter()
+            .map(|t| Token {
+                tok: match t.tok {
+                    Tok::Text(k) => Tok::Text(base + k),
+                    other => other,
+                },
+                span,
+            })
+            .collect();
+
+        let saved_toks = std::mem::replace(&mut self.toks, toks);
+        let saved_pos = std::mem::replace(&mut self.pos, 0);
+        let e = self.parse_expr(Ctx::FULL, &[]);
+        self.toks = saved_toks;
+        self.pos = saved_pos;
+        e
     }
 }
 

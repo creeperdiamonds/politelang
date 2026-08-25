@@ -1,0 +1,3 @@
+I could not read it, because there is no file called "no-such-file.txt".
+this one works
+as expected: the list is empty, so it has no first item

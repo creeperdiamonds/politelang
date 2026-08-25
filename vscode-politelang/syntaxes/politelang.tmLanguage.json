@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "PoliteLang",
+  "scopeName": "source.polite",
+  "_generated": "by `polite grammar` from vocabulary/core.vocab — do not edit by hand",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#text" },
+    { "include": "#courtesy" },
+    { "include": "#structure" },
+    { "include": "#literals" },
+    { "include": "#numbers" },
+    { "include": "#vocabulary" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-dash.polite", "match": "--.*$" },
+        { "name": "comment.line.by-the-way.polite", "match": "(?i)^\\s*by the way.*$" }
+      ]
+    },
+    "text": {
+      "name": "string.quoted.double.polite",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.polite", "match": "\\\\." },
+        { "name": "variable.other.interpolated.polite", "match": "\\{[^}]*\\}" }
+      ]
+    },
+    "courtesy": {
+      "name": "keyword.control.courtesy.polite",
+      "match": "(?i)\\b(please|kindly|thanks|thank you|would you|if you would|be so kind|for repeating|for checking|for defining|for trying|for that)\\b"
+    },
+    "structure": {
+      "name": "keyword.control.polite",
+      "match": "(?i)\\b(define|otherwise|check if|see whether|when|try to|give back|hand back|answer with|share|use|borrow|with|and|or|not|is|is not|is over|is under|is at least|is at most|is between)\\b"
+    },
+    "literals": {
+      "name": "constant.language.polite",
+      "match": "(?i)\\b(yes|no|nothing)\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.polite",
+      "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+    },
+    "vocabulary": {
+      "name": "support.function.polite",
+      "match": "(?i)\\b(repeating|capitals|contains|contents|mentions|multiply|position|remember|smallest|biggest|display|divides|forever|letters|reverse|rounded|trimmed|version|whether|answer|borrow|change|divide|evenly|forget|length|lookup|number|pieces|random|remove|repeat|sorted|square|starts|about|along|break|check|count|empty|every|first|going|items|knows|leave|print|share|small|split|there|times|until|value|while|whole|words|write|back|ends|file|from|give|hand|into|item|join|keep|keys|last|list|loop|make|many|move|next|note|root|show|size|skip|stop|take|tell|text|this|time|when|with|add|are|ask|for|how|let|new|now|one|out|put|say|see|set|sum|the|use|an|as|at|be|by|do|if|in|is|me|of|to|a)\\b"
+    }
+  }
+}

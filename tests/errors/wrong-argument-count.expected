@@ -1,0 +1,13 @@
+In wrong-argument-count.polite, line 5:
+
+    please show greet with "a" and "b"
+                ^^^^^^^^^^^^^^^^^^^^^^
+
+`greet` needs 1 value, and 2 were given here.
+
+An action asks for exactly what it needs, by name, when it is
+defined.
+
+Give it what it asks for:
+
+    please greet with ...

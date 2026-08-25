@@ -217,7 +217,11 @@ pub fn render(source: &Source<'_>, d: &Diagnostic) -> String {
         wrap_into(&mut out, &s.lead, 68, "");
         out.push('\n');
         for l in s.code.lines() {
-            let _ = writeln!(out, "    {}", l);
+            if l.trim().is_empty() {
+                out.push('\n');
+            } else {
+                let _ = writeln!(out, "    {}", l);
+            }
         }
     }
 

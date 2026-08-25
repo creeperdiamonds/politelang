@@ -1,0 +1,7 @@
+-- Spec 10.3: joining text in a loop is quietly made fast.
+please remember sentence is ""
+please for every word in the words in "the quick brown fox":
+    add word to sentence
+    add " " to sentence
+thanks
+please show the trimmed version of sentence

@@ -1,0 +1,16 @@
+In try-without-the-other-half.polite, line 1:
+
+    please try to:
+    ^^^^^^
+
+This tries something but never says what to do if it does not work
+out.
+
+Trying is for the times when something might not work out. If
+nothing follows, there is nowhere for me to go when it does not.
+
+Add the other half:
+
+    otherwise if it does not work out:
+        show "Oh dear."
+    thanks

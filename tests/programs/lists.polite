@@ -1,0 +1,34 @@
+please remember things is an empty list
+please add "bread" to things
+please add "apples" to things
+please add "tea" to things
+
+please show the number of items in things
+please show item 2 of things or "nothing"
+please show the first item of things or "nothing"
+please show the last item of things or "nothing"
+please show the join of things with ", "
+please show the join of the sorted version of things with ", "
+please show the join of the reverse of things with ", "
+please show things contains "tea"
+please show the position of "tea" in things or 0
+
+please remember numbers is an empty list
+please repeat for every n from 1 to 5:
+    add n to numbers
+thanks
+please show the sum of numbers
+please show the biggest of numbers or 0
+please show the smallest of numbers or 0
+
+-- Changing a list by position might not work out, because the position may not be there.
+-- A request that gives back no value cannot take a fallback, so it is handled properly instead.
+please try to:
+    put "toast" at position 1 in things
+    show the join of things with ", "
+    remove position 1 from things
+    show the join of things with ", "
+    remove position 99 from things
+otherwise if it does not work out:
+    show "as expected: {what went wrong}"
+thank you for trying

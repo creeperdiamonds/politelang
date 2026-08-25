@@ -5,6 +5,14 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[lib]
+name = "polite_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "polite"
+path = "src/main.rs"
+
 [dependencies]
 polite-diag = { workspace = true }
 polite-vocab = { workspace = true }

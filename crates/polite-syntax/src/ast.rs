@@ -31,6 +31,8 @@ impl Range {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum BinOp {
     Add,
+    /// `"hello, " then name then "!"` — the word form of dropping a value into text (spec 3.7).
+    Then,
     Sub,
     Mul,
     Div,
@@ -50,6 +52,7 @@ impl BinOp {
     pub fn word(self) -> &'static str {
         match self {
             BinOp::Add => "plus",
+            BinOp::Then => "then",
             BinOp::Sub => "minus",
             BinOp::Mul => "times",
             BinOp::Div => "divided by",

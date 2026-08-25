@@ -1,0 +1,17 @@
+-- Text and lookups.
+
+please remember sentence is "the quick brown fox jumps over the lazy dog the end"
+please remember counts is an empty lookup
+
+please for every word in the words in sentence:
+    check if counts knows about word:
+        remember seen is the value for word in counts or 0
+        put seen plus 1 for word in counts
+    otherwise:
+        put 1 for word in counts
+    thank you for checking
+thanks
+
+please for every word in the keys of counts:
+    show "{word}: {the value for word in counts or 0}"
+thank you for repeating

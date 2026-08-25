@@ -1,0 +1,19 @@
+-- Spec 7.4: riskiness travels outward on its own.
+
+please define load the score:
+    give back the number in the contents of "no-such-file.txt"
+thanks
+
+please define load twice:
+    remember a is load the score
+    give back a
+thanks
+
+please show load the score or 0
+please show load twice or 0
+
+please try to:
+    show load twice
+otherwise if it does not work out:
+    show "the whole chain said: {what went wrong}"
+thanks

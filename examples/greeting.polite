@@ -1,0 +1,12 @@
+-- Actions become words you can use.
+
+please define greet with a name and a greeting:
+    give back "{greeting}, {name}!"
+thanks
+
+please define shout with a line:
+    give back the capitals of line
+thanks
+
+please show greet with "Creeperdiamonds Studios" and "Good morning"
+please show shout with greet with "world" and "hello"

@@ -1,0 +1,19 @@
+-- Every way of asking means the same thing (spec 3.2).
+
+please show "please"
+kindly show "kindly"
+would you show "would you"
+would you please show "would you please"
+would you kindly show "would you kindly"
+if you would show "if you would"
+if you would please show "if you would please"
+if you would be so kind show "if you would be so kind"
+if you would be so kind as to show "if you would be so kind as to"
+if it is not too much trouble show "if it is not too much trouble"
+
+-- One courtesy word can cover a run of actions (rule 3).
+please:
+    show "one"
+    show "courtesy"
+    show "word"
+thank you for everything

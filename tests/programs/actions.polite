@@ -1,0 +1,24 @@
+please define greet with a name and a greeting:
+    give back "{greeting}, {name}!"
+thank you for defining
+
+please define shout with a line:
+    give back the capitals of line
+thanks
+
+please define count down with a number:
+    check if number is at most 0:
+        give back "done"
+    thanks
+    show number
+    give back count down with number minus 1
+thanks
+
+please define say hello:
+    show "hello from an action with a long name"
+thanks
+
+please show greet with "Creeperdiamonds Studios" and "Good morning"
+please show shout with "quietly"
+please show count down with 3
+please say hello
