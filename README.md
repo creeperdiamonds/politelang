@@ -62,7 +62,7 @@ polite run <file.polite>        run a program
 polite check <file.polite>      look it over without running it
     --show-middle               also print the middle language
 polite words [about <topic>]    every word the language knows
-polite explain <phrase>         what a phrase means, in English
+polite explain <word>           what a word means, in PoliteLang and in English
 polite check-vocabulary         make sure no two phrases could collide
 polite bench                    measure against the budgets in the spec
 polite grammar <file.json>      write the editor grammar
@@ -436,6 +436,27 @@ phrasing collapses to the same middle language, supporting *V* ways of saying th
 backends costs **V + N** rather than **V × N** — which is exactly why a large vocabulary is
 affordable at all.
 
+The same table also holds **English**. Every one of the 250 words the language uses is written
+down with its part of speech and what it actually means, quite apart from any program, so
+`polite explain` answers in two halves:
+
+```
+  show {value}
+
+  -- IN POLITELANG --
+  To show something is to let it be seen. This puts a value on the screen.
+  A request, from the everyday vocabulary.
+  Other ways to say the very same thing: display, print, say, write out, tell me...
+
+  -- IN ENGLISH --
+  show
+    verb   To let something be seen; to put it where somebody can look at it.
+    noun   A display put on for people to watch.
+```
+
+A test fails if any word is ever left without one. That serves purpose 1 directly: you cannot use
+this language without learning some English along the way.
+
 The same table generates the editor highlighting, the documentation, the typo suggestions and one
 test per row. And **`polite check-vocabulary` runs on every build**, refusing any two phrases that
 could both match the same sentence, because the language must never guess which one you meant.
@@ -488,7 +509,7 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 
 **Working today**
 
-- The four rules, and 195 phrases across 175 meanings
+- The four rules, and 195 phrases across 175 meanings, with each of its 250 words defined in English too
 - Full type inference — you never write a type, and mistakes are caught before the program runs
 - The `or` / `try` / `I am sure` system, and riskiness that spreads by itself
 - Actions, including multi-word names, recursion, and calling before defining
@@ -499,8 +520,8 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
 - **Mathematics in full** — see below
-- 130 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, and
-  the ambiguity check
+- 137 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, the
+  ambiguity check, and every lesson in the guide
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:
 

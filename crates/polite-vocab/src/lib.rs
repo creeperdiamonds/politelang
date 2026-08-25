@@ -257,6 +257,78 @@ impl Kind {
     }
 }
 
+/// What kind of word something is, in English rather than in the language.
+///
+/// The first reason PoliteLang exists is that you should come away knowing more English than you
+/// started with, so every word it uses carries this as well as its meaning in a program.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum PartOfSpeech {
+    Verb,
+    Noun,
+    Adjective,
+    Adverb,
+    Preposition,
+    Conjunction,
+    Pronoun,
+    Determiner,
+    Interjection,
+    Number,
+}
+
+impl PartOfSpeech {
+    fn from_name(s: &str) -> Option<PartOfSpeech> {
+        Some(match s {
+            "verb" => PartOfSpeech::Verb,
+            "noun" => PartOfSpeech::Noun,
+            "adjective" => PartOfSpeech::Adjective,
+            "adverb" => PartOfSpeech::Adverb,
+            "preposition" => PartOfSpeech::Preposition,
+            "conjunction" => PartOfSpeech::Conjunction,
+            "pronoun" => PartOfSpeech::Pronoun,
+            "determiner" => PartOfSpeech::Determiner,
+            "interjection" => PartOfSpeech::Interjection,
+            "number" => PartOfSpeech::Number,
+            _ => return None,
+        })
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            PartOfSpeech::Verb => "verb",
+            PartOfSpeech::Noun => "noun",
+            PartOfSpeech::Adjective => "adjective",
+            PartOfSpeech::Adverb => "adverb",
+            PartOfSpeech::Preposition => "preposition",
+            PartOfSpeech::Conjunction => "conjunction",
+            PartOfSpeech::Pronoun => "pronoun",
+            PartOfSpeech::Determiner => "determiner",
+            PartOfSpeech::Interjection => "interjection",
+            PartOfSpeech::Number => "number",
+        }
+    }
+
+    /// Every one there is, so a listing can be checked against it.
+    pub const ALL: &'static [PartOfSpeech] = &[
+        PartOfSpeech::Verb,
+        PartOfSpeech::Noun,
+        PartOfSpeech::Adjective,
+        PartOfSpeech::Adverb,
+        PartOfSpeech::Preposition,
+        PartOfSpeech::Conjunction,
+        PartOfSpeech::Pronoun,
+        PartOfSpeech::Determiner,
+        PartOfSpeech::Interjection,
+        PartOfSpeech::Number,
+    ];
+}
+
+/// One meaning a word has in ordinary English.
+#[derive(Clone, Debug)]
+pub struct Sense {
+    pub part: PartOfSpeech,
+    pub meaning: Box<str>,
+}
+
 /// Spec 4.2: nobody learns 400 words. They learn 40, and the rest arrives when they go looking.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Tier {
@@ -371,6 +443,8 @@ pub struct Vocabulary {
     /// Phrases that begin with a hole, indexed by their first literal word.
     infix_by_word: HashMap<Box<str>, Vec<u32>>,
     explanations: HashMap<Form, Box<str>>,
+    /// What each word means in ordinary English, quite apart from the program.
+    english: HashMap<Box<str>, Vec<Sense>>,
     /// Every literal word in the language, for "did you mean" suggestions.
     words: Vec<Box<str>>,
 }
@@ -396,6 +470,7 @@ impl Vocabulary {
     pub fn load(text: &str) -> Result<Vocabulary, Vec<LoadProblem>> {
         let mut phrases: Vec<Phrase> = Vec::with_capacity(256);
         let mut explanations: HashMap<Form, Box<str>> = HashMap::new();
+        let mut english: HashMap<Box<str>, Vec<Sense>> = HashMap::new();
         let mut problems: Vec<LoadProblem> = Vec::new();
 
         for (i, raw) in text.lines().enumerate() {
@@ -418,6 +493,59 @@ impl Vocabulary {
             }
 
             let head_words: Vec<&str> = head.split_whitespace().collect();
+
+            // An English row: `english <word> :: <part of speech> :: <what it means>`
+            if head_words.first() == Some(&"english") {
+                if head_words.len() != 2 {
+                    problems.push(LoadProblem {
+                        line,
+                        message: "an english row reads `english <word> :: <part of speech> :: \
+                                  <what it means>`"
+                            .into(),
+                    });
+                    continue;
+                }
+                let part = match PartOfSpeech::from_name(pattern) {
+                    Some(p) => p,
+                    None => {
+                        problems.push(LoadProblem {
+                            line,
+                            message: format!(
+                                "`{pattern}` is not a part of speech. Use verb, noun, adjective, \
+                                 adverb, preposition, conjunction, pronoun, determiner, \
+                                 interjection or number."
+                            ),
+                        });
+                        continue;
+                    }
+                };
+                let meaning = extra.unwrap_or("").trim();
+                if meaning.is_empty() {
+                    problems.push(LoadProblem {
+                        line,
+                        message: format!("`{}` is given no meaning at all", head_words[1]),
+                    });
+                    continue;
+                }
+                if !meaning.ends_with('.') {
+                    problems.push(LoadProblem {
+                        line,
+                        message: format!(
+                            "the meaning of `{}` is not a finished sentence",
+                            head_words[1]
+                        ),
+                    });
+                    continue;
+                }
+                english
+                    .entry(head_words[1].to_ascii_lowercase().as_str().into())
+                    .or_default()
+                    .push(Sense {
+                        part,
+                        meaning: meaning.into(),
+                    });
+                continue;
+            }
 
             // An explanation row: `explain <form> :: <English>`
             if head_words.first() == Some(&"explain") {
@@ -583,6 +711,7 @@ impl Vocabulary {
             by_word,
             infix_by_word,
             explanations,
+            english,
             words,
         })
     }
@@ -608,6 +737,21 @@ impl Vocabulary {
     /// The id of some phrase using this form, for the few constructs the parser handles itself.
     pub fn first_phrase_for(&self, form: Form) -> Option<u32> {
         self.phrases.iter().position(|p| p.form == form).map(|i| i as u32)
+    }
+
+    /// What a word means in ordinary English. The sense the language uses comes first.
+    pub fn english(&self, word: &str) -> &[Sense] {
+        self.english
+            .get(word.to_ascii_lowercase().as_str())
+            .map(|v| &v[..])
+            .unwrap_or(&[])
+    }
+
+    /// Every word that has an English meaning written down for it.
+    pub fn english_words(&self) -> Vec<&str> {
+        let mut out: Vec<&str> = self.english.keys().map(|k| &**k).collect();
+        out.sort_unstable();
+        out
     }
 
     pub fn explanation(&self, form: Form) -> Option<&str> {
@@ -836,6 +980,57 @@ mod tests {
         )
         .unwrap();
         assert_eq!(v.conflicts().len(), 1);
+    }
+
+    /// The first purpose of the language is that you learn more English, so a word it uses
+    /// without saying what that word means would be a broken promise.
+    #[test]
+    fn every_word_the_language_uses_has_an_english_meaning() {
+        let v = Vocabulary::embedded();
+        let mut missing: Vec<&str> = Vec::new();
+        for p in v.phrases() {
+            for w in &p.literals {
+                if v.english(w).is_empty() && !missing.contains(&&**w) {
+                    missing.push(w);
+                }
+            }
+        }
+        missing.sort_unstable();
+        assert!(
+            missing.is_empty(),
+            "these words are used but never explained in English: {missing:?}"
+        );
+    }
+
+    /// Including the words the parser itself uses, which never appear in the table.
+    #[test]
+    fn the_structural_words_are_explained_too() {
+        let v = Vocabulary::embedded();
+        let structural = [
+            "please", "kindly", "would", "you", "if", "be", "so", "kind", "as", "to", "it", "is",
+            "not", "too", "much", "trouble", "thank", "thanks", "for", "that", "otherwise",
+            "define", "with", "and", "or", "try", "does", "work", "out", "what", "went", "wrong",
+            "yes", "no", "nothing", "plus", "minus", "times", "divided", "by", "over", "under",
+            "at", "least", "most", "between", "i", "am", "sure", "then", "a", "an", "the",
+        ];
+        let missing: Vec<&str> = structural
+            .iter()
+            .copied()
+            .filter(|w| v.english(w).is_empty())
+            .collect();
+        assert!(missing.is_empty(), "structural words with no meaning: {missing:?}");
+    }
+
+    #[test]
+    fn an_english_meaning_carries_its_part_of_speech() {
+        let v = Vocabulary::embedded();
+        let senses = v.english("show");
+        assert!(senses.len() >= 2, "show is both a verb and a noun");
+        assert_eq!(senses[0].part, PartOfSpeech::Verb);
+        assert!(senses[0].meaning.starts_with("To let"));
+        assert_eq!(v.english("please")[0].part, PartOfSpeech::Adverb);
+        assert_eq!(v.english("list")[0].part, PartOfSpeech::Noun);
+        assert_eq!(v.english("kindly")[0].part, PartOfSpeech::Adverb);
     }
 
     #[test]

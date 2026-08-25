@@ -557,3 +557,302 @@ explain transpose_of     :: To transpose is to turn on its side: the rows become
 explain determinant_of   :: The determinant says how much a matrix stretches space. Nothing means it flattens it. It might not work out, because only a square matrix has one.
 explain matrix_inverse   :: This is the matrix that undoes the one you gave. It might not work out, because a matrix that flattens space cannot be undone.
 explain identity_matrix  :: This is the square matrix that changes nothing at all, with ones down the middle and nothing anywhere else.
+
+
+# ---------------------------------------------------------------------------
+# English
+#
+# The first reason this language exists is that you should come away knowing more English than you
+# started with. So every word it uses is written down here as well: what part of speech it is, and
+# what it means in ordinary English, quite apart from what it does in a program.
+#
+# `polite explain <word>` shows both, side by side.
+#
+#     english <word> :: <part of speech> :: <what it means>
+#
+# A word may have several senses. The one the language uses comes first.
+# ---------------------------------------------------------------------------
+
+english a              :: determiner   :: Used before a naming word to mean any one of that kind, not a particular one.
+english about          :: preposition  :: On the subject of; having to do with.
+english add            :: verb         :: To put one thing together with another so that there is more of it.
+english along          :: adverb       :: Onward; further forward.
+english am             :: verb         :: The form of the verb to be that goes with I.
+english an             :: determiner   :: The form of a used before a word that begins with a vowel sound.
+english and            :: conjunction  :: Used to join two things together.
+english angle          :: noun         :: The amount of turn between two lines that meet.
+english answer         :: verb         :: To give a reply to a question.
+english answer         :: noun         :: A reply, or the solution to a problem.
+english append         :: verb         :: To add something on to the end of what is already there.
+english are            :: verb         :: The form of the verb to be that goes with you, we and they.
+english arrange        :: verb         :: To put things in a particular order.
+english as             :: conjunction  :: In the way that; or used to give something a name.
+english ask            :: verb         :: To put a question to somebody, or to request something.
+english at             :: preposition  :: In or near a place, or at a particular point.
+english average        :: noun         :: The total of several numbers shared equally between them.
+english back           :: adverb       :: To the place or state something came from.
+english base           :: noun         :: The bottom part that something stands on; of numbers, how many different digits a way of writing them uses.
+english be             :: verb         :: To exist, or to have some quality.
+english between        :: preposition  :: In the space or the range that separates two things.
+english biggest        :: adjective    :: Larger than all the others.
+english binary         :: noun         :: A way of writing numbers using only two digits, one and zero.
+english binary         :: adjective    :: Having two parts.
+english bitwise        :: adverb       :: Working on each single bit of a number, one at a time.
+english borrow         :: verb         :: To take something for a while, meaning to give it back.
+english bottom         :: noun         :: The lowest part of something; in a fraction, the number below the line.
+english break          :: verb         :: To come apart, or to bring something to a sudden stop.
+english by             :: preposition  :: Beside; or used to say how something is done, or by how much.
+english capitals       :: noun         :: The big letters, A B C rather than a b c.
+english change         :: verb         :: To make something different from what it was.
+english change         :: noun         :: The act of becoming different.
+english changed        :: verb         :: The past form of change.
+english check          :: verb         :: To look and see whether something is so.
+english choose         :: verb         :: To pick one out of several.
+english common         :: adjective    :: Shared by more than one; or happening often.
+english complex        :: adjective    :: Made of several joined parts; of a number, having a part above the line as well as across.
+english conjugate      :: noun         :: A matching pair; of a complex number, the same distance across and the opposite way up.
+english contains       :: verb         :: Holds within itself.
+english contents       :: noun         :: What is held inside something.
+english correlation    :: noun         :: How closely two things move together.
+english cosine         :: noun         :: How far across you have gone, going round a circle of size one.
+english count          :: verb         :: To say the numbers in order, or to find out how many there are.
+english count          :: noun         :: A total reached by counting.
+english cross          :: adjective    :: Lying across; a cross product points out of the plane of the two it comes from.
+english cross          :: noun         :: A mark or shape made of two lines crossing.
+english cube           :: noun         :: A solid with six square sides; also a number multiplied by itself and by itself again.
+english cubed          :: verb         :: Multiplied by itself and by itself again.
+english decimal        :: adjective    :: To do with tenths, and with counting in tens.
+english decimal        :: noun         :: A number written with a dot and parts after it.
+english define         :: verb         :: To say exactly what something means.
+english degrees        :: noun         :: Units of turn. A full turn is three hundred and sixty of them.
+english determinant    :: noun         :: A number saying how much a matrix stretches or flattens space.
+english direction      :: noun         :: The way something points or moves.
+english display        :: verb         :: To put something where it can be seen.
+english display        :: noun         :: Something put out to be looked at.
+english divide         :: verb         :: To share something into equal parts.
+english divided        :: verb         :: The past form of divide.
+english divides        :: verb         :: Goes into a number; shares into equal parts.
+english divisors       :: noun         :: The whole numbers that go evenly into another number.
+english do             :: verb         :: To carry something out; to perform an action.
+english does           :: verb         :: The form of do that goes with he, she and it.
+english dot            :: noun         :: A small round mark. A dot product multiplies two lists and adds the results together.
+english down           :: adverb       :: Towards a lower place, or a lower number.
+english e              :: noun         :: A particular number, a little over two and a half, that turns up wherever something grows on its own.
+english empty          :: adjective    :: Having nothing at all in it.
+english ends           :: verb         :: Finishes; comes to a stop.
+english enough         :: determiner   :: As much as is needed, and no more.
+english evenly         :: adverb       :: In equal parts, leaving nothing over.
+english every          :: determiner   :: Each one of a group, without leaving any out.
+english everything     :: pronoun      :: All of it; every single thing.
+english exclusive      :: adjective    :: Taking one or the other but not both.
+english exponential    :: adjective    :: Growing faster and faster the larger it already is.
+english factor         :: noun         :: A number that goes evenly into another.
+english factorial      :: noun         :: Every whole number from one up to a given number, all multiplied together.
+english factors        :: noun         :: More than one factor.
+english file           :: noun         :: A named piece of writing kept on a machine.
+english first          :: adjective    :: Coming before all the others.
+english for            :: preposition  :: Meant to be given to; or lasting a length of time.
+english forever        :: adverb       :: For all time, with no end.
+english forget         :: verb         :: To stop keeping something in mind.
+english fraction       :: noun         :: A part of a whole, written as one number over another.
+english from           :: preposition  :: Used to say where something starts.
+english give           :: verb         :: To hand something over to somebody.
+english going          :: verb         :: Moving along, or carrying on.
+english greatest       :: adjective    :: Largest of them all.
+english hand           :: verb         :: To pass something to somebody.
+english hand           :: noun         :: The part of the body at the end of the arm.
+english have           :: verb         :: To hold or to own.
+english hexadecimal    :: noun         :: A way of writing numbers using sixteen digits rather than ten.
+english how            :: adverb       :: In what way; or to what amount.
+english hyperbolic     :: adjective    :: To do with a hyperbola, the curve a hanging chain makes.
+english i              :: pronoun      :: The word you use when speaking of yourself.
+english identity       :: noun         :: What a thing is in itself. The identity matrix is the one that changes nothing.
+english if             :: conjunction  :: On the condition that.
+english imaginary      :: adjective    :: Existing in the mind rather than in fact; of numbers, measured up rather than across.
+english in             :: preposition  :: Inside; within.
+english into           :: preposition  :: To the inside of; or used to show a change from one thing to another.
+english inverse        :: noun         :: The thing that undoes another.
+english inverse        :: adjective    :: Opposite in effect.
+english is             :: verb         :: The form of the verb to be that goes with he, she and it.
+english it             :: pronoun      :: The word for a thing already spoken of.
+english item           :: noun         :: One single thing in a list.
+english items          :: noun         :: More than one item.
+english join           :: verb         :: To bring two things together so that they become one.
+english keep           :: verb         :: To go on having something.
+english kept           :: verb         :: The past form of keep.
+english keys           :: noun         :: The names a lookup stores its things under.
+english keys           :: noun         :: Things that open locks.
+english kind           :: adjective    :: Gentle and caring towards others.
+english kind           :: noun         :: A sort or type of thing.
+english kindly         :: adverb       :: In a kind way; used to ask for something politely.
+english knows          :: verb         :: Has in mind; is aware of.
+english larger         :: adjective    :: Bigger than the other one.
+english last           :: adjective    :: Coming after all the others.
+english least          :: adjective    :: Smallest in amount.
+english leave          :: verb         :: To go away from somewhere; to let something stay as it is.
+english left           :: adjective    :: On the side opposite the right.
+english left           :: verb         :: The past form of leave.
+english length         :: noun         :: How long something is from end to end.
+english let            :: verb         :: To allow something to happen.
+english letter         :: noun         :: One of the marks that words are written with.
+english letter         :: noun         :: A written message sent to somebody.
+english letters        :: noun         :: More than one letter.
+english list           :: noun         :: A number of things written one after another.
+english list           :: verb         :: To write things out one after another.
+english logarithm      :: noun         :: The power a number must be raised to in order to make another.
+english long           :: adjective    :: Measuring a lot from end to end, or lasting a lot of time.
+english look           :: verb         :: To turn your eyes towards something.
+english lookup         :: noun         :: A store where things are found by name, the way a dictionary finds a meaning by its word.
+english loop           :: noun         :: Something that comes back round to where it began.
+english magnitude      :: noun         :: How large something is.
+english make           :: verb         :: To bring something into being.
+english many           :: determiner   :: A large number of.
+english matrix         :: noun         :: Numbers set out in rows and columns.
+english me             :: pronoun      :: The form of I used after a verb.
+english median         :: noun         :: The middle one, once they are all put in order.
+english mentions       :: verb         :: Refers to; speaks of.
+english minus          :: preposition  :: Less; with the second amount taken away.
+english mode           :: noun         :: The one that turns up most often.
+english mode           :: noun         :: A way of doing something.
+english most           :: determiner   :: The greatest amount or number.
+english move           :: verb         :: To go from one place to another.
+english much           :: determiner   :: A large amount of.
+english multiple       :: noun         :: A number that another goes evenly into.
+english multiple       :: adjective    :: More than one.
+english multiply       :: verb         :: To add a number to itself a given number of times.
+english natural        :: adjective    :: Belonging to nature; not made up. The natural logarithm is the one that uses the number e.
+english new            :: adjective    :: Made or begun only just now.
+english next           :: adjective    :: Coming immediately after this one.
+english no             :: determiner   :: Not any.
+english no             :: interjection :: The word used to disagree or refuse.
+english not            :: adverb       :: Used to say that something is untrue or the opposite.
+english note           :: verb         :: To make a record of something; to notice it.
+english note           :: noun         :: A short piece of writing to remind you.
+english nothing        :: pronoun      :: Not a single thing.
+english now            :: adverb       :: At this moment.
+english number         :: noun         :: A word or sign that says how many.
+english of             :: preposition  :: Belonging to; made from; being part of.
+english one            :: number       :: The first and smallest counting number.
+english or             :: conjunction  :: Used to offer another possibility.
+english otherwise      :: adverb       :: In the other case; if that is not so.
+english out            :: adverb       :: Away from the inside.
+english over           :: preposition  :: Above; or more than; or shared into, as in a fraction.
+english pairwise       :: adverb       :: Taking two lists a pair at a time.
+english part           :: noun         :: A piece of something larger.
+english percent        :: noun         :: Out of every hundred.
+english percentage     :: noun         :: An amount given as so many hundredths.
+english pi             :: noun         :: How many times across a circle goes into the way round it, a little over three.
+english piece          :: noun         :: A part broken or cut from a whole.
+english pieces         :: noun         :: More than one piece.
+english places         :: noun         :: Positions; in a decimal, the digits after the dot.
+english please         :: adverb       :: A word used to ask for something politely.
+english please         :: verb         :: To make somebody glad.
+english plus           :: preposition  :: With the second amount added on.
+english position       :: noun         :: The place where something sits.
+english power          :: noun         :: The number of times a number is multiplied by itself.
+english power          :: noun         :: Strength, or the ability to do something.
+english prime          :: adjective    :: Of a whole number above one, having no factors but one and itself.
+english prime          :: adjective    :: First in importance.
+english print          :: verb         :: To put words onto paper or onto a screen.
+english product        :: noun         :: The result of multiplying.
+english put            :: verb         :: To place something somewhere.
+english radians        :: noun         :: Units of turn. A full turn is two pi of them.
+english random         :: adjective    :: Chosen with no pattern to it.
+english real           :: adjective    :: Actually existing; of numbers, measured across rather than up.
+english remainder      :: noun         :: What is left over.
+english remember       :: verb         :: To keep something in mind.
+english remove         :: verb         :: To take something away.
+english repeat         :: verb         :: To do or say something again.
+english repeated       :: verb         :: The past form of repeat.
+english repeating      :: verb         :: Doing something again.
+english rest           :: noun         :: What is left after the first part.
+english rest           :: verb         :: To stop and take a break.
+english return         :: verb         :: To go back, or to give something back.
+english reverse        :: verb         :: To turn something back to front.
+english reverse        :: noun         :: The other way round.
+english right          :: adjective    :: On the side opposite the left.
+english right          :: adjective    :: Correct.
+english root           :: noun         :: The part a plant grows from. A square root is the number that, times itself, gives another.
+english rounded        :: verb         :: Brought to the nearest whole number.
+english say            :: verb         :: To speak words.
+english scaled         :: verb         :: Made larger or smaller by the same amount all over.
+english seconds        :: noun         :: Small units of time. Sixty of them make a minute.
+english see            :: verb         :: To take something in with the eyes; also, to understand.
+english set            :: verb         :: To put in place, or to give something a value.
+english share          :: verb         :: To let others have some of what is yours.
+english shifted        :: verb         :: Moved along from where it was.
+english show           :: verb         :: To let something be seen; to put it where somebody can look at it.
+english show           :: noun         :: A display put on for people to watch.
+english sign           :: noun         :: A mark standing for something; of a number, whether it is above or below zero.
+english sine           :: noun         :: How far up you have gone, going round a circle of size one.
+english size           :: noun         :: How big something is.
+english skip           :: verb         :: To pass over something without doing it.
+english skip           :: verb         :: To move along with light hopping steps.
+english small          :: adjective    :: Little in size or amount.
+english smaller        :: adjective    :: Less big than the other one.
+english smallest       :: adjective    :: Least big of them all.
+english so             :: adverb       :: To such an amount.
+english so             :: conjunction  :: And therefore.
+english sorted         :: verb         :: Put in order.
+english split          :: verb         :: To break something into parts.
+english spread         :: noun         :: How far from the middle things usually sit.
+english spread         :: verb         :: To open out or reach across.
+english square         :: noun         :: A shape with four equal sides and four right angles.
+english square         :: noun         :: A number multiplied by itself.
+english squared        :: verb         :: Multiplied by itself.
+english starts         :: verb         :: Begins.
+english stop           :: verb         :: To bring something to an end.
+english sum            :: noun         :: The result of adding things together.
+english sure           :: adjective    :: Certain; having no doubt about it.
+english take           :: verb         :: To get hold of something, or to remove it.
+english tangent        :: noun         :: A line that touches a curve; of an angle, its sine shared by its cosine.
+english tell           :: verb         :: To say something to somebody.
+english text           :: noun         :: Written words.
+english thank          :: verb         :: To say that you are grateful.
+english thanks         :: noun         :: Words of gratitude.
+english thanks         :: interjection :: A short way of saying thank you.
+english that           :: determiner   :: The one already spoken of.
+english that           :: pronoun      :: The thing already spoken of.
+english the            :: determiner   :: Used before a naming word to mean a particular one.
+english then           :: adverb       :: After that; next.
+english there          :: adverb       :: In or at that place.
+english things         :: noun         :: Objects or matters, spoken of generally.
+english this           :: determiner   :: The one here, or the one being spoken of now.
+english time           :: noun         :: What clocks measure; the passing of moments.
+english times          :: preposition  :: Multiplied by.
+english times          :: noun         :: The number of occasions something happens.
+english to             :: preposition  :: In the direction of; as far as.
+english too            :: adverb       :: More than is wanted.
+english too            :: adverb       :: Also; as well.
+english top            :: noun         :: The highest part; in a fraction, the number above the line.
+english total          :: noun         :: The whole amount when everything is added together.
+english transpose      :: verb         :: To swap things around; of a matrix, to turn the rows into columns.
+english trimmed        :: verb         :: Cut back at the edges.
+english trouble        :: noun         :: Difficulty, or bother caused to somebody.
+english try            :: verb         :: To make an attempt at something.
+english under          :: preposition  :: Below; less than.
+english until          :: conjunction  :: Up to the time that.
+english up             :: adverb       :: Towards a higher place, or a higher number.
+english update         :: verb         :: To bring something up to date; to give it a new value.
+english use            :: verb         :: To put something to work for a purpose.
+english value          :: noun         :: What something is worth; the thing a name is holding.
+english variance       :: noun         :: How far from the average numbers sit, before the square root that makes it a spread.
+english version        :: noun         :: One form of something that comes in several.
+english wait           :: verb         :: To stay where you are until something happens.
+english ways           :: noun         :: Methods of doing something; or the number of different possibilities.
+english went           :: verb         :: The past form of go.
+english what           :: pronoun      :: Used to ask which thing is meant.
+english when           :: conjunction  :: At the time that.
+english whether        :: conjunction  :: Used to introduce a choice between two possibilities.
+english while          :: conjunction  :: During the time that.
+english whole          :: adjective    :: Complete, with nothing missing. Of a number, having nothing after the dot.
+english whose          :: pronoun      :: Belonging to which person or thing.
+english with           :: preposition  :: In the company of; or using.
+english within         :: preposition  :: Inside the limits of.
+english words          :: noun         :: The units that language is made of.
+english work           :: verb         :: To do a job; or to turn out successfully.
+english would          :: verb         :: Used to ask for something politely, or to speak of what might be.
+english write          :: verb         :: To put words down.
+english wrong          :: adjective    :: Not correct; not as it should be.
+english yes            :: interjection :: The word used to agree.
+english you            :: pronoun      :: The person being spoken to.

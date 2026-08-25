@@ -641,9 +641,63 @@ polite explain "repeat until"      what one means, in English
 polite explain borrow
 ```
 
-`polite explain` tells you what a word means in **English** first, and only then what it does. That
-is deliberate — one of the reasons this language exists is so that you come away knowing more
-English than you started with.
+`polite explain` answers in **two halves**, because a word lives in two worlds:
+
+```
+  show {value}
+
+  -- IN POLITELANG --------------------------------------------
+
+  To show something is to let it be seen. This puts a value on the
+  screen.
+
+  A request, from the everyday vocabulary.
+
+  Other ways to say the very same thing:
+    display {value}
+    print {value}
+    say {value}
+    write out {value}
+    tell me {value}
+    have a look at {value}
+
+  -- IN ENGLISH -----------------------------------------------
+
+  show
+    verb          To let something be seen; to put it where somebody
+                  can look at it.
+    noun          A display put on for people to watch.
+```
+
+The first half is what the language does with it. The second is what the word really means, with
+its part of speech — **verb, noun, adjective, adverb** and the rest — quite apart from any
+program.
+
+Ask about a phrase and you get the English for every word in it:
+
+```
+polite explain "repeat until"
+```
+
+```
+  repeat
+    verb          To do or say something again.
+
+  until
+    conjunction   Up to the time that.
+```
+
+And the words that hold a sentence together answer too:
+
+```
+polite explain please
+polite explain and
+polite explain to
+```
+
+Every one of the 250 words the language uses has an English meaning written down, and a test fails
+if one is ever missing. That is not decoration — the first reason this language exists is that you
+should come away knowing more English than you started with.
 
 And to look a program over without running it:
 
