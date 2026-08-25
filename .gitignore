@@ -1,0 +1,5 @@
+/target
+**/*.rs.bk
+.polite-cache/
+vscode-politelang/*.vsix
+vscode-politelang/node_modules/

@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/polite-diag",
+    "crates/polite-vocab",
+    "crates/polite-syntax",
+    "crates/polite-check",
+    "crates/polite-ir",
+    "crates/polite-run",
+    "crates/polite-std",
+    "crates/polite-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Creeperdiamonds Studios"]
+license = "MIT"
+repository = "https://github.com/creeperdiamonds/politelang"
+
+# Section 9.5 of the spec: near-zero dependencies. Nothing here on purpose.
+# No serde, no toml, no regex, no parser generators, no async runtime.
+[workspace.dependencies]
+polite-diag = { path = "crates/polite-diag" }
+polite-vocab = { path = "crates/polite-vocab" }
+polite-syntax = { path = "crates/polite-syntax" }
+polite-check = { path = "crates/polite-check" }
+polite-ir = { path = "crates/polite-ir" }
+polite-run = { path = "crates/polite-run" }
+polite-std = { path = "crates/polite-std" }
+
+# Spec 9.5: line-tables-only meaningfully cuts RAM while linking, which matters at 3.8 GB.
+[profile.dev]
+debug = "line-tables-only"
+incremental = true
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

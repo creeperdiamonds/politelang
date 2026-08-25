@@ -1,0 +1,12 @@
+[package]
+name = "polite-ir"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+polite-diag = { workspace = true }
+polite-vocab = { workspace = true }
+polite-syntax = { workspace = true }
+polite-check = { workspace = true }

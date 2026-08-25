@@ -1,0 +1,10 @@
+[package]
+name = "polite-syntax"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+polite-diag = { workspace = true }
+polite-vocab = { workspace = true }

@@ -1,0 +1,255 @@
+# PoliteLang core vocabulary
+#
+# Spec section 4.1: the vocabulary is data, not code. Adding a word to the language means adding a
+# row to this file. No parser is edited. No backend is edited. Ever.
+#
+# Format, one row per line:
+#
+#     <kind> <tier> <form> :: <pattern> [:: risky]
+#
+#   kind     stmt   a request that does something
+#            block  a request that opens a block, closed by "thank you" / "thanks"
+#            expr   a phrase that produces a value
+#
+#   tier     everyday   the ~40 words a beginner needs (spec 4.2)
+#            working    real-program vocabulary
+#            full       specialist vocabulary
+#
+#   form     the meaning this phrase lowers to. Many phrases share one form; that is the whole
+#            point. Six ways to loop, one loop in the middle language.
+#
+#   pattern  literal words plus holes. {name} and {var} holes take a plain name; every other
+#            hole takes an expression.
+#
+#   risky    marks an operation that might not work out (spec 7.5). The list of risky operations
+#            is therefore closed, generated into the docs, and identical across every backend.
+#
+# Explanations for `polite explain` live at the bottom of the file.
+
+
+# ---------------------------------------------------------------------------
+# Showing things
+# ---------------------------------------------------------------------------
+
+stmt  everyday  show           :: show {value}
+stmt  everyday  show           :: display {value}
+stmt  everyday  show           :: print {value}
+stmt  everyday  show           :: say {value}
+stmt  everyday  show           :: write out {value}
+stmt  everyday  show           :: tell me {value}
+
+stmt  everyday  ask_as         :: ask {prompt} as {name}
+stmt  everyday  ask_as         :: ask for {name} with {prompt}
+
+
+# ---------------------------------------------------------------------------
+# Remembering and changing
+#
+# Introducing a name and updating one are deliberately different words (spec 3.5), so a typo
+# is caught instead of quietly making a second variable.
+# ---------------------------------------------------------------------------
+
+stmt  everyday  remember       :: remember {name} is {value}
+stmt  everyday  remember       :: note {name} is {value}
+stmt  everyday  remember       :: keep {name} as {value}
+stmt  everyday  remember       :: let {name} be {value}
+
+stmt  everyday  assign         :: change {name} to {value}
+stmt  everyday  assign         :: set {name} to {value}
+stmt  everyday  assign         :: make {name} into {value}
+
+stmt  everyday  add_to         :: add {value} to {name}
+stmt  everyday  take_from      :: take {value} from {name}
+stmt  working   multiply_by    :: multiply {name} by {value}
+stmt  working   divide_by      :: divide {name} by {value} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Loops
+#
+# Six phrasings, one loop in the middle language (spec 9.3).
+# ---------------------------------------------------------------------------
+
+block everyday  loop_count     :: repeat {count} times
+block everyday  loop_count     :: do this {count} times
+block everyday  loop_while     :: repeat while {cond}
+block everyday  loop_while     :: keep going while {cond}
+block everyday  loop_until     :: repeat until {cond}
+block everyday  loop_until     :: keep going until {cond}
+block everyday  loop_forever   :: keep going forever
+block everyday  loop_forever   :: repeat forever
+block everyday  loop_each      :: do this for every {var} in {list}
+block everyday  loop_each      :: for every {var} in {list}
+block everyday  loop_range     :: repeat for every {var} from {from} to {to}
+block everyday  loop_range     :: count {var} from {from} to {to}
+
+stmt  everyday  stop_repeating :: stop repeating
+stmt  everyday  stop_repeating :: break out
+stmt  everyday  stop_repeating :: leave the loop
+stmt  everyday  skip_one       :: skip to the next one
+stmt  everyday  skip_one       :: move along
+
+
+# ---------------------------------------------------------------------------
+# Choosing
+# ---------------------------------------------------------------------------
+
+block everyday  check          :: check if {cond}
+block everyday  check          :: see whether {cond}
+block everyday  check          :: when {cond}
+
+stmt  everyday  give_back      :: give back {value}
+stmt  everyday  give_back      :: hand back {value}
+stmt  everyday  give_back      :: answer with {value}
+
+
+# ---------------------------------------------------------------------------
+# Lists
+# ---------------------------------------------------------------------------
+
+expr  everyday  empty_list     :: an empty list
+expr  everyday  empty_list     :: a new list
+expr  everyday  item_of        :: item {index} of {list} :: risky
+expr  everyday  count_of       :: the number of items in {list}
+expr  everyday  count_of       :: how many items are in {list}
+expr  everyday  first_item     :: the first item of {list} :: risky
+expr  everyday  last_item      :: the last item of {list} :: risky
+expr  working   sum_of         :: the sum of {list}
+expr  working   biggest_of     :: the biggest of {list} :: risky
+expr  working   smallest_of    :: the smallest of {list} :: risky
+expr  working   sorted_of      :: the sorted version of {list}
+expr  working   reverse_of     :: the reverse of {list}
+expr  working   join_of        :: the join of {list} with {separator}
+expr  working   contains_item  :: {list} contains {value}
+expr  working   position_of    :: the position of {value} in {list} :: risky
+
+stmt  working   put_at         :: put {value} at position {index} in {name} :: risky
+stmt  working   remove_at      :: remove position {index} from {name} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Lookups
+# ---------------------------------------------------------------------------
+
+expr  working   empty_lookup   :: an empty lookup
+expr  working   value_for      :: the value for {key} in {lookup} :: risky
+expr  working   keys_of        :: the keys of {lookup}
+expr  working   has_key        :: {lookup} knows about {key}
+
+stmt  working   put_for        :: put {value} for {key} in {name}
+stmt  working   forget_key     :: forget {key} in {name}
+
+
+# ---------------------------------------------------------------------------
+# Text
+# ---------------------------------------------------------------------------
+
+expr  everyday  length_of      :: the length of {value}
+expr  everyday  capitals_of    :: the capitals of {value}
+expr  everyday  small_of       :: the small letters of {value}
+expr  working   trimmed_of     :: the trimmed version of {value}
+expr  working   words_in       :: the words in {value}
+expr  working   split_of       :: the pieces of {value} split by {separator}
+expr  working   number_in      :: the number in {value} :: risky
+expr  working   text_of        :: the text of {value}
+expr  working   starts_with    :: {value} starts with {prefix}
+expr  working   ends_with      :: {value} ends with {suffix}
+expr  working   contains_text  :: {value} mentions {part}
+
+
+# ---------------------------------------------------------------------------
+# Numbers
+# ---------------------------------------------------------------------------
+
+expr  everyday  random_range   :: a random whole number from {from} to {to}
+expr  working   rounded_of     :: the rounded version of {value}
+expr  working   absolute_of    :: the size of {value}
+expr  working   square_root_of :: the square root of {value} :: risky
+expr  working   divides_evenly :: {value} divides evenly by {divisor}
+
+
+# ---------------------------------------------------------------------------
+# Files and the world
+# ---------------------------------------------------------------------------
+
+expr  working   contents_of    :: the contents of {path} :: risky
+stmt  working   write_file     :: write {value} to {path} :: risky
+expr  working   file_exists    :: there is a file at {path}
+expr  full      time_now       :: the time now
+
+
+# ---------------------------------------------------------------------------
+# Modules
+# ---------------------------------------------------------------------------
+
+stmt  working   use_module     :: use {name}
+stmt  working   use_module     :: borrow {name}
+stmt  working   share          :: share {name}
+
+
+# ---------------------------------------------------------------------------
+# Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
+# purpose 1 of the language is that you learn more English.
+# ---------------------------------------------------------------------------
+
+explain show           :: To show something is to let it be seen. This puts a value on the screen.
+explain ask_as         :: To ask is to request an answer. This waits for the person to type something, and remembers it under the name you give.
+explain remember       :: To remember something is to keep it in mind. This introduces a new name and gives it a value.
+explain assign         :: To change something is to make it different. This gives an existing name a new value.
+explain add_to         :: To add is to join one thing to another. With a number it counts up; with a list it puts an item on the end; with text it joins the text on.
+explain take_from      :: To take from is to remove. This counts a number down.
+explain multiply_by    :: To multiply is to add a number to itself a given number of times.
+explain divide_by      :: To divide is to share a number into equal parts. It might not work out, because nothing can be shared into zero parts.
+explain loop_count     :: To repeat is to do the same thing again. This does the block a set number of times.
+explain loop_while     :: While means during the time that something is true. This keeps doing the block for as long as the condition holds.
+explain loop_until     :: Until means up to the moment something becomes true. This keeps doing the block until the condition holds.
+explain loop_forever   :: This keeps doing the block with no end of its own. Use `stop repeating` to leave.
+explain loop_each      :: This does the block once for every item in a list, giving each one the name you chose.
+explain loop_range     :: This counts from one number up to another, doing the block once for each.
+explain stop_repeating :: To stop repeating is to leave the loop you are inside and carry on after it.
+explain skip_one       :: This abandons the current turn around the loop and starts the next one.
+explain check          :: To check is to look and see. This does the block only if the condition is true.
+explain give_back      :: To give back is to return something to whoever asked. This ends the action and hands over a value.
+explain empty_list     :: A list is a row of things kept in order. This makes one with nothing in it yet.
+explain item_of        :: This takes one item out of a list by its position, counting from 1. It might not work out, because the list may be shorter than that.
+explain count_of       :: This is how many items a list is holding.
+explain first_item     :: The first item is the one at the front. It might not work out, because the list may be empty.
+explain last_item      :: The last item is the one at the back. It might not work out, because the list may be empty.
+explain sum_of         :: To sum is to add everything together. This adds up all the numbers in a list.
+explain biggest_of     :: This is the largest number in a list. It might not work out, because an empty list has no largest.
+explain smallest_of    :: This is the smallest number in a list. It might not work out, because an empty list has no smallest.
+explain sorted_of      :: To sort is to put in order. This gives back a new list in order, leaving the original alone.
+explain reverse_of     :: To reverse is to turn back to front. This gives back a new list the other way round.
+explain join_of        :: To join is to bring together. This glues every item of a list into one piece of text, with the separator between them.
+explain contains_item  :: To contain is to hold within. This is yes when the list holds that item.
+explain position_of    :: This is where an item sits in a list, counting from 1. It might not work out, because the item may not be there.
+explain put_at         :: This replaces the item at a position. It might not work out, because the list may be shorter than that.
+explain remove_at      :: This takes the item at a position out of the list. It might not work out, because the list may be shorter than that.
+explain empty_lookup   :: A lookup holds values you find by name, the way a dictionary finds a meaning by its word. This makes one with nothing in it yet.
+explain value_for      :: This finds the value stored under a key. It might not work out, because nothing may be stored there.
+explain keys_of        :: These are all the names a lookup knows about, as a list.
+explain has_key        :: This is yes when the lookup has something stored under that key.
+explain put_for        :: This stores a value in a lookup under a key, so you can find it again by that name.
+explain forget_key     :: To forget is to stop keeping in mind. This removes a key and its value from a lookup.
+explain length_of      :: The length of text is how many letters it has.
+explain capitals_of    :: Capitals are the big letters. This gives back the same text in capitals.
+explain small_of       :: This gives back the same text in small letters.
+explain trimmed_of     :: To trim is to cut off the edges. This removes spaces from the start and end of text.
+explain words_in       :: This breaks text apart wherever there are spaces, and gives back the words as a list.
+explain split_of       :: To split is to break into pieces. This breaks text apart wherever the separator appears.
+explain number_in      :: This reads text as a number. It might not work out, because the text may not be a number at all.
+explain text_of        :: This turns any value into text, so it can be joined with other text.
+explain starts_with    :: This is yes when text begins with the piece you named.
+explain ends_with      :: This is yes when text finishes with the piece you named.
+explain contains_text  :: To mention is to refer to. This is yes when the piece appears anywhere in the text.
+explain random_range   :: Random means chosen with no pattern. This picks a whole number between two limits, including both.
+explain rounded_of     :: To round is to bring to the nearest whole number.
+explain absolute_of    :: The size of a number ignores whether it is above or below zero.
+explain square_root_of :: The square root is the number which, times itself, gives you this one. It might not work out, because numbers below zero have none.
+explain divides_evenly :: This is yes when one number goes into another leaving nothing over. Nothing divides evenly by zero, so that answer is simply no.
+explain contents_of    :: This reads a whole file as text. It might not work out, because the file may not be there.
+explain write_file     :: This writes text into a file, replacing whatever was there. It might not work out, because the place may not be writable.
+explain file_exists    :: This is yes when there really is a file at that place.
+explain time_now       :: This is the number of seconds since the start of 1970, which is how computers usually count time.
+explain use_module     :: To borrow is to take with the intention of giving back. This brings another file's shared words into yours.
+explain share          :: To share is to offer to others. A file keeps everything to itself unless it shares it.
