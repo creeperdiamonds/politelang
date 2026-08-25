@@ -961,6 +961,7 @@ impl Runner<'_> {
     /// machine opens pages with. After that only the picture is written again — the page asks for
     /// it over and over by itself, so the window keeps up without anybody doing anything.
     fn open_window(&mut self) -> Result<(), String> {
+        use std::io::IsTerminal;
         const PICTURE: &str = "polite-window.png";
         const PAGE: &str = "polite-window.html";
 
@@ -969,6 +970,19 @@ impl Runner<'_> {
         std_lib::picture::save_png(surface, PICTURE, size)?;
 
         if self.window.is_some() {
+            return Ok(());
+        }
+
+        // A window lands on somebody's screen, so one is only ever opened when somebody is
+        // actually sitting at the machine. A program being fed its answers from somewhere else is
+        // being run by a machine, and a machine has no use for a window — while every such run
+        // would still put one more thing in front of whoever owns the computer, and they would
+        // have no idea where any of it came from.
+        if !std::io::stdin().is_terminal() {
+            self.window = Some(PICTURE.to_string());
+            self.world.show(&format!(
+                "  (nobody is at the keyboard, so I have not opened a window; the picture is in {PICTURE})"
+            ));
             return Ok(());
         }
 
@@ -1007,7 +1021,8 @@ impl Runner<'_> {
             Ok(_) => {
                 self.window = Some(PICTURE.to_string());
                 self.world.show(&format!(
-                    "  (a window was opened for the picture; it is also saved as {PICTURE})"
+                    "  (a window was opened for the picture; it is also saved as {PICTURE})
+                       (if the computer asks which app to open it with, choose a browser and tick \"always\")"
                 ));
                 Ok(())
             }

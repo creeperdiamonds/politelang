@@ -119,7 +119,7 @@ please make each dot 6 across
 please try to:
     save the canvas to "room.png"
     put the canvas in a window
-    show "  The room is in room.png, and in a window."
+    show "  The room is saved as room.png."
 otherwise if it does not work out:
     show "  I could not, because {what went wrong}."
 thank you for trying
