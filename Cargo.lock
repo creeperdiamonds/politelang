@@ -18,6 +18,7 @@ dependencies = [
  "polite-check",
  "polite-diag",
  "polite-ir",
+ "polite-js",
  "polite-run",
  "polite-std",
  "polite-syntax",
@@ -36,6 +37,14 @@ dependencies = [
  "polite-diag",
  "polite-syntax",
  "polite-vocab",
+]
+
+[[package]]
+name = "polite-js"
+version = "0.1.0"
+dependencies = [
+ "polite-diag",
+ "polite-ir",
 ]
 
 [[package]]

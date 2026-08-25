@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 polite-diag = { workspace = true }
+polite-js = { workspace = true }
 polite-vocab = { workspace = true }
 polite-syntax = { workspace = true }
 polite-check = { workspace = true }

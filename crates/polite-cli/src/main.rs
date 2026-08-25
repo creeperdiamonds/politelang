@@ -13,6 +13,8 @@ polite — the PoliteLang toolchain
   polite run <file.polite>        run a program
       --allow-hidden              run it even though part of it is kept unreadable
       --seed <number>             make anything it leaves to chance repeatable
+  polite build <file.polite>      write it out as JavaScript, to run on Node
+      --out <folder>              where to put it (default: beside the file)
   polite check <file.polite>      look it over without running it
       --show-middle               also print the middle language
       --plain                     no optimisation passes
@@ -40,6 +42,7 @@ fn main() -> ExitCode {
     match args[0].as_str() {
         "run" => command_run(&args[1..], &vocab),
         "check" => command_check(&args[1..], &vocab),
+        "build" => command_build(&args[1..], &vocab),
         "words" => words::list(&args[1..], &vocab),
         "explain" => words::explain(&args[1..], &vocab),
         "check-vocabulary" => command_check_vocabulary(&vocab),
@@ -191,6 +194,105 @@ fn agreed_to_hidden(count: usize, path: &str, allowed_already: bool) -> bool {
 fn is_yes(said: &str) -> bool {
     said.trim().eq_ignore_ascii_case("yes")
 }
+
+/// Write a program out as JavaScript.
+///
+/// Spec 9.4 said backends consume the middle language and nothing above it knows they exist, and
+/// this is the first one. What comes out is a module and the runtime it leans on, side by side and
+/// ready to run, so that a PoliteLang program can reach a world full of libraries without the
+/// language taking a single one of them on.
+fn command_build(args: &[String], vocab: &Vocabulary) -> ExitCode {
+    let mut out_dir: Option<String> = None;
+    let mut rest: Vec<String> = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == "--out" {
+            match args.get(i + 1) {
+                Some(v) => out_dir = Some(v.clone()),
+                None => {
+                    eprintln!("`--out` wants a folder after it.");
+                    return ExitCode::FAILURE;
+                }
+            }
+            i += 2;
+        } else {
+            rest.push(args[i].clone());
+            i += 1;
+        }
+    }
+
+    let path = match rest.first() {
+        Some(p) => p.clone(),
+        None => {
+            eprintln!("Which file would you like me to write out?");
+            return ExitCode::FAILURE;
+        }
+    };
+    let source = std::path::Path::new(&path);
+
+    let built = match pipeline::build_path(source, vocab, true) {
+        Ok(b) => b,
+        Err(reason) => {
+            eprintln!("{reason}");
+            return ExitCode::FAILURE;
+        }
+    };
+    if !built.messages.is_empty() {
+        print!("{}", built.messages);
+    }
+    let program = match built.program {
+        Some(p) => p,
+        None => return ExitCode::FAILURE,
+    };
+
+    // Said before a line is written, rather than left to be discovered when it runs.
+    let missing = polite_js::cannot_carry(&program);
+    if !missing.is_empty() {
+        println!("  Careful: this program uses words the JavaScript backend does not carry yet.");
+        for which in &missing {
+            println!("    {}", polite_js::runtime_name(*which));
+        }
+        println!("  It will be written out, and will say so if it reaches one of them.");
+        println!();
+    }
+
+    let stem = source
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "program".to_string());
+    let folder = match &out_dir {
+        Some(d) => std::path::PathBuf::from(d),
+        None => source.parent().unwrap_or(std::path::Path::new(".")).to_path_buf(),
+    };
+    if let Err(e) = std::fs::create_dir_all(&folder) {
+        eprintln!("I could not make the folder {}: {e}", folder.display());
+        return ExitCode::FAILURE;
+    }
+
+    let module = folder.join(format!("{stem}.mjs"));
+    let runtime = folder.join("polite.mjs");
+
+    if let Err(e) = std::fs::write(&module, polite_js::emit(&program)) {
+        eprintln!("I could not write {}: {e}", module.display());
+        return ExitCode::FAILURE;
+    }
+    // The runtime travels with the program, so what comes out of here runs on its own.
+    if let Err(e) = std::fs::write(&runtime, RUNTIME) {
+        eprintln!("I could not write {}: {e}", runtime.display());
+        return ExitCode::FAILURE;
+    }
+
+    println!("  Written to {}", module.display());
+    println!("  The runtime it needs is beside it, as {}", runtime.display());
+    println!();
+    println!("  Run it with:");
+    println!();
+    println!("      node {}", module.display());
+    ExitCode::SUCCESS
+}
+
+/// The runtime, carried inside the program that writes it out so that nothing has to be found.
+const RUNTIME: &str = include_str!("../../../runtime/polite.mjs");
 
 fn command_check(args: &[String], vocab: &Vocabulary) -> ExitCode {
     let show_middle = args.iter().any(|a| a == "--show-middle");

@@ -7,6 +7,7 @@ members = [
     "crates/polite-check",
     "crates/polite-ir",
     "crates/polite-run",
+    "crates/polite-js",
     "crates/polite-std",
     "crates/polite-cli",
 ]
@@ -28,6 +29,7 @@ polite-syntax = { path = "crates/polite-syntax" }
 polite-check = { path = "crates/polite-check" }
 polite-ir = { path = "crates/polite-ir" }
 polite-run = { path = "crates/polite-run" }
+polite-js = { path = "crates/polite-js" }
 polite-std = { path = "crates/polite-std" }
 
 # Spec 9.5: line-tables-only meaningfully cuts RAM while linking, which matters at 3.8 GB.
