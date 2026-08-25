@@ -1,0 +1,11 @@
+-- Words this file is happy to lend out.
+
+please define greet with a name:
+    give back "hello, {name}!"
+thank you for defining
+
+please define politely ask with a question:
+    give back "{question}, if you would be so kind?"
+thanks
+
+please share greet and politely ask

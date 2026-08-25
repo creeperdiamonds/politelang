@@ -19,9 +19,8 @@ fn every_program_in_the_corpus_does_what_it_says() {
 
     for case in common::cases("programs") {
         let name = case.file_name().unwrap().to_string_lossy().to_string();
-        let text = common::read(&case);
-
-        let built = pipeline::build(&name, &text, &vocab, true);
+        let built = pipeline::build_path(&case, &vocab, true)
+            .unwrap_or_else(|e| panic!("{name} could not be gathered: {e}"));
         assert!(
             !built.had_problems,
             "{name} did not check out:\n{}",
@@ -64,7 +63,6 @@ fn optimising_never_changes_what_a_program_does() {
 
     for case in common::cases("programs") {
         let name = case.file_name().unwrap().to_string_lossy().to_string();
-        let text = common::read(&case);
 
         let replies: Vec<String> = {
             let path = case.with_extension("replies");
@@ -77,7 +75,8 @@ fn optimising_never_changes_what_a_program_does() {
 
         let mut outputs = Vec::new();
         for optimise in [true, false] {
-            let built = pipeline::build(&name, &text, &vocab, optimise);
+            let built = pipeline::build_path(&case, &vocab, optimise)
+                .unwrap_or_else(|e| panic!("{name} could not be gathered: {e}"));
             let program = built.program.expect("should build");
             let mut world = Scripted::with_replies(replies.clone());
             let outcome =

@@ -1,0 +1,16 @@
+-- A file of words to lend out.
+
+please define greet with a name:
+    give back "hello, {name}!"
+thank you for defining
+
+please define shout with a line:
+    give back the capitals of line
+thanks
+
+-- Kept to itself, because it is nobody else's business.
+please define secretly count:
+    give back 42
+thanks
+
+please share greet and shout

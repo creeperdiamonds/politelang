@@ -1,0 +1,13 @@
+In borrowing-a-missing-file.polite, line 1:
+
+    please use nowhere
+    ^^^^^^^^^^^^^^^^^^
+
+I could not borrow `nowhere`, because there is no file there.
+
+`borrowing-a-missing-file.polite` asks for it, and I looked for it
+beside that file.
+
+A file is borrowed by its name, without the ending:
+
+    please use helpers

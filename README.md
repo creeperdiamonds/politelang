@@ -171,6 +171,29 @@ thank you for defining
 please show greet with "Creeperdiamonds Studios" and "Good morning"
 ```
 
+**Borrowing between files.** A file keeps everything to itself unless it offers it — which is
+both safer and exactly the manner of offering something rather than leaving your things lying
+about.
+
+```polite
+-- greetings.polite
+please define greet with a name:
+    give back "hello, {name}!"
+thanks
+
+please share greet
+```
+
+```polite
+-- main.polite
+please use "greetings.polite"
+please show greet with "Creeperdiamonds Studios"
+```
+
+`borrow` says the same thing as `use`, and is the more mannerly of the two. Anything not shared
+stays private, files that borrow each other in a circle are caught before anything runs, and every
+message points at the line in the file you actually wrote it in.
+
 **Things that might not work out.** The language will never crash on you, and it will never
 quietly invent an answer. So when something might fail, you say what happens if it does — in one
 of three ways.
@@ -293,22 +316,26 @@ Measured there, by `polite bench`:
 
 | | measured | budget |
 |---|---|---|
-| check a 1,000 line program | **5.7 ms** | < 10 ms |
-| checking throughput | **174,000 lines/sec** | ≥ 150,000 |
+| check a 1,000 line program | **5.3 ms** | < 10 ms |
+| checking throughput | **189,000 lines/sec** | ≥ 150,000 |
 | compiler memory per line | **181 bytes** | < 2 KB |
 | compile and run `hello` | **0.03 ms** | < 3 ms |
 | 300,000 turn numeric loop | **10.5 ms** | — |
-| the same loop in CPython | 44.5 ms | — |
-| **times faster than CPython** | **4.2×** | ≥ 2× |
-| **parse slowdown at 40× the vocabulary** | **0–2.5%** | < 5% |
+| the same loop in CPython | 43.8 ms | — |
+| **times faster than CPython** | **3.3–4.6×** | ≥ 2× |
+| **parse slowdown at 40× the vocabulary** | **0.0%** | < 5% |
 | `polite` binary, stripped | **768 KB** | < 3 MB |
 
 That last row is the one that matters most, because it tests a *claim* rather than a speed: the
 whole project rests on a large vocabulary being cheap. The benchmark generates four thousand extra
 phrases and proves parsing does not notice.
 
+Timings are the *best* of several runs rather than the average, and the vocabulary ratio is the
+median of paired samples. On a two-core laptop something else is always waking up, and an average
+measures whatever else the machine happened to be doing.
+
 `polite bench --save` writes the baseline; a later run fails if anything slips by more than a
-tenth.
+tenth, beyond a small slack so that a number sitting near zero is not judged by percentages.
 
 ---
 
@@ -323,15 +350,17 @@ tenth.
 - Lists, lookups, text, numbers, files, time, chance
 - PoliteIR, constant folding, unreachable-code removal, and the `Backend` socket
 - The reference runner, which never checks a type at runtime
+- **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
-- 66 tests: a corpus of 17 programs, 17 pinned messages, a generated test per vocabulary row, and
+- 68 tests: a corpus of 18 programs, 20 pinned messages, a generated test per vocabulary row, and
   the ambiguity check
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:
 
-- **Borrowing between files.** `please use helpers` parses and answers with a polite "not ready
-  yet". One file at a time, for now.
+- **Choosing only some words to borrow** — `use draw and fill from the drawing kit`. Borrowing
+  takes the whole of what a file shares, for now.
+- **A package manager**, so borrowing reaches beyond files sitting next to each other.
 - **`check if save has something`** (spec 7.3). The three ways in 7.2 all work; flow-sensitive
   narrowing does not exist yet.
 - **Kinds of your own** — `please describe a player with a name and a score`. Use a lookup for now.
@@ -372,6 +401,7 @@ crates/polite-cli           the `polite` command
 examples/                   programs to read
 tests/programs              the corpus, and the future backend conformance suite
 tests/errors                every message, pinned word for word
+tests/*/parts               files the corpus borrows from
 vscode-politelang/          the editor extension
 docs/superpowers/specs/     the design, written before any of this
 ```
@@ -385,7 +415,7 @@ generator, no async runtime. That is what keeps a full rebuild under half a minu
 
 Each of these is its own project, plugging into a socket and a test corpus that already exist:
 
-1. **Borrowing between files**, and then a package manager
+1. **A package manager**, so borrowing reaches past the files next door
 2. **A native backend** through Cranelift — the road toward genuinely low-level work
 3. **A JVM backend** — the realistic road to Minecraft plugins
 4. **A WebAssembly backend** — a browser playground, so anyone can try it with no install

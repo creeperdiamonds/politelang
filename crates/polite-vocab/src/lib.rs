@@ -462,6 +462,11 @@ impl Vocabulary {
         self.infix_by_word.get(word).map(|v| &v[..]).unwrap_or(&[])
     }
 
+    /// The id of some phrase using this form, for the few constructs the parser handles itself.
+    pub fn first_phrase_for(&self, form: Form) -> Option<u32> {
+        self.phrases.iter().position(|p| p.form == form).map(|i| i as u32)
+    }
+
     pub fn explanation(&self, form: Form) -> Option<&str> {
         self.explanations.get(&form).map(|s| &**s)
     }

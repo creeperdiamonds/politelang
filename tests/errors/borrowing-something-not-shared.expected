@@ -1,0 +1,13 @@
+In borrowing-something-not-shared.polite, line 3:
+
+    please show kept to myself
+                ^^^^^^^^^^^^^^
+
+`kept to myself` is not shared, so it is not mine to hand over.
+
+A file keeps everything to itself unless it offers it. That way
+nothing of yours is used by another file by accident.
+
+Add this to the file that defines it:
+
+    please share kept to myself

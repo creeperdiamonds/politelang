@@ -1,0 +1,8 @@
+-- Spec section 5: borrowing between files.
+
+please use "parts/greetings.polite"
+please borrow "parts/numbers.polite"
+
+please show greet with "Creeperdiamonds Studios"
+please show shout with greet with "world"
+please show double with 21

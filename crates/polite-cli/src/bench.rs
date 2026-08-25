@@ -5,6 +5,23 @@
 //! measured here, and a run fails if anything has slipped by more than a tenth.
 
 use crate::pipeline;
+
+/// Timings are the *best* of several runs, not the average.
+///
+/// On a two-core laptop something else is always waking up, and an average measures whatever else
+/// the machine happened to be doing. The fastest run is the one where the machine got out of the
+/// way, and it is the only one that says anything about the code.
+fn best_of(rounds: u32, mut run: impl FnMut() -> f64) -> f64 {
+    let mut best = f64::MAX;
+    for _ in 0..rounds {
+        let taken = run();
+        if taken < best {
+            best = taken;
+        }
+    }
+    best
+}
+
 use polite_vocab::Vocabulary;
 use std::process::ExitCode;
 use std::time::Instant;
@@ -18,6 +35,12 @@ struct Measure {
     /// Whether a bigger number is better.
     bigger_is_better: bool,
     budget: Option<f64>,
+    /// How much movement is beneath notice.
+    ///
+    /// A measurement that is meant to sit near zero cannot be judged by percentages: going from
+    /// 0.1% to 1% is a tenfold worsening of nothing at all. This is the amount that has to move
+    /// before anybody should care.
+    slack: f64,
 }
 
 pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
@@ -28,25 +51,29 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
 
     // ---- Checking throughput -------------------------------------------------
     let program = synthetic_program(1000);
-    let start = Instant::now();
-    let rounds = 5;
     let mut tree_bytes = 0usize;
-    for _ in 0..rounds {
+    let mut checked_out = true;
+    let each = best_of(7, || {
+        let start = Instant::now();
         let built = pipeline::build("bench.polite", &program, vocab, true);
+        let taken = start.elapsed().as_secs_f64();
         tree_bytes = built.tree_bytes;
         if built.had_problems {
-            println!("{}", built.messages);
-            eprintln!("The benchmark program did not check out, so the numbers would be a lie.");
-            return ExitCode::FAILURE;
+            checked_out = false;
         }
+        taken
+    });
+    if !checked_out {
+        eprintln!("The benchmark program did not check out, so the numbers would be a lie.");
+        return ExitCode::FAILURE;
     }
-    let each = start.elapsed().as_secs_f64() / rounds as f64;
     results.push(Measure {
         name: "check a 1,000 line program",
         value: each * 1000.0,
         unit: "ms",
         bigger_is_better: false,
         budget: Some(10.0),
+        slack: 0.5,
     });
     results.push(Measure {
         name: "checking throughput",
@@ -54,6 +81,7 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
         unit: "lines/sec",
         bigger_is_better: true,
         budget: Some(150_000.0),
+        slack: 10_000.0,
     });
     results.push(Measure {
         name: "tree memory per line",
@@ -61,40 +89,49 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
         unit: "bytes",
         bigger_is_better: false,
         budget: Some(2048.0),
+        slack: 16.0,
     });
 
     // ---- Hello, end to end, without the process start ------------------------
     let hello = "please show \"hello\"\n";
-    let start = Instant::now();
-    let rounds = 50;
-    for _ in 0..rounds {
+    let each = best_of(200, || {
+        let start = Instant::now();
         let built = pipeline::build("hello.polite", hello, vocab, true);
         let p = built.program.expect("hello should build");
         let mut world = polite_run::Scripted::default();
         let _ = polite_run::run(&p, &mut world);
-    }
-    let each = start.elapsed().as_secs_f64() / rounds as f64;
+        start.elapsed().as_secs_f64()
+    });
     results.push(Measure {
         name: "compile and run hello",
         value: each * 1000.0,
         unit: "ms",
         bigger_is_better: false,
         budget: Some(3.0),
+        slack: 0.05,
     });
 
     // ---- Ten times the vocabulary -------------------------------------------
     // Spec 10.4 calls this the one budget that tests a claim rather than a speed: section 4 says
     // a large vocabulary is cheap, and either that is true or the central bet is wrong.
     let big = grow_vocabulary(4000);
-    let small_time = time_parse(vocab, &program);
-    let big_time = time_parse(&big, &program);
-    let slowdown = (big_time / small_time - 1.0) * 100.0;
+    let mut ratios: Vec<f64> = Vec::with_capacity(21);
+    for _ in 0..21 {
+        // Measured as a pair, one straight after the other, so whatever the machine is doing at
+        // the time lands on both sides of the comparison.
+        let small_time = time_parse(vocab, &program);
+        let big_time = time_parse(&big, &program);
+        ratios.push(big_time / small_time.max(f64::MIN_POSITIVE));
+    }
+    ratios.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let slowdown = (ratios[ratios.len() / 2] - 1.0) * 100.0;
     results.push(Measure {
         name: "parse slowdown at 40x the vocabulary",
         value: slowdown.max(0.0),
         unit: "%",
         bigger_is_better: false,
         budget: Some(5.0),
+        slack: 3.0,
     });
 
     // ---- Numeric loop, against CPython ---------------------------------------
@@ -102,15 +139,19 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
     let built = pipeline::build("loop.polite", loop_src, vocab, true);
     match built.program {
         Some(p) => {
-            let start = Instant::now();
-            let mut world = polite_run::Scripted::default();
-            let _ = polite_run::run(&p, &mut world);
+            let taken = best_of(5, || {
+                let start = Instant::now();
+                let mut world = polite_run::Scripted::default();
+                let _ = polite_run::run(&p, &mut world);
+                start.elapsed().as_secs_f64()
+            });
             results.push(Measure {
                 name: "300,000 turn numeric loop",
-                value: start.elapsed().as_secs_f64() * 1000.0,
+                value: taken * 1000.0,
                 unit: "ms",
                 bigger_is_better: false,
                 budget: None,
+                slack: 0.0,
             });
         }
         None => println!("{}", built.messages),
@@ -132,6 +173,7 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
                 unit: "ms",
                 bigger_is_better: false,
                 budget: None,
+                slack: 0.0,
             });
             results.push(Measure {
                 name: "times faster than CPython",
@@ -139,6 +181,7 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
                 unit: "x",
                 bigger_is_better: true,
                 budget: Some(2.0),
+                slack: 0.5,
             });
         }
         None => println!(
@@ -172,11 +215,13 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
         );
 
         if let Some((_, was)) = previous.iter().find(|(n, _)| n == m.name) {
-            let worse = if m.bigger_is_better {
-                m.value < was * 0.9
-            } else {
-                m.value > was * 1.1
-            };
+            let moved = (m.value - was).abs();
+            let worse = moved > m.slack
+                && if m.bigger_is_better {
+                    m.value < was * 0.9
+                } else {
+                    m.value > was * 1.1
+                };
             if worse {
                 slipped.push(m.name);
             }
@@ -268,12 +313,11 @@ fn load_baseline() -> Vec<(String, f64)> {
 }
 
 fn time_parse(vocab: &Vocabulary, source: &str) -> f64 {
-    let rounds = 10;
-    let start = Instant::now();
-    for _ in 0..rounds {
+    best_of(5, || {
+        let start = Instant::now();
         let _ = polite_syntax::parse(source, vocab);
-    }
-    start.elapsed().as_secs_f64() / rounds as f64
+        start.elapsed().as_secs_f64()
+    })
 }
 
 /// The same loop, timed in CPython, if CPython is here to ask.

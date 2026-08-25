@@ -12,7 +12,7 @@ use polite_diag::{Bag, Diagnostic, Span};
 use polite_syntax::ast::*;
 use polite_syntax::Sym;
 use polite_vocab::{Form, Vocabulary};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use types::{TyId, TyKind, Types};
 
 pub const NO_SLOT: u32 = u32::MAX;
@@ -90,7 +90,17 @@ struct Risk {
 }
 
 pub fn check(ast: &Ast, vocab: &Vocabulary) -> (Checked, Bag) {
+    check_across(ast, vocab, &[])
+}
+
+/// Check a file together with everything it borrowed (spec section 5).
+///
+/// `files` gives the byte range of each gathered file. What one file may see of another is
+/// decided here, because this is the only stage that knows where every name came from.
+pub fn check_across(ast: &Ast, vocab: &Vocabulary, files: &[(u32, u32)]) -> (Checked, Bag) {
     let mut c = Checker::new(ast, vocab);
+    c.modules = files.to_vec();
+    c.collect_shared();
     c.prepare_functions();
 
     // Riskiness travels outward through calls (spec 7.4), so settle it before saying anything.
@@ -142,6 +152,17 @@ struct Checker<'a> {
     slot_count: u32,
     loop_depth: u32,
     try_depth: u32,
+
+    /// Byte range of each gathered file. Empty or single means there is only one.
+    modules: Vec<(u32, u32)>,
+    /// Which file the statement being read came from.
+    current_module: usize,
+    /// Which file each action was written in.
+    action_module: Vec<usize>,
+    /// Which file each name was introduced in.
+    slot_module: HashMap<(u32, u32), usize>,
+    /// The names each file offers to the others.
+    shared: HashSet<(usize, Sym)>,
 }
 
 impl<'a> Checker<'a> {
@@ -174,6 +195,41 @@ impl<'a> Checker<'a> {
             slot_count: 0,
             loop_depth: 0,
             try_depth: 0,
+            modules: Vec::new(),
+            current_module: 0,
+            action_module: Vec::new(),
+            slot_module: HashMap::new(),
+            shared: HashSet::new(),
+        }
+    }
+
+    /// Which gathered file an offset belongs to.
+    fn module_of(&self, offset: u32) -> usize {
+        for (i, (start, end)) in self.modules.iter().enumerate() {
+            if offset >= *start && offset < *end {
+                return i;
+            }
+        }
+        self.modules.len().saturating_sub(1)
+    }
+
+    /// Read every share before anything else, so a file may offer a word before defining it and
+    /// a borrowing file still sees it.
+    fn collect_shared(&mut self) {
+        let ids: Vec<StmtId> = self.ast.block(self.ast.top).to_vec();
+        for id in ids {
+            let node = *self.ast.stmt(id);
+            if let StmtKind::Form {
+                form: Form::Share,
+                names,
+                ..
+            } = node.kind
+            {
+                let module = self.module_of(node.span.start);
+                for name in self.ast.name_slice(names).to_vec() {
+                    self.shared.insert((module, name));
+                }
+            }
         }
     }
 
@@ -220,6 +276,8 @@ impl<'a> Checker<'a> {
                 span: action.span,
             });
             self.by_action.insert(action.name, i as u32);
+            let module = self.module_of(action.span.start);
+            self.action_module.push(module);
         }
         self.main = self.functions.len() as u32;
         self.functions.push(FnInfo {
@@ -276,6 +334,7 @@ impl<'a> Checker<'a> {
         self.try_depth = 0;
 
         let info = self.functions[index as usize].clone();
+        self.current_module = self.module_of(info.span.start);
         if let Some(a) = info.action {
             let action = self.ast.actions[a as usize].clone();
             let params: Vec<Sym> = self.ast.name_slice(action.params).to_vec();
@@ -303,12 +362,28 @@ impl<'a> Checker<'a> {
         self.scopes.last_mut().unwrap().insert(name, slot);
         self.slot_span.insert((self.current, slot), span);
         self.slot_name.insert((self.current, slot), name);
+        let module = self.module_of(span.start);
+        self.slot_module.insert((self.current, slot), module);
         slot
     }
 
+    /// Find a name, but only one this file is allowed to see.
+    ///
+    /// Spec section 5: a file keeps everything to itself unless it shares it, and only actions
+    /// can be shared. So a name introduced in another file is simply not here.
     fn look_up(&self, name: Sym) -> Option<u32> {
         for scope in self.scopes.iter().rev() {
             if let Some(s) = scope.get(&name) {
+                if self.modules.len() > 1 {
+                    let owner = self
+                        .slot_module
+                        .get(&(self.current, *s))
+                        .copied()
+                        .unwrap_or(self.current_module);
+                    if owner != self.current_module {
+                        continue;
+                    }
+                }
                 return Some(*s);
             }
         }
@@ -357,6 +432,7 @@ impl<'a> Checker<'a> {
 
     fn check_stmt(&mut self, id: StmtId) {
         let node = *self.ast.stmt(id);
+        self.current_module = self.module_of(node.span.start);
         match node.kind {
             StmtKind::Define { .. } => {
                 // Its body is walked as its own function.
@@ -723,19 +799,32 @@ impl<'a> Checker<'a> {
                 }
             }
 
-            Form::UseModule | Form::Share => {
-                self.say(
-                    Diagnostic::problem(span, "Borrowing between files is not ready yet.")
-                        .because(
-                            "The language runs one file at a time for now. Sharing words between \
-                             files is designed and written down, and it is the next thing to be \
-                             built.",
-                        )
-                        .suggest(
-                            "For now, keep the actions you need in the same file:",
-                            "please define greet with a name:\n    give back \"hello, {name}!\"\nthanks",
-                        ),
-                );
+            Form::UseModule => {
+                // Borrowing is settled before anything is read, by gathering the files together.
+                // A use line that survives to here came from text rather than from a file, and
+                // there is nothing left for it to do.
+            }
+
+            Form::Share => {
+                for name in names {
+                    if !self.by_action.contains_key(name) {
+                        let word = self.name_text(*name);
+                        self.say(
+                            Diagnostic::problem(
+                                span,
+                                format!("There is no action called `{word}` here to share."),
+                            )
+                            .because(
+                                "Sharing offers one of your own actions to any file that borrows \
+                                 this one, so there has to be one to offer.",
+                            )
+                            .suggest(
+                                "Define it first, and then share it:",
+                                format!("please define {word}:\n    show \"hello\"\nthanks\n\nplease share {word}"),
+                            ),
+                        );
+                    }
+                }
             }
 
             other => {
@@ -1339,6 +1428,32 @@ impl<'a> Checker<'a> {
         for (k, want) in expected.iter().enumerate() {
             if let (Some(a), Some(t)) = (args.get(k), tys.get(k)) {
                 self.want(*a, *t, *want, "a value this action needs");
+            }
+        }
+
+        // Spec section 5: a file offers nothing unless it shares it.
+        if self.modules.len() > 1 {
+            let owner = self
+                .action_module
+                .get(index as usize)
+                .copied()
+                .unwrap_or(self.current_module);
+            if owner != self.current_module && !self.shared.contains(&(owner, name)) {
+                let word = self.name_text(name);
+                self.say(
+                    Diagnostic::problem(
+                        span,
+                        format!("`{word}` is not shared, so it is not mine to hand over."),
+                    )
+                    .because(
+                        "A file keeps everything to itself unless it offers it. That way nothing \
+                         of yours is used by another file by accident.",
+                    )
+                    .suggest(
+                        "Add this to the file that defines it:",
+                        format!("please share {word}"),
+                    ),
+                );
             }
         }
 

@@ -1,0 +1,15 @@
+In ring-b.polite, line 1:
+
+    please use ring-a
+    ^^^^^^^^^^^^^^^^^
+
+These files borrow each other in a circle.
+
+The circle runs borrowing-in-a-circle.polite then ring-a.polite then
+ring-b.polite then ring-a.polite. Each one is waiting for the next,
+so none of them can go first.
+
+Move what they share into a file of its own, and let both borrow
+that:
+
+    please use shared

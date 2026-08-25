@@ -48,6 +48,9 @@ keys! {
     and => "and",
     or => "or",
     r#try => "try",
+    share => "share",
+    use_ => "use",
+    borrow => "borrow",
     does => "does",
     work => "work",
     out => "out",
@@ -610,6 +613,35 @@ impl<'a> Parser<'a> {
             return self.parse_try(start, polite);
         }
 
+        // `share greet and wave` offers several words at once, which no single pattern in the
+        // table can hold, so it is read here.
+        if self.at_word(self.keys.share) {
+            return self.parse_share(start, polite);
+        }
+
+        // Borrowing is settled before any of this, by gathering the files together. The line is
+        // left exactly as it was written so that messages can point at it, and read here as the
+        // no-op it has become.
+        if self.at_word(self.keys.use_) || self.at_word(self.keys.borrow) {
+            self.skip_to_end_of_line();
+            let phrase = self
+                .vocab
+                .first_phrase_for(Form::UseModule)
+                .unwrap_or_default();
+            let span = Span::new(start.start, self.span().end);
+            return Some(self.ast.push_stmt(
+                StmtKind::Form {
+                    form: Form::UseModule,
+                    phrase,
+                    names: Range::EMPTY,
+                    args: Range::EMPTY,
+                    body: None,
+                },
+                span,
+                polite,
+            ));
+        }
+
         // An action you defined yourself wins over the shipped vocabulary. You taught me that
         // word on purpose, so it is the one you meant.
         if let Some(stmt) = self.parse_call_statement(start, polite) {
@@ -734,6 +766,68 @@ impl<'a> Parser<'a> {
         });
         let action = self.ast.actions.len() as u32 - 1;
         Some(self.ast.push_stmt(StmtKind::Define { action }, span, polite))
+    }
+
+    fn parse_share(&mut self, start: Span, polite: bool) -> Option<StmtId> {
+        self.bump(); // share
+        let mut names: Vec<Sym> = Vec::new();
+        loop {
+            // An action name may be several words long, so take the longest one that fits.
+            if let Some((words, len)) = self.match_action_name() {
+                for _ in 0..len {
+                    self.bump();
+                }
+                let sym = self.action_sym(&words);
+                names.push(sym);
+                if !self.eat_word(self.keys.and) && !self.eat(Tok::Comma) {
+                    break;
+                }
+                continue;
+            }
+            match self.tok() {
+                Tok::Word(w) => {
+                    names.push(w);
+                    self.bump();
+                }
+                _ => {
+                    let span = self.span();
+                    self.problems.push(
+                        Diagnostic::problem(span, "I was expecting the name of something to share.")
+                            .because(
+                                "A file keeps everything to itself unless it offers it, and what                                  it offers has to be named.",
+                            )
+                            .suggest("Name them:", "please share greet and wave"),
+                    );
+                    break;
+                }
+            }
+            if !self.eat_word(self.keys.and) && !self.eat(Tok::Comma) {
+                break;
+            }
+        }
+
+        if names.is_empty() {
+            self.skip_to_end_of_line();
+            return None;
+        }
+
+        let phrase = self
+            .vocab
+            .first_phrase_for(Form::Share)
+            .unwrap_or_default();
+        let names_range = self.ast.push_names(&names);
+        let span = Span::new(start.start, self.span().end);
+        Some(self.ast.push_stmt(
+            StmtKind::Form {
+                form: Form::Share,
+                phrase,
+                names: names_range,
+                args: Range::EMPTY,
+                body: None,
+            },
+            span,
+            polite,
+        ))
     }
 
     fn parse_try(&mut self, start: Span, polite: bool) -> Option<StmtId> {

@@ -7,5 +7,6 @@
 
 pub mod bench;
 pub mod grammar;
+pub mod modules;
 pub mod pipeline;
 pub mod words;

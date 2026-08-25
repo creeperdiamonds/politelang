@@ -1,0 +1,9 @@
+-- One file borrowing another (spec section 5).
+--
+-- A file keeps everything to itself unless it shares it, which is both safer and
+-- exactly the manner of offering something rather than leaving your things lying about.
+
+please use "parts/greetings.polite"
+
+please show greet with "Creeperdiamonds Studios"
+please show politely ask with "Could you pass the salt"

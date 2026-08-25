@@ -367,6 +367,71 @@ pub fn render_all(source: &Source<'_>, bag: Bag) -> String {
     out
 }
 
+
+/// Several files gathered into one piece of text (spec section 5).
+///
+/// Every span in the compiler is an offset into the gathered whole, and this is what turns one
+/// back into a place in the file somebody actually wrote.
+pub struct Files<'a> {
+    parts: Vec<(u32, u32, Source<'a>)>,
+}
+
+impl<'a> Files<'a> {
+    /// Build from `(name, start, text)` for each file, where `start` is its offset in the whole.
+    pub fn new(parts: Vec<(&'a str, u32, &'a str)>) -> Files<'a> {
+        Files {
+            parts: parts
+                .into_iter()
+                .map(|(name, start, text)| {
+                    (start, start + text.len() as u32, Source::new(name, text))
+                })
+                .collect(),
+        }
+    }
+
+    /// The file an offset belongs to, and where that file begins.
+    pub fn locate(&self, offset: u32) -> Option<(&Source<'a>, u32)> {
+        self.parts
+            .iter()
+            .find(|(start, end, _)| offset >= *start && offset <= *end)
+            .map(|(start, _, source)| (source, *start))
+            .or_else(|| self.parts.last().map(|(start, _, s)| (s, *start)))
+    }
+
+    pub fn is_single(&self) -> bool {
+        self.parts.len() <= 1
+    }
+}
+
+/// Render every message, each against the file it was actually written in.
+pub fn render_all_across(files: &Files<'_>, bag: Bag) -> String {
+    let items = bag.sorted();
+    let mut out = String::new();
+    for (i, d) in items.iter().enumerate() {
+        if i > 0 {
+            out.push('\n');
+        }
+        match files.locate(d.span.start) {
+            Some((source, base)) => {
+                let mut local = d.clone();
+                local.span = Span::new(
+                    d.span.start.saturating_sub(base),
+                    d.span.end.saturating_sub(base),
+                );
+                for (span, _) in &mut local.also {
+                    *span = Span::new(
+                        span.start.saturating_sub(base),
+                        span.end.saturating_sub(base),
+                    );
+                }
+                out.push_str(&render(source, &local));
+            }
+            None => out.push_str(&d.title),
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

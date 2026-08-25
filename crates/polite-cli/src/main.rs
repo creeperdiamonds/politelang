@@ -56,25 +56,6 @@ fn main() -> ExitCode {
     }
 }
 
-fn read(path: &str) -> Option<String> {
-    match std::fs::read_to_string(path) {
-        Ok(t) => Some(t),
-        Err(e) => {
-            eprintln!("I could not read `{path}`: {}.", plain_io(&e));
-            None
-        }
-    }
-}
-
-fn plain_io(e: &std::io::Error) -> String {
-    use std::io::ErrorKind::*;
-    match e.kind() {
-        NotFound => "there is no file there".to_string(),
-        PermissionDenied => "it is not mine to read".to_string(),
-        _ => "it could not be reached".to_string(),
-    }
-}
-
 fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
     let path = match args.first() {
         Some(p) => p.clone(),
@@ -83,12 +64,13 @@ fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let text = match read(&path) {
-        Some(t) => t,
-        None => return ExitCode::FAILURE,
+    let built = match pipeline::build_path(std::path::Path::new(&path), vocab, true) {
+        Ok(b) => b,
+        Err(reason) => {
+            eprintln!("{reason}");
+            return ExitCode::FAILURE;
+        }
     };
-
-    let built = pipeline::build(&path, &text, vocab, true);
     if !built.messages.is_empty() {
         print!("{}", built.messages);
     }
@@ -117,12 +99,13 @@ fn command_check(args: &[String], vocab: &Vocabulary) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let text = match read(&path) {
-        Some(t) => t,
-        None => return ExitCode::FAILURE,
+    let built = match pipeline::build_path(std::path::Path::new(&path), vocab, optimise) {
+        Ok(b) => b,
+        Err(reason) => {
+            eprintln!("{reason}");
+            return ExitCode::FAILURE;
+        }
     };
-
-    let built = pipeline::build(&path, &text, vocab, optimise);
     if !built.messages.is_empty() {
         print!("{}", built.messages);
     }

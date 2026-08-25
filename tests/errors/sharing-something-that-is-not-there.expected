@@ -1,0 +1,17 @@
+In sharing-something-that-is-not-there.polite, line 1:
+
+    please share nobody
+    ^^^^^^^^^^^^^^^^^^^
+
+There is no action called `nobody` here to share.
+
+Sharing offers one of your own actions to any file that borrows this
+one, so there has to be one to offer.
+
+Define it first, and then share it:
+
+    please define nobody:
+        show "hello"
+    thanks
+
+    please share nobody

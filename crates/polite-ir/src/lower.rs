@@ -1092,7 +1092,7 @@ impl Lower<'_, '_> {
                     b,
                 });
             }
-            B::And | B::Or | B::Then => unreachable!("handled above"),
+            B::And | B::Or => unreachable!("handled above"),
         }
     }
 
