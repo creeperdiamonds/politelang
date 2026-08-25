@@ -70,6 +70,10 @@ polite grammar <file.json>      write the editor grammar
 
 Try `polite words` first. Forty words is the whole of the everyday language.
 
+**New to programming?** Start with **[the guide](docs/GUIDE.md)**. It begins from nothing at all,
+fourteen short lessons, and every program in it lives in `examples/guide/` and is run by the test
+suite — so nothing in it can quietly stop working.
+
 ---
 
 ## The four rules
@@ -540,7 +544,9 @@ crates/polite-ir            PoliteIR, lowering, optimisation, the Backend socket
 crates/polite-run           the reference runner
 crates/polite-std           values and the standard library
 crates/polite-cli           the `polite` command
+docs/GUIDE.md               learn the language from nothing
 examples/                   programs to read
+examples/guide/             one runnable program per lesson
 tests/programs              the corpus, and the future backend conformance suite
 tests/errors                every message, pinned word for word
 tests/*/parts               files the corpus borrows from

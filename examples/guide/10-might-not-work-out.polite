@@ -1,0 +1,31 @@
+-- Lesson 11. When things might not work out.
+
+-- One: give it something to fall back on.
+please remember saved is the contents of "save.txt" or "nothing saved yet"
+please show saved
+
+please remember n is the number in "not a number" or 0
+please show n
+
+please remember things is an empty list
+please show item 5 of things or "there is no fifth thing"
+
+-- Two: handle it properly.
+please try to:
+    remember settings is the contents of "settings.polite"
+    show "The settings are {the length of settings} letters long."
+otherwise if it does not work out:
+    show "I could not read them, because {what went wrong}."
+thank you for trying
+
+-- It spreads by itself: this action becomes risky because the thing it does is,
+-- and the language mentions it without you writing anything.
+please define load the score:
+    give back the number in the contents of "score.txt"
+thanks
+
+please show load the score or 0
+
+-- Three: take responsibility. This one is certain, so nothing is asked of you.
+please remember first is 1 over 3, I am sure
+please show first

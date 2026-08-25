@@ -1,0 +1,12 @@
+-- Lesson 4. Putting values inside text.
+
+please remember name is "Ada"
+please remember age is 11
+
+please show "{name} is {age} years old."
+please show "Next year she will be {age plus 1}."
+
+-- Anything that is a value anywhere is a value inside braces.
+please remember things is an empty list
+please add "bread" to things
+please show "The list holds {the number of items in things} thing."

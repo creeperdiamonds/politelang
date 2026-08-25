@@ -1,0 +1,16 @@
+-- Lesson 9. Lookups.
+--
+-- A lookup finds things by name, the way a dictionary finds a meaning by its word.
+
+please remember ages is an empty lookup
+please put 11 for "ada" in ages
+please put 42 for "grace" in ages
+
+please show the value for "ada" in ages or 0
+please show ages knows about "grace"
+please show ages knows about "nobody"
+please show the join of the keys of ages with ", "
+please show the number of things in ages
+
+please forget "ada" in ages
+please show the join of the keys of ages with ", "

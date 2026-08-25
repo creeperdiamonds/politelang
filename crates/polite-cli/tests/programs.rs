@@ -94,3 +94,51 @@ fn optimising_never_changes_what_a_program_does() {
         );
     }
 }
+
+/// Every lesson in the guide really runs.
+///
+/// A learning guide whose programs do not work is worse than none at all, so the guide's
+/// examples live in the repository and are run here rather than being typed into prose and
+/// hoped for.
+#[test]
+fn every_lesson_in_the_guide_runs() {
+    let vocab = Vocabulary::embedded();
+    let dir = common::root().join("examples").join("guide");
+    let mut lessons: Vec<std::path::PathBuf> = std::fs::read_dir(&dir)
+        .unwrap_or_else(|e| panic!("could not read {}: {e}", dir.display()))
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().map(|x| x == "polite").unwrap_or(false))
+        .collect();
+    lessons.sort();
+    assert!(lessons.len() >= 12, "the guide is thinner than it should be");
+
+    for lesson in lessons {
+        let name = lesson.file_name().unwrap().to_string_lossy().to_string();
+        let built = pipeline::build_path(&lesson, &vocab, true)
+            .unwrap_or_else(|e| panic!("{name} could not be gathered: {e}"));
+        assert!(
+            !built.had_problems,
+            "{name} does not check out:\n{}",
+            built.messages
+        );
+        let program = built.program.expect("a lesson that checks out should build");
+
+        let replies: Vec<String> = {
+            let path = lesson.with_extension("replies");
+            if path.exists() {
+                common::read(&path).lines().map(|l| l.to_string()).collect()
+            } else {
+                Vec::new()
+            }
+        };
+
+        let mut world = Scripted::with_replies(replies);
+        let outcome = polite_run::run_with(&program, &mut world, Limits::steps(20_000_000), Some(7));
+        assert!(
+            outcome.is_ok(),
+            "{name} stopped early: {}",
+            outcome.unwrap_err()
+        );
+    }
+}

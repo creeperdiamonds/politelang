@@ -1,0 +1,28 @@
+-- Lesson 13. Numbers, as far as you want to go.
+
+please show 7 plus 3
+please show 7 + 3
+please show 7 minus 3
+please show 7 times 3
+please show 7 divided by 2
+
+-- Whole numbers have no limit. Nothing wraps round to a wrong answer.
+please remember f is 1
+please repeat for every n from 1 to 100:
+    multiply f by n
+thanks
+please show f
+please show "which is {the length of the text of f} digits long"
+
+-- Fractions are exact, which decimals never quite are.
+please show 1 over 3 plus 1 over 3 plus 1 over 3
+please show 1 over 2 plus 1 over 3
+please show 0.75 as a fraction
+
+-- And everything else is here for when you need it.
+please show the square root of 144
+please show the sine of the number pi divided by 2
+please show 97 is prime
+please show the ways to choose 2 from 5 or 0
+please show 255 in hexadecimal
+please show 3 plus the imaginary number 4

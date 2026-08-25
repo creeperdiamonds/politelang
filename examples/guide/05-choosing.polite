@@ -1,0 +1,30 @@
+-- Lesson 6. Choosing.
+
+please remember score is 7
+
+please check if score is over 10:
+    show "That is a lot."
+otherwise if score is over 5:
+    show "That is respectable."
+otherwise:
+    show "Early days."
+thank you for checking
+
+-- Ways to ask a question.
+please check if score is 7:
+    show "exactly seven"
+thanks
+please check if score is not 3:
+    show "not three"
+thanks
+please check if score is at least 5 and score is at most 9:
+    show "somewhere in the middle"
+thanks
+please check if score is between 1 and 10:
+    show "between one and ten"
+thanks
+
+-- Indentation is only there to help you read. This runs just the same.
+please check if score is over 5:
+show "badly indented, and perfectly fine"
+thanks

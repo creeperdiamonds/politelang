@@ -1,0 +1,34 @@
+-- Lesson 10. Teaching the language your own words.
+
+please define greet with a name:
+    give back "Hello, {name}."
+thank you for defining
+
+please show greet with "Ada"
+
+-- Two values are separated by `and`.
+please define greet warmly with a name and a greeting:
+    give back "{greeting}, {name}!"
+thanks
+
+please show greet warmly with "Ada" and "Good morning"
+
+-- An action's name can be several words long, which often reads better.
+-- An action may call itself, as this one does.
+please define count down from with a number:
+    check if number is at most 0:
+        give back "done"
+    thanks
+    show number
+    give back count down from with number minus 1
+thanks
+
+please show count down from with 3
+
+-- And you may use an action before you have defined it: the whole file is
+-- read first.
+please show doubled with 21
+
+please define doubled with a number:
+    give back number times 2
+thanks

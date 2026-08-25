@@ -1,0 +1,34 @@
+-- Lesson 7. Repeating.
+
+please repeat 3 times:
+    show "again"
+thanks
+
+please repeat for every n from 1 to 5:
+    show n
+thanks
+
+please remember n is 0
+please repeat while n is under 3:
+    add 1 to n
+    show "while {n}"
+thanks
+
+please remember score is 0
+please repeat until score is over 100:
+    add 40 to score
+thanks
+please show "score reached {score}"
+
+please keep going forever:
+    show "once"
+    stop repeating
+thanks
+
+-- `skip to the next one` abandons this turn and starts the next.
+please repeat for every n from 1 to 5:
+    check if n is 3:
+        skip to the next one
+    thanks
+    show n
+thanks

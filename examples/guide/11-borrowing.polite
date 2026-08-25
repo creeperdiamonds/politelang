@@ -1,0 +1,8 @@
+-- Lesson 12. Borrowing between files.
+--
+-- A file keeps everything to itself unless it shares it.
+
+please use "parts/greetings.polite"
+
+please show greet with "Ada"
+please show wave

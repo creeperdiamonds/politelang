@@ -1,0 +1,17 @@
+-- Lesson 3. Remembering things.
+
+please remember name is "Ada"
+please remember age is 11
+
+please show name
+please show age
+
+-- `remember` introduces a name. `change` updates one that is already there.
+please remember score is 0
+please change score to 10
+please show score
+
+-- Two shortcuts you will use constantly.
+please add 5 to score
+please take 2 from score
+please show score

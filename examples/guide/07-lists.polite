@@ -1,0 +1,29 @@
+-- Lesson 8. Lists.
+
+please remember shopping is an empty list
+please add "bread" to shopping
+please add "apples" to shopping
+please add "tea" to shopping
+
+please show "There are {the number of items in shopping} things to buy."
+
+please for every thing in shopping:
+    show "  - {thing}"
+thanks
+
+-- Positions count from 1, the way people count.
+please show item 1 of shopping or "nothing"
+
+please show the first item of shopping or "nothing"
+please show the last item of shopping or "nothing"
+please show the join of the sorted version of shopping with ", "
+please show the join of the reverse of shopping with ", "
+please show shopping contains "tea"
+
+please remember numbers is an empty list
+please repeat for every n from 1 to 5:
+    add n to numbers
+thanks
+please show the total of numbers
+please show the average of numbers or 0
+please show the join of the rest of numbers with ", "

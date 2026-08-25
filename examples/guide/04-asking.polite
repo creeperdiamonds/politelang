@@ -1,0 +1,14 @@
+-- Lesson 5. Asking a question.
+--
+-- You never say what kind of answer you want. Because `age` is compared to a
+-- number below, the language works out that the answer should be read as one.
+
+please ask "What is your name? " as name
+please show "Hello, {name}."
+
+please ask "How old are you? " as age
+please check if age is over 10:
+    show "You are older than ten."
+otherwise:
+    show "Ten or under."
+thank you for checking
