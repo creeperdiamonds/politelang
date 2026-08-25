@@ -14,3 +14,8 @@ target/js-comparison/
 # What `polite build` leaves behind, and what npm brings in for a bot
 node_modules/
 examples/**/*.mjs
+
+# Secrets. Never committed, ever.
+.env
+.env.*
+!.env.example

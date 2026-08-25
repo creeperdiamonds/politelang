@@ -781,15 +781,7 @@ impl Runner<'_> {
 
             Builtin::SecretCalled => {
                 let name = a0().as_text();
-                match std::env::var(&*name) {
-                    Ok(v) => Some(Value::text(v)),
-                    Err(_) => {
-                        return Err(format!(
-                            "there is no secret called {name} here. Set it before running, and it \
-                             stays out of the program where it belongs."
-                        ))
-                    }
-                }
+                Some(Value::text(std_lib::secrets::secret_called(&name)?))
             }
 
             Builtin::WriteText => {

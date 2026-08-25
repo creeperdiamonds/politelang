@@ -950,17 +950,100 @@ let inbox = [];
 let listeners = [];
 let heard = null;
 
-export function secretCalled(name) {
-  const found = process.env[showable(name)];
-  if (found === undefined || found === "") {
-    nope(
-      `there is no secret called ${showable(name)} here. Set it before running, and it stays out ` +
-        `of the program where it belongs.`
-    );
+// ---------------------------------------------------------------------------
+// Secrets kept outside the program
+//
+// The same two places the reference runner looks in, in the same order, read by the same rules --
+// written out again here rather than reached for from a package, because this is forty lines and a
+// dependency is forever. The environment wins over the file, so a secret handed over on the
+// command line beats one written down, which is what you want when a real machine somewhere sets
+// it properly and the file is only there for working at home.
+//
+// Only the folder the program is run from is looked in, and no parent of it. Somewhere further up
+// the disk quietly supplying a secret is very hard to work out when it goes wrong.
+// ---------------------------------------------------------------------------
+
+let envFile = null;
+
+function unquote(value) {
+  const first = value[0];
+  const last = value[value.length - 1];
+
+  if (value.length >= 2 && first === '"' && last === '"') {
+    const inner = value.slice(1, -1);
+    let out = "";
+    for (let i = 0; i < inner.length; i++) {
+      if (inner[i] !== "\\") {
+        out += inner[i];
+        continue;
+      }
+      const next = inner[++i];
+      if (next === "n") out += "\n";
+      else if (next === "r") out += "\r";
+      else if (next === "t") out += "\t";
+      else if (next === "\\" || next === '"') out += next;
+      else if (next === undefined) out += "\\";
+      else out += "\\" + next;
+    }
+    return out;
+  }
+
+  if (value.length >= 2 && first === "'" && last === "'") return value.slice(1, -1);
+
+  // Unquoted: a `#` starts a remark, and what is left is trimmed.
+  const remark = value.indexOf("#");
+  return (remark === -1 ? value : value.slice(0, remark)).trimEnd();
+}
+
+export function readEnvFile(text) {
+  const found = new Map();
+  for (const raw of text.split(/\r?\n/)) {
+    let line = raw.trim();
+    if (line === "" || line.startsWith("#")) continue;
+    if (line.startsWith("export ")) line = line.slice(7).trimStart();
+
+    // The first `=` divides them. Tokens and keys very often end in padding, and splitting on the
+    // last one would ruin them.
+    const at = line.indexOf("=");
+    if (at < 0) continue;
+    const name = line.slice(0, at).trim();
+    if (name === "" || !/^[\p{L}\p{N}_.]+$/u.test(name)) continue;
+    found.set(name, unquote(line.slice(at + 1).trim()));
   }
   return found;
 }
 
+function fromEnvFile(name) {
+  if (envFile === null) {
+    try {
+      envFile = readEnvFile(fs.readFileSync(".env", "utf8"));
+    } catch {
+      envFile = false; // there is no file, and there is no point looking again
+    }
+  }
+  return envFile === false ? undefined : envFile.get(name);
+}
+
+export function secretCalled(name) {
+  const wanted = showable(name);
+
+  const fromAround = process.env[wanted];
+  if (fromAround !== undefined && fromAround !== "") return fromAround;
+
+  const written = fromEnvFile(wanted);
+  if (written !== undefined) return written;
+
+  if (envFile === false) {
+    nope(
+      `there is no secret called ${wanted} here. Set it before running, or put it in a file ` +
+        `called .env in this folder, and either way it stays out of the program where it belongs.`
+    );
+  }
+  nope(
+    `there is no secret called ${wanted} here. It is not in the surroundings, and the .env file ` +
+      `in this folder does not mention it.`
+  );
+}
 export async function discordLogIn(token) {
   let discordjs;
   try {

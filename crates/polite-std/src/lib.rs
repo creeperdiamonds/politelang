@@ -22,6 +22,7 @@ pub mod exact;
 pub mod letters;
 pub mod maths;
 pub mod numbers;
+pub mod secrets;
 pub mod picture;
 pub mod vectors;
 

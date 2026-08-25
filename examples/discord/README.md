@@ -36,8 +36,23 @@ npm install discord.js
 node hello-bot.mjs
 ```
 
-The token is read from the surroundings rather than from the program, so hand it over as you start
-it. PowerShell:
+**5. Give it the token.** The easiest way is a `.env` file in this folder. Copy the example:
+
+```
+cp .env.example .env
+```
+
+and put your token in it:
+
+```
+DISCORD_TOKEN=your token here
+```
+
+`.env` is in `.gitignore`, so it cannot be committed by accident. `.env.example` is committed and
+holds nothing but a reminder.
+
+If you would rather hand it over as you start the bot, that works too, and beats the file if both
+are set. PowerShell:
 
 ```powershell
 $env:DISCORD_TOKEN = "your token here"
@@ -79,7 +94,7 @@ they are a bot                      whether it was a bot rather than a person
 the channel it came from            the name of the channel
 the server it came from             the name of the server
 
-the secret called {which}           something kept outside the program
+the secret called {which}           read from the surroundings, or from .env in this folder
 ```
 
 `polite explain "reply with"` says what any of them mean, in PoliteLang and in English.
@@ -98,7 +113,7 @@ the next one.
 
 | what it says | what to do |
 | --- | --- |
-| `there is no secret called DISCORD_TOKEN here` | hand the token over as you start it, as above |
+| `there is no secret called DISCORD_TOKEN here` | put it in `.env`, or hand it over as you start it |
 | `Discord would not take that token` | wrong or expired — *Reset Token* and use the new one |
 | `discord.js is not installed here` | `npm install discord.js` in this folder |
 | it connects but `what they said` is always empty | Message Content Intent is off — step 2 |
