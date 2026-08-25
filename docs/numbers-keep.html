@@ -1,0 +1,1007 @@
+<title>Numbers Keep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Heebo:wght@400;600&display=swap">
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   NUMBERS KEEP
+   A tower of six floors, one for each section of the summer work.
+   Committed to a single dark world on purpose: it is a keep at night.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Old stone under lamplight. The neutral is biased blue so the amber reads warm against it. */
+  --pitch:      #10151d;
+  --stone:      #171e29;
+  --stone-lit:  #1e2836;
+  --edge:       #2b3849;
+  --edge-lit:   #3d4d63;
+
+  --chalk:      #e9e7df;
+  --chalk-dim:  #a8b2c1;
+  --chalk-far:  #6d7a8c;
+
+  --lamp:       #e8a33d;
+  --lamp-deep:  #b9772a;
+  --jade:       #58c095;
+  --ember:      #e05a5e;
+
+  --carve: inset 0 1px 0 rgba(255,255,255,.05), inset 0 -1px 0 rgba(0,0,0,.4);
+
+  --step: clamp(14px, 1.6vw, 20px);
+  --rule-width: 66ch;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--pitch);
+  color: var(--chalk);
+  font-family: "Alegreya Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(16px, 1.15vw, 18px);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Lamplight, pooled at the top. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(232,163,61,.13), transparent 60%),
+    radial-gradient(90% 60% at 50% 110%, rgba(0,0,0,.55), transparent 55%);
+  z-index: 0;
+}
+
+.hebrew { font-family: "Heebo", "Alegreya Sans", sans-serif; direction: rtl; unicode-bidi: isolate; }
+.maths  { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+h1, h2, .carved {
+  font-family: "Cinzel", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid var(--edge-lit);
+  background: var(--stone-lit);
+  border-radius: 2px;
+  padding: .7em 1.4em;
+  letter-spacing: .04em;
+  box-shadow: var(--carve);
+  transition: background .15s, border-color .15s, transform .08s;
+}
+button:hover { background: #26334a; border-color: var(--lamp-deep); }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+button[disabled] { opacity: .4; cursor: default; }
+
+.primary {
+  background: linear-gradient(180deg, var(--lamp) 0%, var(--lamp-deep) 100%);
+  border-color: #8a5718;
+  color: #241606;
+  font-weight: 700;
+}
+.primary:hover { background: linear-gradient(180deg, #f2b45a 0%, #c8842f 100%); }
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: calc(var(--step) * 1.6) var(--step) calc(var(--step) * 3);
+}
+
+.scene { display: none; }
+.scene.on { display: block; animation: rise .45s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+/* ── The keep itself, drawn in stone ─────────────────────────────── */
+
+.keep { display: flex; flex-direction: column-reverse; gap: 4px; width: 100%; }
+
+.tier {
+  position: relative;
+  border: 1px solid var(--edge);
+  background: var(--stone);
+  box-shadow: var(--carve);
+  padding: .55em .9em;
+  display: flex;
+  align-items: center;
+  gap: .9em;
+  color: var(--chalk-far);
+  transition: background .3s, color .3s, border-color .3s;
+}
+.tier .no { font-family: "Cinzel", serif; font-size: .85em; width: 2.2em; }
+.tier .nm { flex: 1; letter-spacing: .05em; font-size: .92em; }
+.tier .he { font-size: .85em; opacity: .8; }
+
+.tier.done { color: var(--chalk-dim); border-color: var(--edge-lit); background: var(--stone-lit); }
+.tier.done .no { color: var(--jade); }
+.tier.here {
+  color: var(--chalk);
+  border-color: var(--lamp-deep);
+  background: linear-gradient(90deg, rgba(232,163,61,.14), transparent 70%);
+}
+.tier.here .no { color: var(--lamp); }
+.tier.here::before {
+  content: "";
+  position: absolute; left: -1px; top: -1px; bottom: -1px;
+  width: 3px; background: var(--lamp);
+}
+
+/* ── Fight ───────────────────────────────────────────────────────── */
+
+.bar {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1em; flex-wrap: wrap;
+  padding-bottom: .6em; margin-bottom: calc(var(--step) * 1.2);
+  border-bottom: 1px solid var(--edge);
+}
+.eyebrow {
+  font-size: .72em; text-transform: uppercase; letter-spacing: .22em;
+  color: var(--chalk-far);
+}
+
+.fight {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: calc(var(--step) * 1.8);
+  align-items: start;
+}
+@media (max-width: 820px) { .fight { grid-template-columns: 1fr; } }
+
+.sigil-box { display: flex; flex-direction: column; align-items: center; gap: .8em; }
+.sigil { width: 100%; max-width: 260px; aspect-ratio: 1; display: block; }
+.sigil .body { fill: none; stroke: var(--edge-lit); stroke-width: 2.5; }
+.sigil .mark { fill: none; stroke: var(--lamp); stroke-width: 2.5; opacity: .85; }
+.sigil .crack {
+  fill: none; stroke: var(--jade); stroke-width: 2.5; stroke-linecap: round;
+  stroke-dasharray: var(--len); stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset .5s cubic-bezier(.2,.8,.3,1);
+}
+.sigil .crack.cut { stroke-dashoffset: 0; }
+
+.creature-name { font-family: "Cinzel", serif; letter-spacing: .12em; color: var(--chalk-dim); font-size: .95em; }
+
+.pips { display: flex; gap: 7px; }
+.pip {
+  width: 26px; height: 5px; border-radius: 1px;
+  background: var(--edge); transition: background .25s, box-shadow .25s;
+}
+.pip.lit { background: var(--jade); box-shadow: 0 0 10px rgba(88,192,149,.55); }
+
+.slate {
+  border: 1px solid var(--edge);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%),
+    var(--stone);
+  box-shadow: var(--carve);
+  padding: calc(var(--step) * 1.3);
+}
+
+.q {
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.05rem, 2.1vw, 1.4rem);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  color: var(--chalk);
+  margin: 0 0 1.1em;
+}
+.q em { color: var(--lamp); font-style: normal; }
+
+.answer-row { display: flex; gap: .7em; flex-wrap: wrap; align-items: center; }
+
+input[type="text"] {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1.15rem;
+  color: var(--chalk);
+  background: var(--pitch);
+  border: 1px solid var(--edge-lit);
+  border-radius: 2px;
+  padding: .6em .8em;
+  width: 11ch;
+  text-align: center;
+}
+input[type="text"]:focus { outline: 2px solid var(--lamp); outline-offset: 1px; }
+
+.choices { display: flex; gap: .7em; flex-wrap: wrap; }
+
+.verdict { margin-top: 1em; min-height: 1.6em; font-weight: 500; }
+.verdict.good { color: var(--jade); }
+.verdict.bad  { color: var(--ember); }
+
+/* ── The rule, when you get one wrong ────────────────────────────── */
+
+.rule-card {
+  border: 1px solid var(--lamp-deep);
+  background:
+    linear-gradient(180deg, rgba(232,163,61,.08), transparent 50%),
+    var(--stone-lit);
+  box-shadow: var(--carve), 0 24px 60px rgba(0,0,0,.6);
+  padding: calc(var(--step) * 1.6);
+  max-width: var(--rule-width);
+  margin: calc(var(--step) * 1.4) auto 0;
+}
+.rule-name {
+  font-family: "Cinzel", serif; font-weight: 700;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  color: var(--lamp); letter-spacing: .08em; margin-bottom: .35em;
+}
+.rule-he { font-size: 1.05em; color: var(--chalk-dim); margin-bottom: .9em; }
+.rule-text { font-size: 1.08em; margin-bottom: 1.2em; }
+.working {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .92em; line-height: 1.75; white-space: pre-wrap;
+  color: var(--chalk-dim);
+  border-left: 2px solid var(--edge-lit);
+  padding-left: 1em;
+}
+
+/* ── Codex and notes ─────────────────────────────────────────────── */
+
+.grid { display: grid; gap: var(--step); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+.card {
+  border: 1px solid var(--edge); background: var(--stone);
+  box-shadow: var(--carve); padding: calc(var(--step) * 1.1);
+}
+.card.locked { opacity: .45; }
+.card h3 { font-family: "Cinzel", serif; font-size: 1rem; letter-spacing: .07em; color: var(--lamp); margin: 0 0 .3em; }
+.card .he { color: var(--chalk-dim); font-size: .95em; margin-bottom: .5em; }
+.card p { margin: 0; color: var(--chalk-dim); font-size: .95em; }
+
+.tally { display: flex; gap: calc(var(--step) * 1.6); flex-wrap: wrap; }
+.tally div { display: flex; flex-direction: column; }
+.tally .n {
+  font-family: "Cinzel", serif; font-size: clamp(1.6rem, 4vw, 2.4rem);
+  color: var(--lamp); line-height: 1; font-variant-numeric: tabular-nums;
+}
+.tally .l { font-size: .72em; text-transform: uppercase; letter-spacing: .18em; color: var(--chalk-far); margin-top: .4em; }
+
+textarea {
+  width: 100%; min-height: 320px;
+  font-family: "JetBrains Mono", monospace; font-size: .86em; line-height: 1.7;
+  color: var(--chalk-dim); background: var(--pitch);
+  border: 1px solid var(--edge); border-radius: 2px; padding: 1em;
+  resize: vertical;
+}
+
+.row { display: flex; gap: .7em; flex-wrap: wrap; align-items: center; margin-top: var(--step); }
+
+/* ── Motion ──────────────────────────────────────────────────────── */
+
+@keyframes shake {
+  10%,90% { transform: translateX(-2px); }
+  20%,80% { transform: translateX(4px); }
+  30%,50%,70% { transform: translateX(-7px); }
+  40%,60% { transform: translateX(7px); }
+}
+.shaking { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
+
+@keyframes flare { from { opacity: .55; } to { opacity: 0; } }
+#flare {
+  position: fixed; inset: 0; pointer-events: none; z-index: 5; opacity: 0;
+  background: radial-gradient(70% 55% at 50% 45%, transparent 40%, var(--flare-hue, rgba(224,90,94,.9)) 100%);
+}
+#flare.go { animation: flare .6s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+.muted { color: var(--chalk-dim); }
+.far { color: var(--chalk-far); }
+.stack { display: flex; flex-direction: column; gap: var(--step); }
+.tight { display: flex; flex-direction: column; gap: calc(var(--step) * .5); }
+.sep { border: 0; border-top: 1px solid var(--edge); margin: calc(var(--step) * 1.6) 0; }
+.center { text-align: center; }
+</style>
+
+<div id="flare"></div>
+
+<div class="wrap">
+
+  <!-- ══ TITLE ══════════════════════════════════════════════════ -->
+  <section class="scene on" id="scene-title">
+    <div class="center stack" style="padding-block: clamp(20px, 6vh, 70px)">
+      <div>
+        <div class="eyebrow">Six floors · one for every section of the summer work</div>
+        <h1 style="font-size: clamp(2.4rem, 8vw, 5rem); margin-top:.25em">NUMBERS KEEP</h1>
+      </div>
+
+      <p class="muted" style="max-width: 54ch; margin-inline: auto">
+        Climb it by answering. <strong style="color:var(--chalk)">One mistake ends the climb</strong>
+        and you begin again at the bottom — so the only way up is to know it.
+        What you keep between climbs is what you have learned.
+      </p>
+
+      <div class="tally" style="justify-content:center; margin-top:.5em">
+        <div><span class="n" id="t-best">—</span><span class="l">Best climb</span></div>
+        <div><span class="n" id="t-rules">0</span><span class="l">Rules known</span></div>
+        <div><span class="n" id="t-right">0</span><span class="l">Answered right</span></div>
+        <div><span class="n" id="t-runs">0</span><span class="l">Climbs</span></div>
+      </div>
+
+      <div class="row" style="justify-content:center; margin-top:1em">
+        <button class="primary" id="go">Begin the climb</button>
+        <button id="see-codex">The codex</button>
+        <button id="sound-toggle" title="Sound">Sound: on</button>
+      </div>
+    </div>
+
+    <hr class="sep">
+    <div class="keep" id="keep-preview"></div>
+  </section>
+
+  <!-- ══ FIGHT ══════════════════════════════════════════════════ -->
+  <section class="scene" id="scene-fight">
+    <div class="bar">
+      <div>
+        <div class="eyebrow" id="f-eyebrow">Floor 1 of 7</div>
+        <h2 class="carved" id="f-name" style="font-size: clamp(1.2rem, 3vw, 1.9rem)"></h2>
+      </div>
+      <div class="tight" style="align-items:flex-end">
+        <div class="eyebrow">This floor</div>
+        <div class="pips" id="pips"></div>
+      </div>
+    </div>
+
+    <div class="fight">
+      <div class="sigil-box">
+        <svg class="sigil" id="sigil" viewBox="0 0 200 200" aria-hidden="true"></svg>
+        <div class="creature-name" id="creature"></div>
+        <div class="far" style="font-size:.85em" id="floor-he"></div>
+      </div>
+
+      <div>
+        <div class="slate">
+          <p class="q" id="question"></p>
+
+          <div class="answer-row" id="answer-row">
+            <input type="text" id="answer" inputmode="text" autocomplete="off" spellcheck="false"
+                   aria-label="Your answer">
+            <button class="primary" id="strike">Strike</button>
+          </div>
+
+          <div class="choices" id="choices" style="display:none"></div>
+
+          <div class="verdict" id="verdict"></div>
+        </div>
+
+        <div id="rule-slot"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FALLEN ═════════════════════════════════════════════════ -->
+  <section class="scene" id="scene-fallen">
+    <div class="center stack">
+      <div>
+        <div class="eyebrow" style="color:var(--ember)">The climb ends here</div>
+        <h1 style="font-size: clamp(1.8rem, 5.5vw, 3rem); margin-top:.3em" id="fallen-head"></h1>
+      </div>
+      <p class="muted" style="max-width: 50ch; margin-inline:auto" id="fallen-note"></p>
+      <div id="fallen-rule"></div>
+      <div class="row" style="justify-content:center">
+        <button class="primary" id="again">Begin again at the bottom</button>
+        <button id="fallen-codex">The codex</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CROWNED ════════════════════════════════════════════════ -->
+  <section class="scene" id="scene-crowned">
+    <div class="center stack">
+      <div>
+        <div class="eyebrow" style="color:var(--lamp)">Every floor, clean</div>
+        <h1 style="font-size: clamp(2rem, 6vw, 3.4rem); margin-top:.3em">THE KEEP IS YOURS</h1>
+      </div>
+      <p class="muted" style="max-width:52ch; margin-inline:auto">
+        Seven floors without a single mistake. Here is everything you used to do it —
+        copy it into your book.
+      </p>
+      <div class="tally" style="justify-content:center">
+        <div><span class="n" id="c-right">0</span><span class="l">Answers</span></div>
+        <div><span class="n" id="c-rules">0</span><span class="l">Rules used</span></div>
+      </div>
+    </div>
+    <hr class="sep">
+    <textarea id="notes" readonly aria-label="Your notes"></textarea>
+    <div class="row">
+      <button class="primary" id="copy">Copy my notes</button>
+      <button id="crowned-again">Climb again</button>
+      <button id="crowned-codex">The codex</button>
+    </div>
+  </section>
+
+  <!-- ══ CODEX ══════════════════════════════════════════════════ -->
+  <section class="scene" id="scene-codex">
+    <div class="bar">
+      <div>
+        <div class="eyebrow">Everything the keep can ask of you</div>
+        <h2 class="carved" style="font-size: clamp(1.4rem,3.4vw,2rem)">THE CODEX</h2>
+      </div>
+      <button id="codex-back">Back</button>
+    </div>
+    <p class="muted" style="max-width:60ch">
+      A rule stays here once you have met it, whether you got it right or not.
+      This is the part that survives a fall.
+    </p>
+    <div class="grid" id="codex" style="margin-top:var(--step)"></div>
+    <div class="row">
+      <button id="copy-codex">Copy every rule I know</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ══════════════════════════════════════════════════════════════════
+   THE RULES
+   Ten of them. Each is shown the same way every single time, because
+   that is what makes a thing stick.
+   ══════════════════════════════════════════════════════════════════ */
+
+const RULES = {
+  squares: {
+    name: "DIFFERENCE OF TWO SQUARES",
+    he: "הפרש ריבועים",
+    text: "(a + b)(a − b) = a² − b²"
+  },
+  perfect: {
+    name: "A SQUARE OPENED UP",
+    he: "טרינום ריבועי",
+    text: "(a + b)² = a² + 2ab + b²"
+  },
+  bottom: {
+    name: "THE BOTTOM IS NEVER ZERO",
+    he: "תחום הצבה",
+    text: "Set every denominator to 0 and solve. Those values of x are out of bounds."
+  },
+  vertex: {
+    name: "MINUS B OVER TWO A",
+    he: "קדקוד הפרבולה",
+    text: "The x of the vertex is −b ÷ 2a. Put it back in to get the y."
+  },
+  zeros: {
+    name: "MAKE Y NOTHING",
+    he: "נקודות האפס",
+    text: "The zeros are where y = 0. Factor, and read each bracket."
+  },
+  yaxis: {
+    name: "PUT X TO NOTHING",
+    he: "נקודת חיתוך עם ציר y",
+    text: "The y axis is where x = 0, so the answer is the number standing on its own."
+  },
+  mouth: {
+    name: "A SMILES, MINUS A FROWNS",
+    he: "מינימום ומקסימום",
+    text: "a above zero opens upward and has a lowest point. Below zero it opens down."
+  },
+  meet: {
+    name: "MAKE THE TWO Y VALUES MEET",
+    he: "מערכת משוואות",
+    text: "Where two graphs cross, their y values are equal. Set them equal and solve."
+  },
+  pythag: {
+    name: "LEG SQUARED PLUS LEG SQUARED",
+    he: "משפט פיתגורס",
+    text: "leg² + leg² = hypotenuse²"
+  },
+  rect: {
+    name: "SIDE TIMES SIDE",
+    he: "מלבן",
+    text: "Area is side × side. The diagonal is Pythagoras on the two sides."
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   THE FLOORS
+   One per section of the worksheet. Numbers are made fresh every time,
+   so nothing can be learned by heart except the method.
+   ══════════════════════════════════════════════════════════════════ */
+
+const R = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+const TRIPLES = [[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[7,24,25],[20,21,29],[12,16,20]];
+
+const FLOORS = [
+  {
+    name: "SHORT MULTIPLICATION AND FACTORS",
+    he: "נוסחאות כפל מקוצר ופירוק לגורמים",
+    creature: "The Goblin",
+    sigil: "goblin",
+    make() {
+      const k = R(2, 12), sq = k * k;
+      switch (R(1, 3)) {
+        case 1: return {
+          q: `Open the brackets:\n\n   (x + ${k})(x − ${k})\n\nWhat number is left at the end?`,
+          a: -sq, rule: "squares",
+          work: `a is x and b is ${k}\n(a + b)(a − b) = a² − b²\nso it is x² − ${k}²\nand ${k}² = ${sq}\nthe number at the end is −${sq}`
+        };
+        case 2: return {
+          q: `Break into factors:\n\n   x² − ${sq}\n\nIt comes out as (x − k)(x + k).\nWhat is k?`,
+          a: k, rule: "squares",
+          work: `${sq} is a square number\n√${sq} = ${k}\nso x² − ${sq} = (x − ${k})(x + ${k})\nk is ${k}`
+        };
+        default: return {
+          q: `Open the brackets:\n\n   (x + ${k})²\n\nWhat number sits in front of x?`,
+          a: 2 * k, rule: "perfect",
+          work: `(a + b)² = a² + 2ab + b²\na is x and b is ${k}\nthe middle piece is 2 · x · ${k}\nso the number in front of x is ${2 * k}`
+        };
+      }
+    }
+  },
+  {
+    name: "EQUATIONS WITH DENOMINATORS",
+    he: "משוואות עם מכנים",
+    creature: "The Shade",
+    sigil: "shade",
+    make() {
+      const k = R(2, 11), m = R(2, 9), n = m * k;
+      if (R(1, 2) === 1) return {
+        q: `Here is a fraction:\n\n   ${n} ÷ (x − ${k})\n\nWhich value of x is out of bounds?`,
+        a: k, rule: "bottom",
+        work: `the bottom can never be zero\nso set it to nothing:  x − ${k} = 0\nwhich gives x = ${k}\nthat value is out of bounds`
+      };
+      return {
+        q: `Solve for x:\n\n   ${n} ÷ x = ${m}`,
+        a: k, rule: "bottom",
+        work: `multiply both sides by x:  ${n} = ${m}x\ndivide both sides by ${m}\nx = ${n} ÷ ${m} = ${k}\nand x is not 0, so it is allowed`
+      };
+    }
+  },
+  {
+    name: "PARABOLAS",
+    he: "פרבולות",
+    creature: "The Ghost",
+    sigil: "ghost",
+    make() {
+      const p = R(1, 6), q = p + R(2, 8);
+      const mid = p + q, last = p * q;
+      const head = `The parabola:\n\n   y = x² − ${mid}x + ${last}\n\n`;
+      switch (R(1, 5)) {
+        case 1: return {
+          q: head + `What is the x of the vertex?`,
+          a: mid / 2, rule: "vertex",
+          work: `the rule is minus b over two a\na = 1 and b = −${mid}\nso x = ${mid} ÷ 2\nx = ${mid / 2}`
+        };
+        case 2: return {
+          q: head + `It crosses the x axis twice.\nWhat is the larger crossing?`,
+          a: q, rule: "zeros",
+          work: `make y nothing:  x² − ${mid}x + ${last} = 0\nit factors into (x − ${p})(x − ${q}) = 0\nso x is ${p} or x is ${q}\nthe larger is ${q}`
+        };
+        case 3: return {
+          q: head + `Where does it cross the y axis?`,
+          a: last, rule: "yaxis",
+          work: `the y axis is where x = 0\nput 0 in:  0 − 0 + ${last}\nso it crosses at y = ${last}`
+        };
+        case 4: {
+          const at = R(0, 8);
+          const v = at * at - mid * at + last;
+          return {
+            q: head + `What is y when x = ${at}?`,
+            a: v, rule: "vertex",
+            work: `put ${at} in wherever x is\n${at}² = ${at * at}\n${mid} · ${at} = ${mid * at}\n${at * at} − ${mid * at} + ${last} = ${v}`
+          };
+        }
+        default: return {
+          q: head + `Does it smile or does it frown?`,
+          a: "smiles", rule: "mouth",
+          choices: ["smiles", "frowns"],
+          work: `look at a, the number in front of x²\nhere a = 1, which is above zero\na above zero opens upward, so it smiles\nand its vertex is its lowest point`
+        };
+      }
+    }
+  },
+  {
+    name: "WHERE GRAPHS MEET",
+    he: "מערכות משוואות",
+    creature: "The Wraith",
+    sigil: "wraith",
+    make() {
+      const r1 = R(1, 5), r2 = r1 + R(1, 5);
+      const slope = R(1, 4), lift = R(1, 6);
+      const b = slope - r1 - r2, c = lift + r1 * r2;
+      // A coefficient of one is not written out, and a zero one is not written at all.
+      const bs = b === 0 ? "" : (b < 0 ? ` − ${b === -1 ? "" : -b}x` : ` + ${b === 1 ? "" : b}x`);
+      const ls = slope === 1 ? "x" : `${slope}x`;
+      const para = `y = x²${bs} + ${c}`;
+      const line = `y = ${ls} + ${lift}`;
+      return {
+        q: `These two cross twice:\n\n   ${para}\n   ${line}\n\nOne crossing is at x = ${r1}.\nWhere is the other?`,
+        a: r2, rule: "meet",
+        work: `where they cross, the two y values are equal\nx²${bs} + ${c} = ${ls} + ${lift}\nbring it all to one side and it factors\ninto (x − ${r1})(x − ${r2}) = 0\nso the other crossing is x = ${r2}`
+      };
+    }
+  },
+  {
+    name: "PYTHAGORAS",
+    he: "משפט פיתגורס",
+    creature: "The Stone Golem",
+    sigil: "golem",
+    make() {
+      const [s, l, h] = pick(TRIPLES);
+      if (R(1, 2) === 1) return {
+        q: `A right angled triangle has legs\n\n   ${s} and ${l}\n\nHow long is the hypotenuse?`,
+        a: h, rule: "pythag",
+        work: `leg² + leg² = hypotenuse²\n${s}² = ${s * s}\n${l}² = ${l * l}\ntogether that is ${s * s + l * l}\nand √${s * s + l * l} = ${h}`
+      };
+      return {
+        q: `A right angled triangle has a hypotenuse of ${h}\nand one leg of ${s}.\n\nHow long is the other leg?`,
+        a: l, rule: "pythag",
+        work: `leg² + leg² = hypotenuse²\nso leg² = ${h}² − ${s}²\n${h * h} − ${s * s} = ${h * h - s * s}\nand √${h * h - s * s} = ${l}`
+      };
+    }
+  },
+  {
+    name: "RECTANGLES",
+    he: "גיאומטריה — מלבן",
+    creature: "The Warden",
+    sigil: "warden",
+    make() {
+      if (R(1, 2) === 1) {
+        const w = R(3, 20), t = R(3, 20);
+        return {
+          q: `A rectangle has an area of ${w * t}.\nOne side is ${w}.\n\nHow long is the other side?`,
+          a: t, rule: "rect",
+          work: `area is side × side\nso the other side is the area ÷ the side you know\n${w * t} ÷ ${w}\nwhich is ${t}`
+        };
+      }
+      const [s, l, h] = pick(TRIPLES);
+      return {
+        q: `A rectangle is ${s} by ${l}.\n\nHow long is its diagonal?`,
+        a: h, rule: "rect",
+        work: `the diagonal cuts it into two right angled triangles\nso it is Pythagoras on the two sides\n${s}² + ${l}² = ${s * s} + ${l * l} = ${s * s + l * l}\nand √${s * s + l * l} = ${h}`
+      };
+    }
+  }
+];
+
+const DRAGON = {
+  name: "THE DRAGON",
+  he: "הכול ביחד",
+  creature: "The Dragon",
+  sigil: "dragon",
+  make() { return pick(FLOORS).make(); }
+};
+
+const TOWER = [...FLOORS, DRAGON];
+const NEEDED = [4, 4, 5, 4, 4, 4, 6];   // the dragon asks for more
+
+/* ══════════════════════════════════════════════════════════════════
+   SIGILS
+   Each creature is a carved mark. It cracks, one line at a time, as
+   you get answers right — so the floor's progress is visible on it.
+   ══════════════════════════════════════════════════════════════════ */
+
+const SIGILS = {
+  goblin: { body: "M100,24 L168,64 L168,140 L100,180 L32,140 L32,64 Z", mark: "M70,84 L86,84 M114,84 L130,84 M70,124 Q100,146 130,124" },
+  shade:  { body: "M100,20 C150,20 172,70 172,110 C172,158 138,182 100,182 C62,182 28,158 28,110 C28,70 50,20 100,20 Z", mark: "M74,96 L74,116 M126,96 L126,116 M76,142 Q100,130 124,142" },
+  ghost:  { body: "M46,170 L46,88 A54,54 0 0 1 154,88 L154,170 L134,152 L114,170 L94,152 L74,170 L54,152 Z", mark: "M80,92 A9,9 0 1 0 80,93 M120,92 A9,9 0 1 0 120,93" },
+  wraith: { body: "M100,18 L156,66 L138,178 L100,152 L62,178 L44,66 Z", mark: "M78,90 L100,110 L122,90 M100,110 L100,140" },
+  golem:  { body: "M40,40 L160,40 L160,160 L40,160 Z", mark: "M40,90 L160,90 M100,40 L100,90 M70,90 L70,160 M130,90 L130,160" },
+  warden: { body: "M100,18 L176,58 L176,142 L100,182 L24,142 L24,58 Z M56,74 L144,74 L144,126 L56,126 Z", mark: "M100,74 L100,126" },
+  dragon: { body: "M100,16 L150,52 L182,120 L142,184 L58,184 L18,120 L50,52 Z", mark: "M66,92 L88,104 L66,116 M134,92 L112,104 L134,116 M72,148 Q100,168 128,148" }
+};
+
+const CRACKS = [
+  "M100,20 L92,70 L108,110 L96,164",
+  "M34,66 L84,96 L128,86 L172,120",
+  "M30,140 L78,120 L118,142 L170,124",
+  "M100,182 L104,132 L88,96 L100,44",
+  "M40,40 L96,100 L160,158",
+  "M160,40 L104,100 L40,158"
+];
+
+function drawSigil(kind, cracked, total) {
+  const s = SIGILS[kind];
+  const parts = [`<path class="body" d="${s.body}"/>`, `<path class="mark" d="${s.mark}"/>`];
+  for (let i = 0; i < total; i++) {
+    const d = CRACKS[i % CRACKS.length];
+    parts.push(`<path class="crack ${i < cracked ? "cut" : ""}" d="${d}"/>`);
+  }
+  return parts.join("");
+}
+
+/** Each crack draws itself in, so its dash pattern has to match its real length. */
+function paintSigil(kind, cracked, total) {
+  const svg = $("sigil");
+  svg.innerHTML = drawSigil(kind, cracked, total);
+  svg.querySelectorAll(".crack").forEach(path => {
+    const len = path.getTotalLength();
+    path.style.setProperty("--len", len);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SOUND — made on the spot, so nothing has to be fetched.
+   ══════════════════════════════════════════════════════════════════ */
+
+let audio = null, soundOn = true;
+function blip(freq, len, type = "triangle", gain = .07) {
+  if (!soundOn) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, audio.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + len);
+    o.connect(g); g.connect(audio.destination);
+    o.start(); o.stop(audio.currentTime + len);
+  } catch (e) { /* a game with no sound is still a game */ }
+}
+const soundRight = () => { blip(523, .09); setTimeout(() => blip(784, .16), 70); };
+const soundWrong = () => { blip(180, .3, "sawtooth", .05); };
+const soundFloor = () => { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => blip(f, .18), i * 80)); };
+
+/* ══════════════════════════════════════════════════════════════════
+   WHAT SURVIVES A FALL
+   ══════════════════════════════════════════════════════════════════ */
+
+const SAVE = "numbers-keep-v1";
+let kept = { best: 0, rules: [], right: 0, runs: 0, crowned: 0 };
+
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE);
+    if (raw) kept = Object.assign(kept, JSON.parse(raw));
+  } catch (e) { /* a fresh start is no disaster */ }
+}
+function save() {
+  try { localStorage.setItem(SAVE, JSON.stringify(kept)); } catch (e) {}
+}
+function learn(key) {
+  if (!kept.rules.includes(key)) { kept.rules.push(key); save(); }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   THE CLIMB
+   ══════════════════════════════════════════════════════════════════ */
+
+const $ = id => document.getElementById(id);
+let floor = 0, cut = 0, current = null, answered = 0, usedRules = [], busy = false;
+
+function show(which) {
+  document.querySelectorAll(".scene").forEach(s => s.classList.toggle("on", s.id === "scene-" + which));
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function paintKeep(el, upto) {
+  el.innerHTML = TOWER.map((f, i) => {
+    const state = i < upto ? "done" : (i === upto ? "here" : "");
+    return `<div class="tier ${state}">
+      <span class="no">${i === 6 ? "VII" : ["I","II","III","IV","V","VI"][i]}</span>
+      <span class="nm">${f.name}</span>
+      <span class="he hebrew">${f.he}</span>
+    </div>`;
+  }).join("");
+}
+
+function paintTally() {
+  $("t-best").textContent = kept.best ? (kept.best === 7 ? "TOP" : kept.best) : "—";
+  $("t-rules").textContent = kept.rules.length;
+  $("t-right").textContent = kept.right;
+  $("t-runs").textContent = kept.runs;
+}
+
+function paintPips() {
+  const need = NEEDED[floor];
+  $("pips").innerHTML = Array.from({ length: need },
+    (_, i) => `<span class="pip ${i < cut ? "lit" : ""}"></span>`).join("");
+}
+
+function startRun() {
+  floor = 0; cut = 0; answered = 0; usedRules = [];
+  kept.runs++; save(); paintTally();
+  nextQuestion();
+  show("fight");
+}
+
+function nextQuestion() {
+  const f = TOWER[floor];
+  const need = NEEDED[floor];
+
+  $("f-eyebrow").textContent = `Floor ${floor + 1} of 7`;
+  $("f-name").textContent = f.name;
+  $("floor-he").textContent = f.he;
+  $("floor-he").className = "far hebrew";
+  $("creature").textContent = f.creature;
+  paintSigil(f.sigil, cut, need);
+  paintPips();
+
+  current = f.make();
+  $("question").textContent = current.q;
+  $("verdict").textContent = "";
+  $("verdict").className = "verdict";
+  $("rule-slot").innerHTML = "";
+  busy = false;
+
+  if (current.choices) {
+    $("answer-row").style.display = "none";
+    $("choices").style.display = "flex";
+    $("choices").innerHTML = current.choices
+      .map(c => `<button class="choice" data-v="${c}">${c}</button>`).join("");
+    $("choices").querySelectorAll(".choice").forEach(b =>
+      b.addEventListener("click", () => judge(b.dataset.v)));
+  } else {
+    $("choices").style.display = "none";
+    $("answer-row").style.display = "flex";
+    $("answer").value = "";
+    $("answer").focus();
+  }
+}
+
+function same(given, wanted) {
+  if (typeof wanted === "string") {
+    return String(given).trim().toLowerCase() === wanted;
+  }
+  const n = Number(String(given).trim().replace(/−/g, "-").replace(/,/g, ""));
+  return Number.isFinite(n) && Math.abs(n - wanted) < 1e-9;
+}
+
+function judge(given) {
+  if (busy) return;
+  if (String(given).trim() === "") { $("answer").focus(); return; }
+  busy = true;
+
+  learn(current.rule);
+  if (!usedRules.includes(current.rule)) usedRules.push(current.rule);
+
+  if (same(given, current.a)) {
+    cut++; answered++;
+    kept.right++; save(); paintTally();
+
+    paintSigil(TOWER[floor].sigil, cut, NEEDED[floor]);
+    paintPips();
+    soundRight();
+
+    const need = NEEDED[floor];
+    if (cut >= need) {
+      $("verdict").textContent = floor === 6
+        ? "The dragon breaks apart."
+        : "The mark shatters. The stair is clear.";
+      $("verdict").className = "verdict good";
+      soundFloor();
+      setTimeout(() => {
+        floor++; cut = 0;
+        if (floor >= TOWER.length) crowned(); else nextQuestion();
+      }, 950);
+    } else {
+      $("verdict").textContent = cut >= 3 ? `Right — that is ${cut} in a row.` : "Right.";
+      $("verdict").className = "verdict good";
+      setTimeout(nextQuestion, 620);
+    }
+  } else {
+    fallen(given);
+  }
+}
+
+function ruleCardHTML(rule, work) {
+  const r = RULES[rule];
+  return `<div class="rule-card">
+    <div class="rule-name">${r.name}</div>
+    <div class="rule-he hebrew">${r.he}</div>
+    <div class="rule-text maths">${r.text}</div>
+    <div class="working">${work}</div>
+  </div>`;
+}
+
+function fallen(given) {
+  soundWrong();
+  const flare = $("flare");
+  flare.style.setProperty("--flare-hue", "rgba(224,90,94,.85)");
+  flare.classList.remove("go"); void flare.offsetWidth; flare.classList.add("go");
+  document.querySelector(".wrap").classList.add("shaking");
+  setTimeout(() => document.querySelector(".wrap").classList.remove("shaking"), 520);
+
+  if (floor + 1 > kept.best) { kept.best = floor + 1; }
+  save(); paintTally();
+
+  $("fallen-head").textContent = floor === 6
+    ? "THE DRAGON HELD"
+    : `FLOOR ${floor + 1} HELD`;
+
+  $("fallen-note").innerHTML =
+    `You answered <strong style="color:var(--chalk)">${given}</strong>. ` +
+    `It was <strong style="color:var(--chalk)">${current.a}</strong>. ` +
+    `<br><br>You got <strong style="color:var(--chalk)">${answered}</strong> right before this one. ` +
+    `Read the rule, then start again at the bottom — that is how it goes in.`;
+
+  $("fallen-rule").innerHTML = ruleCardHTML(current.rule, current.work);
+  show("fallen");
+}
+
+function crowned() {
+  kept.best = 7; kept.crowned++; save(); paintTally();
+  $("c-right").textContent = answered;
+  $("c-rules").textContent = usedRules.length;
+  $("notes").value = notesText(usedRules);
+  soundFloor();
+  show("crowned");
+}
+
+function notesText(keys) {
+  const lines = [
+    "NUMBERS KEEP — the rules you used",
+    "=================================",
+    "",
+    "Copy these into your book. They are the whole of it.",
+    ""
+  ];
+  keys.forEach((k, i) => {
+    const r = RULES[k];
+    lines.push(`${i + 1}. ${r.name}   (${r.he})`);
+    lines.push(`   ${r.text}`);
+    lines.push("");
+  });
+  lines.push(`Answered right this climb: ${answered}`);
+  return lines.join("\n");
+}
+
+function paintCodex() {
+  $("codex").innerHTML = Object.keys(RULES).map(k => {
+    const r = RULES[k], known = kept.rules.includes(k);
+    return `<div class="card ${known ? "" : "locked"}">
+      <h3>${known ? r.name : "NOT YET MET"}</h3>
+      <div class="he hebrew">${known ? r.he : "—"}</div>
+      <p class="maths">${known ? r.text : "Climb far enough to meet it."}</p>
+    </div>`;
+  }).join("");
+}
+
+async function copyText(text, button, said) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const was = button.textContent;
+    button.textContent = said;
+    setTimeout(() => { button.textContent = was; }, 1600);
+  } catch (e) {
+    const box = $("notes");
+    if (box) { box.value = text; box.select(); }
+  }
+}
+
+/* ── wiring ──────────────────────────────────────────────────────── */
+
+$("go").addEventListener("click", startRun);
+$("again").addEventListener("click", startRun);
+$("crowned-again").addEventListener("click", startRun);
+$("strike").addEventListener("click", () => judge($("answer").value));
+$("answer").addEventListener("keydown", e => { if (e.key === "Enter") judge($("answer").value); });
+
+$("see-codex").addEventListener("click", () => { paintCodex(); show("codex"); });
+$("fallen-codex").addEventListener("click", () => { paintCodex(); show("codex"); });
+$("crowned-codex").addEventListener("click", () => { paintCodex(); show("codex"); });
+$("codex-back").addEventListener("click", () => { paintKeep($("keep-preview"), 0); show("title"); });
+
+$("copy").addEventListener("click", e => copyText($("notes").value, e.target, "Copied"));
+$("copy-codex").addEventListener("click", e =>
+  copyText(notesText(kept.rules), e.target, "Copied"));
+
+$("sound-toggle").addEventListener("click", e => {
+  soundOn = !soundOn;
+  e.target.textContent = "Sound: " + (soundOn ? "on" : "off");
+  if (soundOn) blip(660, .1);
+});
+
+load();
+paintTally();
+paintKeep($("keep-preview"), 0);
+</script>

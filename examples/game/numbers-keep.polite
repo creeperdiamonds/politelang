@@ -1,0 +1,200 @@
+-- NUMBERS KEEP
+--
+-- A tower of six floors. Every floor is one section of the summer work for finishing year nine,
+-- and every creature on it asks the kind of question that section asks.
+--
+-- Two things make this practice rather than a test:
+--
+--   You never move past a question you got wrong. It comes back until you get it right, and only
+--   then does the floor start over. A floor is beaten by four in a row, first time, with no help.
+--
+--   Every question type has one named rule, shown the same way every single time, so that the
+--   shape of it sticks. At the end the game writes your notes out to a file for you to copy.
+--
+-- Written in PoliteLang by Creeperdiamonds Studios.
+
+
+please use "parts/questions.polite"
+
+
+-- ---------------------------------------------------------------------------
+-- The tower
+-- ---------------------------------------------------------------------------
+
+please:
+    show ""
+    show "================================================================"
+    show "                        N U M B E R S   K E E P"
+    show "================================================================"
+    show ""
+    show "  Six floors. One for every section of your summer work."
+    show ""
+    show "  Four right in a row beats a floor. Get one wrong and you do"
+    show "  that question again until it is right, and then the floor"
+    show "  starts over. That is the whole point: you leave knowing it."
+    show ""
+    show "  Every rule you meet goes into your notes at the end."
+    show ""
+thank you for everything
+
+please remember health is 20
+please remember hits is 0
+please remember misses is 0
+please remember best is 0
+please remember book is an empty lookup
+please remember floor is 1
+
+please repeat until floor is over 7:
+    show ""
+    show "----------------------------------------------------------------"
+    check if floor is over 6:
+        show "  THE TOP OF THE TOWER   --   {the name of floor with floor}"
+    otherwise:
+        show "  FLOOR {floor}   --   {the name of floor with floor}"
+    thanks
+    show "----------------------------------------------------------------"
+    show ""
+
+    remember needed is 4
+    check if floor is over 6:
+        change needed to 5
+    thanks
+
+    remember streak is 0
+    change health to 20
+
+    keep going forever:
+        check if streak is at least needed:
+            stop repeating
+        thanks
+
+        remember q is a question for with floor
+        remember text is item 1 of q or ""
+        remember answer is the number in (item 2 of q or "0") or 0
+        remember working is item 3 of q or ""
+        remember which is the number in (item 4 of q or "1") or 1
+        remember creature is item 5 of q or "thing"
+
+        remember rule is the rule named with which
+        remember rulename is item 1 of rule or ""
+        remember ruletext is item 2 of rule or ""
+        remember hebrew is item 3 of rule or ""
+
+        -- Every rule is written into the book the first time it is met.
+        check if not (book knows about rulename):
+            put "{ruletext}\n     ({hebrew})" for rulename in book
+        thanks
+
+        show ""
+        show "  The {creature} bars the stair.   [ you {health} ]   [ {streak} of {needed} ]"
+        show ""
+        show "    {text}"
+        show ""
+
+        ask "  Your answer?  " as given
+
+        check if given is answer:
+            add 1 to hits
+            add 1 to streak
+            check if streak is over best:
+                change best to streak
+            thanks
+            check if streak is at least 3:
+                show ""
+                show "  RIGHT -- and that is {streak} in a row. The {creature} reels."
+            otherwise:
+                show ""
+                show "  Right. The {creature} gives ground."
+            thanks
+        otherwise:
+            add 1 to misses
+            show ""
+            show "  Not this time. The answer was {answer}."
+            show ""
+            show "  THE RULE:  {rulename}"
+            show "             {ruletext}"
+            show "             ({hebrew})"
+            show ""
+            show "  The way to it:"
+            show "{working}"
+            show ""
+            show "  Now do that one again, and this time it will stay with you."
+            show ""
+
+            -- You do not walk past a question you got wrong.
+            keep going forever:
+                show "    {text}"
+                show ""
+                ask "  Your answer?  " as again
+                check if again is answer:
+                    show ""
+                    show "  Yes. That is it, and now it is yours."
+                    stop repeating
+                thanks
+                show ""
+                show "  Not yet. Remember: {rulename}"
+                show "                     {ruletext}"
+                show ""
+            thank you for repeating
+
+            take 5 from health
+            change streak to 0
+            show ""
+            show "  The {creature} strikes while you were working it out."
+            show "  The floor starts over."
+
+            check if health is at most 0:
+                show ""
+                show "  You sit down on the step and get your breath back."
+                show "  Nothing is lost. Begin the floor again."
+                change health to 20
+            thanks
+        thank you for checking
+    thank you for repeating
+
+    show ""
+    show "  The way up is clear."
+    add 1 to floor
+thank you for repeating
+
+
+-- ---------------------------------------------------------------------------
+-- What you take away
+-- ---------------------------------------------------------------------------
+
+please show ""
+please show "================================================================"
+please show "  YOU REACHED THE TOP."
+please show "================================================================"
+please show ""
+please show "  Right first time:  {hits}"
+please show "  Had to go again:   {misses}"
+please show "  Longest run:       {best}"
+please show ""
+
+please remember notes is "NUMBERS KEEP -- the rules you met\n"
+please add "==================================\n\n" to notes
+please add "Copy these into your book. They are the whole of it.\n\n" to notes
+
+please remember counted is 0
+please for every name in the keys of book:
+    add 1 to counted
+    add "{counted}. {name}\n" to notes
+    add "     {the value for name in book or ""}\n\n" to notes
+thank you for repeating
+
+please add "\nRight first time: {hits}     Had to go again: {misses}     Longest run: {best}\n" to notes
+
+please show "  Your notes:"
+please show ""
+please show notes
+
+please try to:
+    write notes to "numbers-keep-notes.txt"
+    show "  Written to numbers-keep-notes.txt as well, ready to copy out."
+otherwise if it does not work out:
+    show "  I could not write the file, because {what went wrong}."
+    show "  The notes are above all the same."
+thank you for trying
+
+please show ""

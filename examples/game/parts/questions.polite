@@ -1,0 +1,302 @@
+-- THE QUESTIONS OF NUMBERS KEEP
+--
+-- Every question the keep can ask, and the rule behind it. Kept in its own file so that the game
+-- and the checker beside it ask exactly the same things.
+--
+-- Only three words are offered out. The makers below them are nobody else's business.
+
+-- ---------------------------------------------------------------------------
+-- The rules worth remembering
+--
+-- Each one is a list of three pieces of text: its name, the rule itself, and the Hebrew for it.
+-- They are written out once, here, and referred to everywhere else.
+-- ---------------------------------------------------------------------------
+
+please define the rule named with a which:
+    remember out is an empty list
+
+    check if which is 1:
+        add "DIFFERENCE OF TWO SQUARES" to out
+        add "(a + b)(a - b) = a squared - b squared" to out
+        add "הפרש ריבועים" to out
+    otherwise if which is 2:
+        add "A SQUARE OPENED UP" to out
+        add "(a + b) squared = a squared + 2ab + b squared" to out
+        add "טרינום ריבועי" to out
+    otherwise if which is 3:
+        add "THE BOTTOM IS NEVER ZERO" to out
+        add "set every bottom to 0 and solve. Those values of x are out of bounds." to out
+        add "תחום הצבה" to out
+    otherwise if which is 4:
+        add "MINUS B OVER TWO A" to out
+        add "the x of the vertex is -b divided by 2a. Put it back in to get the y." to out
+        add "קדקוד הפרבולה" to out
+    otherwise if which is 5:
+        add "MAKE Y NOTHING" to out
+        add "the zeros are where y = 0. Factor, and read each bracket." to out
+        add "נקודות האפס" to out
+    otherwise if which is 6:
+        add "PUT X TO NOTHING" to out
+        add "the y axis is where x = 0, so the answer is the number on its own." to out
+        add "נקודת חיתוך עם ציר Y" to out
+    otherwise if which is 7:
+        add "A SMILES, MINUS A FROWNS" to out
+        add "a above zero opens upward and has a lowest point. Below zero it opens down." to out
+        add "מינימום ומקסימום" to out
+    otherwise if which is 8:
+        add "MAKE THE TWO Y VALUES MEET" to out
+        add "where two graphs cross, their y values are equal. Set them equal and solve." to out
+        add "מערכת משוואות" to out
+    otherwise if which is 9:
+        add "LEG SQUARED PLUS LEG SQUARED" to out
+        add "leg squared + leg squared = hypotenuse squared." to out
+        add "משפט פיתגורס" to out
+    otherwise:
+        add "SIDE TIMES SIDE" to out
+        add "area is side times side. The diagonal is Pythagoras on the two sides." to out
+        add "מלבן" to out
+    thank you for checking
+
+    give back out
+thank you for defining
+
+
+-- ---------------------------------------------------------------------------
+-- Making a question
+--
+-- Every maker gives back the same five pieces of text, so that whoever asked does not have to
+-- know which kind it was:
+--
+--   1  the question
+--   2  the answer
+--   3  the working, for when it goes wrong
+--   4  which rule it belongs to
+--   5  what the creature is called
+-- ---------------------------------------------------------------------------
+
+please define a question of squares:
+    remember k is a random whole number from 2 to 12
+    remember square is k times k
+    remember out is an empty list
+    remember which is a random whole number from 1 to 3
+
+    check if which is 1:
+        add "Open the brackets:  (x + {k})(x - {k})\n    What is the number left at the end?" to out
+        add the text of 0 minus square to out
+        add "  a is x and b is {k}\n  (a + b)(a - b) = a squared - b squared\n  so it is x squared - {k} squared\n  and {k} squared is {square}\n  the number at the end is -{square}" to out
+        add "1" to out
+    otherwise if which is 2:
+        add "Break into factors:  x squared - {square}\n    It comes out as (x - k)(x + k). What is k?" to out
+        add the text of k to out
+        add "  {square} is a square number\n  the square root of {square} is {k}\n  so x squared - {square} = (x - {k})(x + {k})\n  k is {k}" to out
+        add "1" to out
+    otherwise:
+        add "Open the brackets:  (x + {k}) squared\n    What is the number in front of x?" to out
+        add the text of 2 times k to out
+        add "  (a + b) squared = a squared + 2ab + b squared\n  a is x and b is {k}\n  the middle piece is 2 times x times {k}\n  so the number in front of x is {2 times k}" to out
+        add "2" to out
+    thanks
+
+    add "goblin" to out
+    give back out
+thank you for defining
+
+
+please define a question of bottoms:
+    remember k is a random whole number from 2 to 11
+    remember m is a random whole number from 2 to 9
+    remember out is an empty list
+    remember which is a random whole number from 1 to 2
+
+    check if which is 1:
+        add "Here is a fraction:  {m times k} over (x - {k})\n    Which value of x is out of bounds?" to out
+        add the text of k to out
+        add "  the bottom can never be zero\n  so set the bottom to nothing:  x - {k} = 0\n  which gives x = {k}\n  that value is out of bounds" to out
+    otherwise:
+        add "Solve for x:  {m times k} over x = {m}" to out
+        add the text of k to out
+        add "  multiply both sides by x:  {m times k} = {m}x\n  divide both sides by {m}\n  x = {m times k} over {m} = {k}\n  and x is not 0, so it is allowed" to out
+    thanks
+
+    add "3" to out
+    add "shade" to out
+    give back out
+thank you for defining
+
+
+please define a question of parabolas:
+    -- Built from two whole roots, so that every answer comes out whole.
+    remember p is a random whole number from 1 to 6
+    remember q is p plus a random whole number from 2 to 8
+    remember middle is p plus q
+    remember last is p times q
+    remember out is an empty list
+    remember which is a random whole number from 1 to 5
+
+    check if which is 1:
+        add "The parabola:  y = x squared - {middle}x + {last}\n    What is the x of the vertex?" to out
+        add the text of middle over 2 to out
+        add "  the rule is minus b over two a\n  a is 1 and b is -{middle}\n  so x = {middle} over 2\n  x = {middle over 2}" to out
+        add "4" to out
+    otherwise if which is 2:
+        add "The parabola:  y = x squared - {middle}x + {last}\n    It crosses the x axis twice. What is the larger crossing?" to out
+        add the text of q to out
+        add "  make y nothing:  x squared - {middle}x + {last} = 0\n  it factors into (x - {p})(x - {q}) = 0\n  so x is {p} or x is {q}\n  the larger is {q}" to out
+        add "5" to out
+    otherwise if which is 3:
+        add "The parabola:  y = x squared - {middle}x + {last}\n    Where does it cross the y axis?" to out
+        add the text of last to out
+        add "  the y axis is where x = 0\n  put 0 in:  0 - 0 + {last}\n  so it crosses at y = {last}" to out
+        add "6" to out
+    otherwise if which is 4:
+        remember at is a random whole number from 0 to 8
+        remember value is at times at minus middle times at plus last
+        add "The parabola:  y = x squared - {middle}x + {last}\n    What is y when x is {at}?" to out
+        add the text of value to out
+        add "  put {at} in wherever x is\n  {at} squared is {at times at}\n  {middle} times {at} is {middle times at}\n  {at times at} - {middle times at} + {last} = {value}" to out
+        add "4" to out
+    otherwise:
+        add "The parabola:  y = x squared - {middle}x + {last}\n    Type 1 if it smiles, or 2 if it frowns." to out
+        add "1" to out
+        add "  look at a, the number in front of x squared\n  here a is 1, which is above zero\n  a above zero opens upward, so it smiles\n  and its vertex is its lowest point" to out
+        add "7" to out
+    thanks
+
+    add "ghost" to out
+    give back out
+thank you for defining
+
+
+please define a question of meetings:
+    -- A parabola and a line built to cross at two whole numbers.
+    remember first is a random whole number from 1 to 5
+    remember second is first plus a random whole number from 1 to 5
+    remember slope is a random whole number from 1 to 4
+    remember lift is a random whole number from 1 to 6
+
+    remember b is slope minus first minus second
+    remember c is lift plus first times second
+
+    remember out is an empty list
+    add "These two cross twice:\n      y = x squared + {b}x + {c}\n      y = {slope}x + {lift}\n    One crossing is at x = {first}. Where is the other?" to out
+    add the text of second to out
+    add "  where they cross, the two y values are equal\n  x squared + {b}x + {c} = {slope}x + {lift}\n  bring everything to one side and it factors\n  into (x - {first})(x - {second}) = 0\n  so the other crossing is x = {second}" to out
+    add "8" to out
+    add "wraith" to out
+    give back out
+thank you for defining
+
+
+please define a question of corners:
+    -- Right angled triangles with whole sides, so nothing comes out ragged.
+    remember which is a random whole number from 1 to 6
+    remember short is 3
+    remember long is 4
+    remember across is 5
+
+    check if which is 2:
+        change short to 6
+        change long to 8
+        change across to 10
+    otherwise if which is 3:
+        change short to 5
+        change long to 12
+        change across to 13
+    otherwise if which is 4:
+        change short to 8
+        change long to 15
+        change across to 17
+    otherwise if which is 5:
+        change short to 9
+        change long to 12
+        change across to 15
+    otherwise if which is 6:
+        change short to 7
+        change long to 24
+        change across to 25
+    thanks
+
+    remember out is an empty list
+    remember ask is a random whole number from 1 to 2
+
+    check if ask is 1:
+        add "A right angled triangle has legs {short} and {long}.\n    How long is the hypotenuse?" to out
+        add the text of across to out
+        add "  leg squared + leg squared = hypotenuse squared\n  {short} squared is {short times short}\n  {long} squared is {long times long}\n  together that is {short times short plus long times long}\n  and the square root of {short times short plus long times long} is {across}" to out
+    otherwise:
+        add "A right angled triangle has a hypotenuse of {across}\n    and one leg of {short}. How long is the other leg?" to out
+        add the text of long to out
+        add "  leg squared + leg squared = hypotenuse squared\n  so leg squared = {across} squared - {short} squared\n  {across times across} - {short times short} = {across times across minus short times short}\n  and the square root of {across times across minus short times short} is {long}" to out
+    thanks
+
+    add "9" to out
+    add "stone golem" to out
+    give back out
+thank you for defining
+
+
+please define a question of rooms:
+    remember wide is a random whole number from 3 to 20
+    remember tall is a random whole number from 3 to 20
+    remember area is wide times tall
+    remember out is an empty list
+    remember which is a random whole number from 1 to 2
+
+    check if which is 1:
+        add "A rectangle has an area of {area}.\n    One side is {wide}. How long is the other?" to out
+        add the text of tall to out
+        add "  area is side times side\n  so the other side is the area divided by the one you know\n  {area} over {wide}\n  which is {tall}" to out
+        add "10" to out
+    otherwise:
+        add "A rectangle is {wide} by {tall}.\n    What is its perimeter?" to out
+        add the text of 2 times (wide plus tall) to out
+        add "  a rectangle has two of each side\n  {wide} + {tall} is {wide plus tall}\n  and twice that is {2 times (wide plus tall)}" to out
+        add "10" to out
+    thanks
+
+    add "warden" to out
+    give back out
+thank you for defining
+
+
+-- Which floor asks what.
+please define a question for with a floor:
+    check if floor is 1:
+        give back a question of squares
+    otherwise if floor is 2:
+        give back a question of bottoms
+    otherwise if floor is 3:
+        give back a question of parabolas
+    otherwise if floor is 4:
+        give back a question of meetings
+    otherwise if floor is 5:
+        give back a question of corners
+    otherwise if floor is 6:
+        give back a question of rooms
+    thanks
+    -- The dragon takes from anywhere.
+    give back a question for with a random whole number from 1 to 6
+thank you for defining
+
+
+please define the name of floor with a floor:
+    check if floor is 1:
+        give back "SHORT MULTIPLICATION AND FACTORS"
+    otherwise if floor is 2:
+        give back "EQUATIONS WITH BOTTOMS"
+    otherwise if floor is 3:
+        give back "PARABOLAS"
+    otherwise if floor is 4:
+        give back "WHERE GRAPHS MEET"
+    otherwise if floor is 5:
+        give back "PYTHAGORAS"
+    otherwise if floor is 6:
+        give back "RECTANGLES"
+    thanks
+    give back "THE DRAGON"
+thank you for defining
+
+
+
+
+please share the rule named and a question for and the name of floor

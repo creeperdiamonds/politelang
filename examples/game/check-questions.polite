@@ -1,0 +1,16 @@
+-- Every question the keep can ask, with its answer, so the maths can be checked by eye.
+--
+-- Run it with a seed and read down the list. Anything wrong here is wrong in the game.
+
+please use "parts/questions.polite"
+
+please repeat for every round from 1 to 6:
+    show ""
+    show "==== floor {round} :: {the name of floor with round} ===================="
+    repeat 4 times:
+        remember q is a question for with round
+        show ""
+        show "{item 1 of q or ""}"
+        show "  ANSWER: {item 2 of q or ""}"
+    thanks
+thank you for repeating

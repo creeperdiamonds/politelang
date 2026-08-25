@@ -11,6 +11,7 @@ const USAGE: &str = "\
 polite — the PoliteLang toolchain
 
   polite run <file.polite>        run a program
+      --seed <number>             make anything it leaves to chance repeatable
   polite check <file.polite>      look it over without running it
       --show-middle               also print the middle language
       --plain                     no optimisation passes
@@ -57,7 +58,28 @@ fn main() -> ExitCode {
 }
 
 fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
-    let path = match args.first() {
+    // A seed makes a run repeatable, which is what you want when a program uses chance and you
+    // are trying to work out what it did.
+    let mut seed: Option<u64> = None;
+    let mut rest: Vec<String> = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if args[i] == "--seed" {
+            match args.get(i + 1).and_then(|v| v.parse::<u64>().ok()) {
+                Some(v) => seed = Some(v),
+                None => {
+                    eprintln!("`--seed` wants a whole number after it.");
+                    return ExitCode::FAILURE;
+                }
+            }
+            i += 2;
+        } else {
+            rest.push(args[i].clone());
+            i += 1;
+        }
+    }
+
+    let path = match rest.first() {
         Some(p) => p.clone(),
         None => {
             eprintln!("Which file would you like me to run?");
@@ -80,7 +102,7 @@ fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
     };
 
     let mut world = polite_run::Terminal;
-    match polite_run::run(&program, &mut world) {
+    match polite_run::run_with(&program, &mut world, polite_run::Limits::none(), seed) {
         Ok(()) => ExitCode::SUCCESS,
         Err(reason) => {
             println!("\n{reason}");
