@@ -55,20 +55,37 @@ cargo build --release
 ./target/release/polite run examples/hello.polite
 ```
 
+**To type `polite` from anywhere**, on Windows:
+
+```powershell
+.\setup.ps1
+```
+
+It builds, then adds the command to your own PATH — nothing else on the machine is touched,
+nothing is installed, your PATH as it was is kept in `~/.polite-path-backup.txt`, and
+`.\setup.ps1 -Remove` puts it back. Open a new terminal afterwards. On Linux and macOS, add
+`target/release` to your `PATH` in the usual way.
+
 The `polite` command:
 
 ```
 polite run <file.polite>        run a program
+    --allow-hidden              run it even though part of it is kept unreadable
+    --seed <number>             make anything it leaves to chance repeatable
 polite check <file.polite>      look it over without running it
     --show-middle               also print the middle language
+    --plain                     no optimisation passes
 polite words [about <topic>]    every word the language knows
+    --tier everyday|working|full
 polite explain <word>           what a word means, in PoliteLang and in English
 polite check-vocabulary         make sure no two phrases could collide
 polite bench                    measure against the budgets in the spec
 polite grammar <file.json>      write the editor grammar
 ```
 
-Try `polite words` first. Forty words is the whole of the everyday language.
+Try `polite words --tier everyday` first: sixty-nine phrases is the whole of the everyday
+language. A topic has to be a word that actually appears in a phrase — `polite words about
+colour` finds twelve, `about draw` finds eight.
 
 **New to programming?** Start with **[the guide](docs/GUIDE.md)**. It begins from nothing at all,
 fourteen short lessons, and every program in it lives in `examples/guide/` and is run by the test
