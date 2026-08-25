@@ -1586,6 +1586,15 @@ impl<'a> Checker<'a> {
                 self.types.whole
             }
 
+            // Left exactly as written, and text either way.
+            Form::NotDecoded => {
+                let text = self.types.text;
+                if let Some((e, t)) = arg(0) {
+                    self.want(e, t, text, "some writing");
+                }
+                text
+            }
+
             Form::WrittenWidth => {
                 if let Some((e, t)) = arg(0) {
                     let text = self.types.text;

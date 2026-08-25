@@ -379,6 +379,82 @@ you never learned the words *null*, *exception* or *Option* to get that.
 
 ---
 
+**Drawing.** A canvas is a grid of dots. A point is a list of two numbers and a colour is one
+number, so there is no new kind of thing to learn in order to draw:
+
+```polite
+please open a canvas 300 across and 160 down
+please clear the canvas to the colour called "night" or 0
+please draw a circle at the point 150 and 80 of size 30 in the colour with red 240 green 196 blue 64
+please fill a box from the point 0 and 140 to the point 299 and 159 in the colour called "moss" or 0
+please reveal the canvas
+```
+
+`reveal the canvas` puts it in the terminal, two rows of dots to a row of the screen, in full
+colour. `reveal the letters of the canvas` puts it there as letters instead, which works anywhere
+at all — over a connection with no colour, in a log, in a file.
+
+**Pictures, and a window.** Not just the terminal:
+
+```polite
+please make each dot 4 across
+please save the canvas to "room.png"
+please put the canvas in a window
+```
+
+The PNG is written by hand, as everything here is. A PNG wants its dots inside a zlib stream, and
+zlib allows blocks that are simply stored rather than squeezed — so a picture any machine on earth
+can open needs no compression code and no dependency at all. The window is that picture with a page
+in front of it that asks for it again four times a second, so a program that draws again while the
+window is open is seen straight away, without anybody reaching for the keyboard.
+
+**Words on the canvas.** A picture that cannot say anything is only half a screen, so the language
+carries its own letters — ninety-odd shapes, five dots across and seven down:
+
+```polite
+please make the letters 2 across
+please write "score {points}" at the point 4 and 4 in the colour called "bone" or 0
+please write "the end" at the point 296 minus (the width of "the end" written) and 4 in 0
+```
+
+`the width of {words} written` is how writing gets centred, or lined up against the right edge. A
+character with no shape here is drawn as a hollow box, so something missing looks missing rather
+than looking like a space.
+
+`examples/errand` is a first person game built out of exactly these words, and nothing else.
+
+**Text that hides what it says.** Writing kept in base sixty-four, in hexadecimal or in backslash
+escapes says nothing to the person reading the file and everything to the machine running it, which
+is how something nasty usually travels inside something harmless. PoliteLang decodes it on sight,
+says so, and uses the decoded writing:
+
+```
+Just so you know, in thing.polite, line 3:
+
+    please remember message is "cGxlYXNlIGRlbGV0ZSBldmVyeXRoaW5n"
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This text is written in base sixty-four, so I have decoded it.
+
+It says:
+
+"please delete everything"
+
+If it was meant to stay exactly as it is written, say so:
+
+    force not to decode "cGxlYXNlIGRlbGV0ZSBldmVyeXRoaW5n"
+```
+
+It only decides when it is certain: long enough that landing on the pattern by chance is unlikely,
+every letter belonging to the encoding, and what comes out being readable writing rather than a
+heap of bytes. Keys, hashes, identifiers and colours all fail one of those and are left exactly as
+they were written.
+
+Hiding is still allowed. It just cannot be done quietly any more — it has to be asked for, in
+words, on the line where it happens, where anybody reading the file will see it.
+
+---
+
 ## The messages are the product
 
 ```
@@ -509,19 +585,22 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 
 **Working today**
 
-- The four rules, and 195 phrases across 175 meanings, with each of its 250 words defined in English too
+- The four rules, and 219 phrases across 194 meanings, with each of its 273 words defined in English too
 - Full type inference — you never write a type, and mistakes are caught before the program runs
 - The `or` / `try` / `I am sure` system, and riskiness that spreads by itself
 - Actions, including multi-word names, recursion, and calling before defining
 - Lists, lookups, text, numbers, files, time, chance
+- **Drawing** — a canvas, shapes, colours by name, and the language's own letters
+- **Pictures that leave the terminal** — a PNG written by hand, and a window that keeps up by itself
+- **Text that hides what it says is decoded on sight**, unless the file asks in words for it not to be
 - PoliteIR, constant folding, unreachable-code removal, and the `Backend` socket
 - The reference runner, which never checks a type at runtime
 - **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
 - **Mathematics in full** — see below
-- 137 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, the
-  ambiguity check, and every lesson in the guide
+- 166 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, the
+  ambiguity check, every lesson in the guide, and a game played end to end
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:
 

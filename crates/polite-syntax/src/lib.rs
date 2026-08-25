@@ -7,6 +7,7 @@
 #![forbid(unsafe_code)]
 
 pub mod ast;
+pub mod hidden;
 pub mod intern;
 pub mod lex;
 pub mod parse;

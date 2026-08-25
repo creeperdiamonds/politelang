@@ -1169,6 +1169,15 @@ impl Lower<'_, '_> {
     }
 
     fn lower_phrase(&mut self, form: Form, phrase: u32, args: &[ExprId], dst: Slot) {
+        // `force not to decode` is a promise about what happens before this point, not an action.
+        // By the time anything is lowered the decision has been made, so it is simply its own text.
+        if form == Form::NotDecoded {
+            if let Some(inner) = args.first() {
+                self.lower_into(*inner, dst);
+            }
+            return;
+        }
+
         // A point is a list of two numbers, built the way any short list is. There is nothing
         // new here for a backend to learn, which is the whole idea.
         if form == Form::APoint {

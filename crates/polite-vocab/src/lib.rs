@@ -221,6 +221,8 @@ forms! {
     MatrixInverse => "matrix_inverse",
     IdentityMatrix => "identity_matrix",
 
+    NotDecoded => "not_decoded",
+
     WriteText => "write_text",
     LetterSize => "letter_size",
     WrittenWidth => "written_width",

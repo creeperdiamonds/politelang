@@ -432,6 +432,22 @@ expr  full      colour_at      :: the colour at {where}
 # is seen again, without anybody reaching for the keyboard.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Text that hides what it says
+#
+# Writing kept in base sixty-four, in hexadecimal, or in backslash escapes says nothing to the
+# person reading the file and everything to the machine running it, which is how something nasty
+# usually travels inside something harmless. So it is decoded on sight and said out loud, and the
+# decoded writing is what the program gets.
+#
+# Hiding is still allowed. It just cannot be done quietly any more: it has to be asked for, in
+# words, on the line where it happens, where anybody reading the file will see it.
+# ---------------------------------------------------------------------------
+
+expr  working   not_decoded    :: force not to decode {text}
+expr  working   not_decoded    :: leave {text} exactly as it is
+expr  working   not_decoded    :: {text} as it is written
+
 stmt  working   write_text     :: write {words} at {where} in {colour}
 stmt  working   letter_size    :: make the letters {size} across
 expr  working   written_width  :: the width of {words} written
@@ -937,6 +953,7 @@ english point          :: noun         :: One exact place, with no size of its o
 english red            :: noun         :: The colour of blood, and one of the three a screen mixes.
 english reveal         :: verb         :: To let something be seen that was hidden.
 english width          :: noun         :: How far something reaches from one side to the other.
+explain not_decoded    :: Writing that hides what it says is decoded on sight, so that a program means what it looks like it means. This says that one piece of writing is to be left exactly as it is, letter for letter. It is the only way to keep something unreadable, and it shows in the file, which is the point of it.
 explain write_text     :: This writes words onto the canvas itself, so a picture can say something without the terminal saying it. Where the letter leaves a dot blank, the picture underneath still shows.
 explain letter_size    :: A letter is five dots across and seven down. This says how many dots across each of those dots should be drawn, so writing can be made bigger without a second set of letters.
 explain written_width  :: This is how many dots across a line of writing will take up, at the size letters are being drawn. It is how writing is put in the middle of something, or lined up on the right.
@@ -953,3 +970,7 @@ english words          :: noun         :: Units of language; here, the writing t
 english letters        :: noun         :: The written marks that stand for the sounds of a language.
 english width          :: noun         :: How far something reaches from one side to the other.
 english written        :: adjective    :: Set down in letters rather than spoken. Here, the writing as it would be drawn.
+english force          :: verb         :: To make something happen whether or not it would have happened by itself.
+english decode         :: verb         :: To turn something written in a code back into what it really says.
+english leave          :: verb         :: To let something stay as it is, without touching it.
+english exactly        :: adverb       :: In every detail, with nothing altered.

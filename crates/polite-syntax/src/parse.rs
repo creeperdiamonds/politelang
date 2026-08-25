@@ -223,6 +223,11 @@ pub fn parse(src: &str, vocab: &Vocabulary) -> Parsed {
     let top = p.parse_top();
     p.ast.top = top;
 
+    // Anything written so as not to say what it says is decoded now, before anybody looks at the
+    // tree, so that every pass after this one sees what the program actually means.
+    let revealed = crate::hidden::reveal(&mut p.ast);
+    p.problems.extend(revealed);
+
     Parsed {
         ast: p.ast,
         problems: p.problems,
