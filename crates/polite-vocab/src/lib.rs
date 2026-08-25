@@ -183,6 +183,44 @@ forms! {
     AsPercentageOf => "as_percentage_of",
     PercentOf => "percent_of",
 
+    IsPrime => "is_prime",
+    PrimeFactors => "prime_factors",
+    DivisorsOf => "divisors_of",
+    PowerWithin => "power_within",
+    InverseWithin => "inverse_within",
+
+    WaysToChoose => "ways_to_choose",
+    WaysToArrange => "ways_to_arrange",
+
+    InBinary => "in_binary",
+    InHexadecimal => "in_hexadecimal",
+    InBase => "in_base",
+    ValueOfInBase => "value_of_in_base",
+
+    BitwiseAnd => "bitwise_and",
+    BitwiseOr => "bitwise_or",
+    BitwiseExclusiveOr => "bitwise_exclusive_or",
+    BitwiseNot => "bitwise_not",
+    ShiftedLeft => "shifted_left",
+    ShiftedRight => "shifted_right",
+
+    ModeOf => "mode_of",
+    VarianceOf => "variance_of",
+    CorrelationOf => "correlation_of",
+
+    PairwiseSum => "pairwise_sum",
+    PairwiseProduct => "pairwise_product",
+    DotProduct => "dot_product",
+    CrossProduct => "cross_product",
+    MagnitudeOf => "magnitude_of",
+    ScaledBy => "scaled_by",
+
+    MatrixProduct => "matrix_product",
+    TransposeOf => "transpose_of",
+    DeterminantOf => "determinant_of",
+    MatrixInverse => "matrix_inverse",
+    IdentityMatrix => "identity_matrix",
+
     UseModule => "use_module",
     Share => "share",
 }

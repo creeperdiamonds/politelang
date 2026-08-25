@@ -1472,6 +1472,150 @@ impl<'a> Checker<'a> {
                 self.types.whole
             }
 
+            Form::IsPrime => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a whole number");
+                }
+                self.types.yes_no
+            }
+
+            Form::PrimeFactors | Form::DivisorsOf => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a whole number");
+                }
+                let whole = self.types.whole;
+                self.types.list_of(whole)
+            }
+
+            // Whole numbers in, one whole number out.
+            Form::PowerWithin
+            | Form::InverseWithin
+            | Form::WaysToChoose
+            | Form::WaysToArrange
+            | Form::BitwiseAnd
+            | Form::BitwiseOr
+            | Form::BitwiseExclusiveOr
+            | Form::BitwiseNot
+            | Form::ShiftedLeft
+            | Form::ShiftedRight => {
+                for k in 0..args.len().min(3) {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a whole number");
+                    }
+                }
+                self.types.whole
+            }
+
+            Form::InBinary | Form::InHexadecimal | Form::InBase => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a whole number");
+                }
+                if let Some((e, t)) = arg(1) {
+                    self.want_number(e, t, "which base to use");
+                }
+                self.types.text
+            }
+
+            Form::ValueOfInBase => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "text");
+                }
+                if let Some((e, t)) = arg(1) {
+                    self.want_number(e, t, "which base it is written in");
+                }
+                self.types.whole
+            }
+
+            Form::ModeOf => {
+                let item = self.types.fresh();
+                if let Some((e, t)) = arg(0) {
+                    let list = self.types.list_of(item);
+                    self.want(e, t, list, "a list");
+                }
+                item
+            }
+
+            Form::VarianceOf | Form::MagnitudeOf | Form::DeterminantOf => {
+                if let Some((e, t)) = arg(0) {
+                    let whole = self.types.whole;
+                    let list = if form == Form::DeterminantOf {
+                        let row = self.types.list_of(whole);
+                        self.types.list_of(row)
+                    } else {
+                        self.types.list_of(whole)
+                    };
+                    self.want(e, t, list, "a list of numbers");
+                }
+                self.types.decimal
+            }
+
+            Form::CorrelationOf => {
+                let whole = self.types.whole;
+                let list = self.types.list_of(whole);
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want(e, t, list, "a list of numbers");
+                    }
+                }
+                self.types.decimal
+            }
+
+            Form::DotProduct => {
+                let whole = self.types.whole;
+                let list = self.types.list_of(whole);
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want(e, t, list, "a list of numbers");
+                    }
+                }
+                self.types.whole
+            }
+
+            Form::PairwiseSum | Form::PairwiseProduct | Form::CrossProduct => {
+                let whole = self.types.whole;
+                let list = self.types.list_of(whole);
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want(e, t, list, "a list of numbers");
+                    }
+                }
+                list
+            }
+
+            Form::ScaledBy => {
+                let whole = self.types.whole;
+                let list = self.types.list_of(whole);
+                if let Some((e, t)) = arg(0) {
+                    self.want(e, t, list, "a list of numbers");
+                }
+                if let Some((e, t)) = arg(1) {
+                    self.want_number(e, t, "what to multiply by");
+                }
+                list
+            }
+
+            Form::MatrixProduct | Form::TransposeOf | Form::MatrixInverse => {
+                let whole = self.types.whole;
+                let row = self.types.list_of(whole);
+                let matrix = self.types.list_of(row);
+                for k in 0..args.len().min(2) {
+                    if let Some((e, t)) = arg(k) {
+                        self.want(e, t, matrix, "a matrix, which is a list of rows");
+                    }
+                }
+                matrix
+            }
+
+            Form::IdentityMatrix => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "how many rows");
+                }
+                let whole = self.types.whole;
+                let row = self.types.list_of(whole);
+                self.types.list_of(row)
+            }
+
             Form::MakeFraction => {
                 for k in 0..2 {
                     if let Some((e, t)) = arg(k) {

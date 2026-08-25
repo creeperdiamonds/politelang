@@ -18,7 +18,9 @@ use std::rc::Rc;
 
 pub mod big;
 pub mod exact;
+pub mod maths;
 pub mod numbers;
+pub mod vectors;
 
 pub use big::Big;
 pub use exact::{Complex, Fraction};
@@ -38,7 +40,11 @@ pub enum Value {
     Fraction(Rc<Fraction>),
     Decimal(f64),
     /// A number with a part above the line as well as across.
-    Complex(Complex),
+    ///
+    /// Held behind a count rather than inline, because a value is copied constantly in a loop and
+    /// two decimals side by side would make every value half as big again — including the whole
+    /// numbers, which is where the time actually goes (spec 10.2).
+    Complex(Rc<Complex>),
     Text(Rc<String>),
     YesNo(bool),
     Nothing,
@@ -788,7 +794,7 @@ pub fn whole_number_in(text: &str) -> Answer<Value> {
 }
 
 pub fn imaginary_number(v: &Value) -> Value {
-    Value::Complex(Complex::imaginary(v.as_decimal()))
+    Value::Complex(Rc::new(Complex::imaginary(v.as_decimal())))
 }
 
 pub fn real_part(v: &Value) -> Value {
@@ -800,7 +806,7 @@ pub fn imaginary_part(v: &Value) -> Value {
 }
 
 pub fn conjugate(v: &Value) -> Value {
-    Value::Complex(numbers::as_complex(v).conjugate())
+    Value::Complex(Rc::new(numbers::as_complex(v).conjugate()))
 }
 
 pub fn direction(v: &Value) -> Value {
@@ -808,7 +814,7 @@ pub fn direction(v: &Value) -> Value {
 }
 
 pub fn complex_square_root(v: &Value) -> Value {
-    Value::Complex(numbers::as_complex(v).square_root())
+    Value::Complex(Rc::new(numbers::as_complex(v).square_root()))
 }
 
 pub fn remainder(a: &Value, b: &Value) -> Answer<Value> {
@@ -1238,5 +1244,18 @@ mod tests {
     fn decimals_are_shown_as_decimals() {
         assert_eq!(Value::Decimal(1.0).showable(), "1.0");
         assert_eq!(Value::Whole(1).showable(), "1");
+    }
+}
+
+#[cfg(test)]
+mod size_check {
+    use super::*;
+
+    /// Spec 10.2: instructions and values are kept small, because the interpreter copies them
+    /// constantly and the cache is what decides how fast a loop runs.
+    #[test]
+    fn a_value_stays_small() {
+        let size = std::mem::size_of::<Value>();
+        assert!(size <= 16, "a Value grew to {size} bytes");
     }
 }

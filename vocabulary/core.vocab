@@ -328,6 +328,72 @@ expr  full      conjugate_of       :: the conjugate of {value}
 expr  full      direction_of       :: the direction of {value}
 expr  full      complex_square_root :: the complex square root of {value}
 
+
+# ---------------------------------------------------------------------------
+# Whole numbers, in and out
+# ---------------------------------------------------------------------------
+
+expr  working   is_prime       :: {value} is prime
+expr  working   prime_factors  :: the prime factors of {value}
+expr  working   divisors_of    :: the divisors of {value}
+expr  full      power_within   :: {value} to the power {power} within {modulus} :: risky tight
+expr  full      inverse_within :: the inverse of {value} within {modulus} :: risky
+
+expr  working   ways_to_choose  :: the ways to choose {count} from {total} :: risky
+expr  working   ways_to_arrange :: the ways to arrange {count} from {total} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Other ways of writing a number
+# ---------------------------------------------------------------------------
+
+expr  working   in_binary       :: {value} in binary :: tight
+expr  working   in_hexadecimal  :: {value} in hexadecimal :: tight
+expr  full      in_base         :: {value} in base {base} :: risky tight
+expr  full      value_of_in_base :: the value of {text} in base {base} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Bits
+# ---------------------------------------------------------------------------
+
+expr  full      bitwise_and    :: {first} bitwise and {second}
+expr  full      bitwise_or     :: {first} bitwise or {second}
+expr  full      bitwise_exclusive_or :: {first} bitwise exclusive or {second}
+expr  full      bitwise_not    :: the bitwise not of {value}
+expr  full      shifted_left   :: {value} shifted left by {count} :: tight
+expr  full      shifted_right  :: {value} shifted right by {count} :: tight
+
+
+# ---------------------------------------------------------------------------
+# More statistics
+# ---------------------------------------------------------------------------
+
+expr  working   mode_of        :: the mode of {list} :: risky
+expr  working   variance_of    :: the variance of {list} :: risky
+expr  full      correlation_of :: the correlation of {first} and {second} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Vectors and matrices
+#
+# A vector is a list of numbers and a matrix is a list of those lists, so there is no new kind of
+# thing to learn: the rows really are rows.
+# ---------------------------------------------------------------------------
+
+expr  working   pairwise_sum     :: the pairwise sum of {first} and {second} :: risky
+expr  working   pairwise_product :: the pairwise product of {first} and {second} :: risky
+expr  working   dot_product      :: the dot product of {first} and {second} :: risky
+expr  full      cross_product    :: the cross product of {first} and {second} :: risky
+expr  working   magnitude_of     :: the magnitude of {list}
+expr  working   scaled_by        :: {list} scaled by {factor}
+
+expr  full      matrix_product   :: the matrix product of {first} and {second} :: risky
+expr  full      transpose_of     :: the transpose of {matrix} :: risky
+expr  full      determinant_of   :: the determinant of {matrix} :: risky
+expr  full      matrix_inverse   :: the inverse matrix of {matrix} :: risky
+expr  full      identity_matrix  :: the identity matrix of size {size} :: risky
+
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
 # purpose 1 of the language is that you learn more English.
@@ -460,3 +526,34 @@ explain imaginary_part   :: The imaginary part is how far up a complex number si
 explain conjugate_of     :: The conjugate of a complex number is the same distance across and the same distance the other way up.
 explain direction_of     :: This is the way a complex number points, as an angle in radians.
 explain complex_square_root :: Every number has a square root once the imaginary ones are allowed, so this one always works out.
+explain is_prime       :: A prime is a whole number above one that nothing but one and itself goes into evenly.
+explain prime_factors  :: These are the primes that multiply together to make this number, smallest first and repeated as often as they appear.
+explain divisors_of    :: These are all the whole numbers that go evenly into this one, in order.
+explain power_within   :: This raises a number to a power but only ever keeps the remainder within a modulus, so the working stays small however large the power is. It might not work out, because a modulus has to be above zero.
+explain inverse_within :: This is the number which, times the one you gave, leaves one within the modulus. It might not work out, because the two may share a factor.
+explain ways_to_choose  :: This is how many ways there are to pick that many things out of a group, when the order you pick them in does not matter.
+explain ways_to_arrange :: This is how many ways there are to pick that many things out of a group and put them in order.
+explain in_binary       :: Binary writes a number using only ones and zeroes, which is how a machine holds it.
+explain in_hexadecimal  :: Hexadecimal writes a number using sixteen digits rather than ten, with a to f standing for ten to fifteen.
+explain in_base         :: This writes a number using however many digits you ask for. It might not work out, because two to thirty six is as far as the digits go.
+explain value_of_in_base :: This reads text written in some base and gives back the number. It might not work out, because the text may hold a digit that base does not have.
+explain bitwise_and    :: This keeps only the bits that are set in both numbers.
+explain bitwise_or     :: This keeps every bit that is set in either number.
+explain bitwise_exclusive_or :: This keeps the bits that are set in one number or the other, but not in both.
+explain bitwise_not    :: This turns every bit the other way round.
+explain shifted_left   :: Shifting left moves every bit up, which doubles the number once for each place.
+explain shifted_right  :: Shifting right moves every bit down, which halves the number once for each place.
+explain mode_of        :: The mode is the one that turns up most often. Where several tie, this gives the smallest of them. It might not work out, because in an empty list nothing turns up at all.
+explain variance_of    :: The variance says how far from the average the numbers usually sit, before the square root that makes it a spread. It might not work out, because an empty list has none.
+explain correlation_of :: This says how closely two lists move together, from minus one for opposite to one for exactly together. It might not work out, because the lists have to be the same length and to change at all.
+explain pairwise_sum     :: This adds two lists item by item. It might not work out, because they have to be the same length.
+explain pairwise_product :: This multiplies two lists item by item. It might not work out, because they have to be the same length.
+explain dot_product      :: This multiplies two lists item by item and adds the lot together, which says how much they point the same way. It might not work out, because they have to be the same length.
+explain cross_product    :: This is the direction at right angles to two others, which only means something in three dimensions. It might not work out, because both lists have to hold exactly three.
+explain magnitude_of     :: The magnitude is how long a list of numbers is if you read it as an arrow from nothing.
+explain scaled_by        :: This multiplies every item of a list by the same number.
+explain matrix_product   :: This multiplies two matrices, which is how one change of space is followed by another. It might not work out, because the shapes have to meet.
+explain transpose_of     :: To transpose is to turn on its side: the rows become columns. It might not work out, because the rows all have to be the same length.
+explain determinant_of   :: The determinant says how much a matrix stretches space. Nothing means it flattens it. It might not work out, because only a square matrix has one.
+explain matrix_inverse   :: This is the matrix that undoes the one you gave. It might not work out, because a matrix that flattens space cannot be undone.
+explain identity_matrix  :: This is the square matrix that changes nothing at all, with ones down the middle and nothing anywhere else.

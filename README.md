@@ -171,6 +171,33 @@ thank you for defining
 please show greet with "Creeperdiamonds Studios" and "Good morning"
 ```
 
+**Numbers have no limit, and can be exact.** Whole numbers keep going as far as you need, and
+fractions stay fractions:
+
+```polite
+please remember f is 1
+please repeat for every n from 1 to 100:
+    multiply f by n
+thanks
+please show f            -- all 158 digits of a hundred factorial, exactly
+
+please show 1 over 3 plus 1 over 3 plus 1 over 3   -- 1, exactly
+please show 1 over 2 plus 1 over 3                 -- 5/6
+please show 0.75 as a fraction                     -- 3/4
+```
+
+And complex numbers, written the way they are read:
+
+```polite
+please remember here is 3 plus the imaginary number 4
+please show the size of here                  -- 5.0
+please show here times here                   -- -7+24i
+please show the complex square root of 0 minus 1   -- 1i
+```
+
+They can be the same or different but never greater or lesser, and the language says so before the
+program runs rather than inventing an order.
+
 **Arithmetic, in full.** Trigonometry, logarithms, powers and roots, statistics, percentages:
 
 ```polite
@@ -189,6 +216,49 @@ please show 15 kept between 1 and 10                       -- 10
 
 Every one of these that *can* fail says so and makes you say what happens instead — there is no
 angle whose sine is 2, no logarithm of zero, and no share of nothing.
+
+**Number theory, counting, bases, bits, and linear algebra:**
+
+```polite
+please show 2147483647 is prime                          -- yes
+please show the join of the prime factors of 360 with " times "
+please show the divisors of 28
+please show 2 to the power 100 within 1000000007 or 0    -- stays small
+please show the ways to choose 50 from 100 or 0          -- 100891344545564193334812497256
+
+please show 255 in binary                                -- 11111111
+please show 255 in hexadecimal                           -- ff
+please show the value of "ff" in base 16 or 0            -- 255
+please show 12 bitwise and 10                            -- 8
+please show 1 shifted left by 10                         -- 1024
+
+please show the mode of marks or 0
+please show the variance of marks or 0
+please show the correlation of ups and downs or 0        -- -1.0
+
+please show the dot product of a and b or 0
+please show the join of the cross product of x and y with ", "
+please show the magnitude of across                      -- 5.0
+please show the determinant of m or 0
+please show the inverse matrix of m or an empty list
+please show the identity matrix of size 3 or an empty list
+```
+
+A vector is a list of numbers and a matrix is a list of those lists, so there is no new kind of
+thing to learn: the rows really are rows, and you can look at one the way you look at any list.
+
+**Only what could actually go wrong.** `1 over 3` can no more fail than `1 plus 3` can, so the
+language works that out and stays quiet. Where anything is unknown it asks, as always — and a
+fallback that could never be reached says so kindly rather than failing:
+
+```
+Just so you know, in game.polite, line 9:
+
+    please show the square root of 81 or 0
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This fallback is never needed, because `the square root of {value}` always works out here.
+```
 
 **A note on how phrases that follow a value read.** Some belong to the number right beside them,
 and some are said about the whole sum. Which is which is written in the vocabulary table rather
@@ -382,19 +452,24 @@ Measured there, by `polite bench`:
 
 | | measured | budget |
 |---|---|---|
-| check a 1,000 line program | **5.1 ms** | < 10 ms |
-| checking throughput | **175,000–195,000 lines/sec** | ≥ 150,000 |
+| check a 1,000 line program | **5.7 ms** | < 10 ms |
+| checking throughput | **170,000–190,000 lines/sec** | ≥ 150,000 |
 | compiler memory per line | **181 bytes** | < 2 KB |
 | compile and run `hello` | **0.03 ms** | < 3 ms |
-| 300,000 turn numeric loop | **10.5 ms** | — |
-| the same loop in CPython | 43.8 ms | — |
-| **times faster than CPython** | **4.3×** | ≥ 2× |
+| 300,000 turn numeric loop | **12.8 ms** | — |
+| the same loop in CPython | 42.7 ms | — |
+| **times faster than CPython** | **3.4×** | ≥ 2× |
 | **parse slowdown at 40× the vocabulary** | **0.2–1.0%** | < 5% |
 | `polite` binary, stripped | **768 KB** | < 3 MB |
 
 That last row is the one that matters most, because it tests a *claim* rather than a speed: the
 whole project rests on a large vocabulary being cheap. The benchmark generates four thousand extra
 phrases and proves parsing does not notice.
+
+Whole numbers having no limit costs about a third of the speed of an integer loop — every
+addition has to notice when it outgrows a machine word — which took that loop from 10.5 ms to
+12.8 ms. That is written down here rather than quietly left out: it is the price of never wrapping
+round to a wrong answer, and it is worth paying.
 
 Timings are the *best* of several runs rather than the average, and the vocabulary ratio is the
 median of paired samples. On a two-core laptop something else is always waking up, and an average
@@ -409,7 +484,7 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 
 **Working today**
 
-- The four rules, and 150 phrases across 113 meanings
+- The four rules, and 195 phrases across 175 meanings
 - Full type inference — you never write a type, and mistakes are caught before the program runs
 - The `or` / `try` / `I am sure` system, and riskiness that spreads by itself
 - Actions, including multi-word names, recursion, and calling before defining
@@ -419,9 +494,8 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 - **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
-- **Arithmetic in full** — trigonometry, logarithms, powers and roots, rounding of every kind,
-  factors and factorials, medians and spread, percentages
-- 84 tests: a corpus of 20 programs, 20 pinned messages, a generated test per vocabulary row, and
+- **Mathematics in full** — see below
+- 130 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, and
   the ambiguity check
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:

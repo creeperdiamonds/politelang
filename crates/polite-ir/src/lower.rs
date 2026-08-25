@@ -1267,6 +1267,43 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
 
+        Form::IsPrime => Builtin::IsPrime,
+        Form::PrimeFactors => Builtin::PrimeFactors,
+        Form::DivisorsOf => Builtin::Divisors,
+        Form::PowerWithin => Builtin::PowerWithin,
+        Form::InverseWithin => Builtin::InverseWithin,
+        Form::WaysToChoose => Builtin::WaysToChoose,
+        Form::WaysToArrange => Builtin::WaysToArrange,
+
+        Form::InBinary => Builtin::InBinary,
+        Form::InHexadecimal => Builtin::InHexadecimal,
+        Form::InBase => Builtin::InBase,
+        Form::ValueOfInBase => Builtin::ValueOfInBase,
+
+        Form::BitwiseAnd => Builtin::BitwiseAnd,
+        Form::BitwiseOr => Builtin::BitwiseOr,
+        Form::BitwiseExclusiveOr => Builtin::BitwiseExclusiveOr,
+        Form::BitwiseNot => Builtin::BitwiseNot,
+        Form::ShiftedLeft => Builtin::ShiftedLeft,
+        Form::ShiftedRight => Builtin::ShiftedRight,
+
+        Form::ModeOf => Builtin::Mode,
+        Form::VarianceOf => Builtin::Variance,
+        Form::CorrelationOf => Builtin::Correlation,
+
+        Form::PairwiseSum => Builtin::PairwiseSum,
+        Form::PairwiseProduct => Builtin::PairwiseProduct,
+        Form::DotProduct => Builtin::DotProduct,
+        Form::CrossProduct => Builtin::CrossProduct,
+        Form::MagnitudeOf => Builtin::Magnitude,
+        Form::ScaledBy => Builtin::ScaledBy,
+
+        Form::MatrixProduct => Builtin::MatrixProduct,
+        Form::TransposeOf => Builtin::Transpose,
+        Form::DeterminantOf => Builtin::Determinant,
+        Form::MatrixInverse => Builtin::MatrixInverse,
+        Form::IdentityMatrix => Builtin::IdentityMatrix,
+
         Form::MakeFraction => Builtin::MakeFraction,
         Form::TopOf => Builtin::FractionTop,
         Form::BottomOf => Builtin::FractionBottom,

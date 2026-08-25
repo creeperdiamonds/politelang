@@ -23,6 +23,7 @@ pub enum Rank {
     Complex,
 }
 
+#[inline]
 pub fn rank(v: &Value) -> Rank {
     match v {
         Value::Whole(_) | Value::Big(_) | Value::YesNo(_) | Value::Nothing => Rank::Whole,
@@ -58,7 +59,7 @@ pub fn as_fraction(v: &Value) -> Fraction {
 
 pub fn as_complex(v: &Value) -> Complex {
     match v {
-        Value::Complex(c) => *c,
+        Value::Complex(c) => **c,
         other => Complex::real(other.as_decimal()),
     }
 }
@@ -85,10 +86,11 @@ pub fn from_complex(c: Complex) -> Value {
     if c.is_real() {
         Value::Decimal(c.across)
     } else {
-        Value::Complex(c)
+        Value::Complex(Rc::new(c))
     }
 }
 
+#[inline]
 pub fn add(a: &Value, b: &Value) -> Value {
     // The overwhelmingly common case, kept first and kept cheap.
     if let (Value::Whole(x), Value::Whole(y)) = (a, b) {
@@ -104,6 +106,7 @@ pub fn add(a: &Value, b: &Value) -> Value {
     }
 }
 
+#[inline]
 pub fn sub(a: &Value, b: &Value) -> Value {
     if let (Value::Whole(x), Value::Whole(y)) = (a, b) {
         if let Some(v) = x.checked_sub(*y) {
@@ -118,6 +121,7 @@ pub fn sub(a: &Value, b: &Value) -> Value {
     }
 }
 
+#[inline]
 pub fn mul(a: &Value, b: &Value) -> Value {
     if let (Value::Whole(x), Value::Whole(y)) = (a, b) {
         if let Some(v) = x.checked_mul(*y) {
@@ -132,6 +136,7 @@ pub fn mul(a: &Value, b: &Value) -> Value {
     }
 }
 
+#[inline]
 pub fn negate(v: &Value) -> Value {
     match v {
         Value::Whole(n) => match n.checked_neg() {
@@ -173,6 +178,7 @@ pub fn divide(a: &Value, b: &Value) -> Answer<Value> {
 ///
 /// Complex numbers have no order — there is no sense in which one point on a plane comes before
 /// another — so this gives back nothing for them, and the checker says so before the program runs.
+#[inline]
 pub fn compare(a: &Value, b: &Value) -> Option<Ordering> {
     if let (Value::Whole(x), Value::Whole(y)) = (a, b) {
         return Some(x.cmp(y));
@@ -231,7 +237,7 @@ mod tests {
         // fraction meets decimal, and the answer is a decimal
         assert!(matches!(add(&third, &Value::Decimal(0.5)), Value::Decimal(_)));
         // anything meets complex, and the answer is complex
-        let i = Value::Complex(Complex::imaginary(1.0));
+        let i = Value::Complex(Rc::new(Complex::imaginary(1.0)));
         assert_eq!(add(&whole(3), &i).showable(), "3+1i");
     }
 
@@ -245,9 +251,9 @@ mod tests {
 
     #[test]
     fn complex_numbers_have_no_order_but_do_have_sameness() {
-        let a = Value::Complex(Complex::new(1.0, 2.0));
-        let b = Value::Complex(Complex::new(1.0, 2.0));
-        let c = Value::Complex(Complex::new(2.0, 1.0));
+        let a = Value::Complex(Rc::new(Complex::new(1.0, 2.0)));
+        let b = Value::Complex(Rc::new(Complex::new(1.0, 2.0)));
+        let c = Value::Complex(Rc::new(Complex::new(2.0, 1.0)));
         assert_eq!(compare(&a, &c), None);
         assert!(same(&a, &b));
         assert!(!same(&a, &c));
@@ -258,7 +264,7 @@ mod tests {
         assert!(divide(&whole(1), &whole(0)).is_err());
         let third = from_fraction(Fraction::nearest_to(1.0 / 3.0).unwrap());
         assert!(divide(&third, &whole(0)).is_err());
-        assert!(divide(&Value::Complex(Complex::new(1.0, 1.0)), &whole(0)).is_err());
+        assert!(divide(&Value::Complex(Rc::new(Complex::new(1.0, 1.0))), &whole(0)).is_err());
     }
 
     #[test]

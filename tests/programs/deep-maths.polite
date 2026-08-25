@@ -1,0 +1,108 @@
+-- Number theory, combinatorics, bases, bits, statistics, vectors and matrices.
+
+-- Primes and factors
+please show 97 is prime
+please show 91 is prime
+please show the join of the prime factors of 360 with " times "
+please show the join of the divisors of 28 with ", "
+please show 2147483647 is prime
+
+-- Arithmetic that stays small however large the power is
+please show 2 to the power 100 within 1000000007 or 0
+please show the inverse of 3 within 11 or 0
+
+-- Counting the ways
+please show the ways to choose 2 from 5 or 0
+please show the ways to arrange 2 from 5 or 0
+please show the ways to choose 50 from 100 or 0
+
+-- Other ways of writing a number
+please show 255 in binary
+please show 255 in hexadecimal
+please show 255 in base 8 or "?"
+please show the value of "ff" in base 16 or 0
+please show the value of "11111111" in base 2 or 0
+
+-- Bits
+please show 12 bitwise and 10
+please show 12 bitwise or 10
+please show 12 bitwise exclusive or 10
+please show the bitwise not of 0
+please show 1 shifted left by 10
+please show 1024 shifted right by 10
+
+-- Statistics
+please remember marks is an empty list
+please for every m in the pieces of "2 4 4 4 5 5 7 9" split by " ":
+    add the number in m or 0 to marks
+thanks
+please show "mode {the mode of marks or 0}"
+please show "variance {the variance of marks or 0}"
+please show "spread {the spread of marks or 0}"
+
+please remember ups is an empty list
+please remember downs is an empty list
+please repeat for every n from 1 to 5:
+    add n to ups
+    add 0 minus n to downs
+thanks
+please show the correlation of ups and ups or 0
+please show the correlation of ups and downs or 0
+
+-- Vectors
+please remember a is an empty list
+please remember b is an empty list
+please repeat for every n from 1 to 3:
+    add n to a
+    add n times 10 to b
+thanks
+
+please remember sum is the pairwise sum of a and b or an empty list
+please remember product is the pairwise product of a and b or an empty list
+please show the join of sum with ", "
+please show the join of product with ", "
+please show the dot product of a and b or 0
+please show the join of a scaled by 3 with ", "
+
+please remember across is an empty list
+please add 3 to across
+please add 4 to across
+please show the magnitude of across
+
+please remember x is an empty list
+please remember y is an empty list
+please add 1 to x
+please add 0 to x
+please add 0 to x
+please add 0 to y
+please add 1 to y
+please add 0 to y
+please remember out is the cross product of x and y or an empty list
+please show the join of out with ", "
+
+-- Matrices, which are simply lists of rows
+please remember m is an empty list
+please remember row1 is an empty list
+please add 1 to row1
+please add 2 to row1
+please remember row2 is an empty list
+please add 3 to row2
+please add 4 to row2
+please add row1 to m
+please add row2 to m
+
+please show the determinant of m or 0
+please remember turned is the transpose of m or an empty list
+please remember firstrow is item 1 of turned or an empty list
+please show "transposed firstrow {the join of firstrow with ", "}"
+
+please remember i is the identity matrix of size 2 or an empty list
+please remember irow is item 1 of i or an empty list
+please show "identity firstrow {the join of irow with ", "}"
+
+-- Undoing a matrix and doing it again gets back to where it started, give or take the
+-- last scrap of a decimal, which is worth seeing rather than hiding.
+please remember undone is the inverse matrix of m or an empty list
+please remember back is the matrix product of m and undone or an empty list
+please remember backrow is item 1 of back or an empty list
+please show "m times its inverse, firstrow {the join of backrow with ", "}"

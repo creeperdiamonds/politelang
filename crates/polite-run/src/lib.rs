@@ -579,6 +579,131 @@ impl Runner<'_> {
             Builtin::DividesEvenly => Some(std_lib::divides_evenly(&a0(), &a1())),
             Builtin::DivideNumbers => Some(std_lib::numbers::divide(&a0(), &a1())?),
 
+            Builtin::IsPrime => Some(Value::YesNo(std_lib::maths::is_prime(a0().as_whole()))),
+            Builtin::PrimeFactors => {
+                Some(Value::list(std_lib::maths::prime_factors(a0().as_whole())))
+            }
+            Builtin::Divisors => Some(Value::list(std_lib::maths::divisors(a0().as_whole()))),
+            Builtin::PowerWithin => Some(std_lib::maths::power_within(
+                a0().as_whole(),
+                a1().as_whole(),
+                a2().as_whole(),
+            )?),
+            Builtin::InverseWithin => {
+                Some(std_lib::maths::inverse_within(a0().as_whole(), a1().as_whole())?)
+            }
+            Builtin::WaysToChoose => {
+                Some(std_lib::maths::ways_to_choose(a0().as_whole(), a1().as_whole())?)
+            }
+            Builtin::WaysToArrange => {
+                Some(std_lib::maths::ways_to_arrange(a0().as_whole(), a1().as_whole())?)
+            }
+
+            Builtin::InBinary => Some(Value::text(std_lib::maths::in_base(a0().as_whole(), 2)?)),
+            Builtin::InHexadecimal => {
+                Some(Value::text(std_lib::maths::in_base(a0().as_whole(), 16)?))
+            }
+            Builtin::InBase => Some(Value::text(std_lib::maths::in_base(
+                a0().as_whole(),
+                a1().as_whole(),
+            )?)),
+            Builtin::ValueOfInBase => Some(std_lib::maths::value_of_in_base(
+                &a0().as_text(),
+                a1().as_whole(),
+            )?),
+
+            Builtin::BitwiseAnd => Some(std_lib::maths::bit_and(a0().as_whole(), a1().as_whole())),
+            Builtin::BitwiseOr => Some(std_lib::maths::bit_or(a0().as_whole(), a1().as_whole())),
+            Builtin::BitwiseExclusiveOr => Some(std_lib::maths::bit_exclusive_or(
+                a0().as_whole(),
+                a1().as_whole(),
+            )),
+            Builtin::BitwiseNot => Some(std_lib::maths::bit_not(a0().as_whole())),
+            Builtin::ShiftedLeft => {
+                Some(std_lib::maths::shifted_left(a0().as_whole(), a1().as_whole()))
+            }
+            Builtin::ShiftedRight => {
+                Some(std_lib::maths::shifted_right(a0().as_whole(), a1().as_whole()))
+            }
+
+            Builtin::Mode => {
+                let items = as_list(&a0())?;
+                let v = std_lib::maths::mode(&items.borrow())?;
+                Some(v)
+            }
+            Builtin::Variance => {
+                let items = as_list(&a0())?;
+                let v = std_lib::maths::variance(&items.borrow())?;
+                Some(v)
+            }
+            Builtin::Correlation => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::maths::correlation(&first.borrow(), &second.borrow())?;
+                Some(v)
+            }
+
+            Builtin::PairwiseSum => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::vectors::pairwise_sum(&first.borrow(), &second.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::PairwiseProduct => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::vectors::pairwise_product(&first.borrow(), &second.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::DotProduct => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::vectors::dot_product(&first.borrow(), &second.borrow())?;
+                Some(v)
+            }
+            Builtin::CrossProduct => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::vectors::cross_product(&first.borrow(), &second.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::Magnitude => {
+                let items = as_list(&a0())?;
+                let v = std_lib::vectors::magnitude(&items.borrow());
+                Some(v)
+            }
+            Builtin::ScaledBy => {
+                let items = as_list(&a0())?;
+                let factor = a1();
+                let v = std_lib::vectors::scaled_by(&items.borrow(), &factor);
+                Some(Value::list(v))
+            }
+
+            Builtin::MatrixProduct => {
+                let first = as_list(&a0())?;
+                let second = as_list(&a1())?;
+                let v = std_lib::vectors::matrix_product(&first.borrow(), &second.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::Transpose => {
+                let m = as_list(&a0())?;
+                let v = std_lib::vectors::transpose(&m.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::Determinant => {
+                let m = as_list(&a0())?;
+                let v = std_lib::vectors::determinant(&m.borrow())?;
+                Some(v)
+            }
+            Builtin::MatrixInverse => {
+                let m = as_list(&a0())?;
+                let v = std_lib::vectors::matrix_inverse(&m.borrow())?;
+                Some(Value::list(v))
+            }
+            Builtin::IdentityMatrix => {
+                Some(Value::list(std_lib::vectors::identity_matrix(a0().as_whole())?))
+            }
+
             Builtin::MakeFraction => Some(std_lib::make_fraction(&a0(), &a1())?),
             Builtin::FractionTop => Some(std_lib::fraction_top(&a0())),
             Builtin::FractionBottom => Some(std_lib::fraction_bottom(&a0())),

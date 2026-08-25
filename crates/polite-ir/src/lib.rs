@@ -106,6 +106,43 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    IsPrime,
+    PrimeFactors,
+    Divisors,
+    PowerWithin,
+    InverseWithin,
+    WaysToChoose,
+    WaysToArrange,
+
+    InBinary,
+    InHexadecimal,
+    InBase,
+    ValueOfInBase,
+
+    BitwiseAnd,
+    BitwiseOr,
+    BitwiseExclusiveOr,
+    BitwiseNot,
+    ShiftedLeft,
+    ShiftedRight,
+
+    Mode,
+    Variance,
+    Correlation,
+
+    PairwiseSum,
+    PairwiseProduct,
+    DotProduct,
+    CrossProduct,
+    Magnitude,
+    ScaledBy,
+
+    MatrixProduct,
+    Transpose,
+    Determinant,
+    MatrixInverse,
+    IdentityMatrix,
+
     MakeFraction,
     FractionTop,
     FractionBottom,
@@ -204,6 +241,24 @@ impl Builtin {
                 | Builtin::AsPercentageOf
                 | Builtin::MakeFraction
                 | Builtin::WholeNumberIn
+                | Builtin::PowerWithin
+                | Builtin::InverseWithin
+                | Builtin::WaysToChoose
+                | Builtin::WaysToArrange
+                | Builtin::InBase
+                | Builtin::ValueOfInBase
+                | Builtin::Mode
+                | Builtin::Variance
+                | Builtin::Correlation
+                | Builtin::PairwiseSum
+                | Builtin::PairwiseProduct
+                | Builtin::DotProduct
+                | Builtin::CrossProduct
+                | Builtin::MatrixProduct
+                | Builtin::Transpose
+                | Builtin::Determinant
+                | Builtin::MatrixInverse
+                | Builtin::IdentityMatrix
         )
     }
 }
