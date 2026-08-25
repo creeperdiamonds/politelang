@@ -851,7 +851,7 @@ impl<'a> Checker<'a> {
         for r in risks.into_iter().flatten() {
             self.handle_risk(Some(r), span);
         }
-        if phrase_risky {
+        if phrase_risky && !self.cannot_fail(form, args) {
             self.handle_risk(
                 Some(Risk {
                     span,
@@ -1009,7 +1009,7 @@ impl<'a> Checker<'a> {
                     risk = risk.or(r);
                 }
                 let ty = self.check_phrase_expr(form, &args, &tys);
-                if self.vocab.phrase(phrase).risky {
+                if self.vocab.phrase(phrase).risky && !self.cannot_fail(form, &args) {
                     risk = Some(Risk {
                         span: node.span,
                         form: Some(form),
@@ -1054,11 +1054,32 @@ impl<'a> Checker<'a> {
                 }
                 return (lt, rr);
             }
-            self.expr_fallback[id as usize] = false;
+            // Nothing here can fail, so this is boolean `or` — unless neither side is a yes or
+            // no, in which case somebody has written a fallback for something that always works
+            // out. Say so kindly and carry on rather than making a fuss.
             let (rt, rr) = self.check_expr(rhs);
-            self.want_yes_or_no(lhs, lt, "`or`");
-            self.want_yes_or_no(rhs, rt, "`or`");
-            return (self.types.yes_no, rr);
+            let yes_no = self.types.yes_no;
+            let boolean = !self.types.is_number(lt) || !self.types.is_number(rt);
+            if boolean {
+                self.expr_fallback[id as usize] = false;
+                self.want_yes_or_no(lhs, lt, "`or`");
+                self.want_yes_or_no(rhs, rt, "`or`");
+                return (self.types.yes_no, rr);
+            }
+            let _ = yes_no;
+
+            self.expr_fallback[id as usize] = true;
+            let what = self.describe_expr(lhs);
+            self.say(
+                Diagnostic::notice(span, format!("This fallback is never needed, because {what}."))
+                    .because(
+                        "I only ask you to say what happens if something does not work out when it \
+                         genuinely might. This one cannot, so the fallback will never be reached.",
+                    )
+                    .suggest("You can simply leave it off:", "..."),
+            );
+            let _ = self.types.unify(lt, rt);
+            return (lt, rr);
         }
 
         let (lt, lr) = self.check_expr(lhs);
@@ -1104,14 +1125,17 @@ impl<'a> Checker<'a> {
             BinOp::Div => {
                 self.want_number(lhs, lt, "a number");
                 self.want_number(rhs, rt, "a number");
-                (
-                    self.types.decimal,
-                    risk.or(Some(Risk {
+                let could_fail = !matches!(self.plain_number(rhs), Some(v) if v != 0.0);
+                let mine = if could_fail {
+                    Some(Risk {
                         span,
                         form: Some(Form::DivideBy),
                         action: None,
-                    })),
-                )
+                    })
+                } else {
+                    None
+                };
+                (self.types.decimal, risk.or(mine))
             }
             BinOp::Is | BinOp::IsNot => {
                 if self.types.unify(lt, rt).is_err() {
@@ -1135,6 +1159,24 @@ impl<'a> Checker<'a> {
                 (self.types.yes_no, risk)
             }
             BinOp::Over | BinOp::Under | BinOp::AtLeast | BinOp::AtMost => {
+                if !self.types.has_order(lt) || !self.types.has_order(rt) {
+                    self.say(
+                        Diagnostic::problem(
+                            span,
+                            "Complex numbers cannot be put in order.",
+                        )
+                        .because(
+                            "A complex number is a place on a plane rather than a point on a line, \
+                             and there is no sense in which one place comes before another. They \
+                             can still be the same or different.",
+                        )
+                        .suggest(
+                            "Compare how far each one is from zero:",
+                            "the size of a is over the size of b",
+                        ),
+                    );
+                    return (self.types.yes_no, risk);
+                }
                 let l = self.types.resolve(lt);
                 if matches!(self.types.kind(l), TyKind::Text) {
                     let text = self.types.text;
@@ -1430,6 +1472,51 @@ impl<'a> Checker<'a> {
                 self.types.whole
             }
 
+            Form::MakeFraction => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a whole number");
+                    }
+                }
+                self.types.fraction
+            }
+
+            Form::TopOf | Form::BottomOf | Form::AsWholeNumber => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.whole
+            }
+
+            Form::WholeNumberIn => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "text");
+                }
+                self.types.whole
+            }
+
+            Form::AsFraction => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.fraction
+            }
+
+            Form::AsDecimal | Form::RealPart | Form::ImaginaryPart | Form::DirectionOf => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.decimal
+            }
+
+            Form::ImaginaryNumber | Form::ConjugateOf | Form::ComplexSquareRoot => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.complex
+            }
+
             // Constants.
             Form::NumberPi | Form::NumberE => self.types.decimal,
 
@@ -1588,10 +1675,19 @@ impl<'a> Checker<'a> {
                 self.types.whole
             }
             Form::AbsoluteOf => {
-                if let Some((e, t)) = arg(0) {
-                    self.want_number(e, t, "a number");
+                match arg(0) {
+                    Some((e, t)) => {
+                        self.want_number(e, t, "a number");
+                        // How far a complex number is from zero is a plain distance.
+                        let r = self.types.resolve(t);
+                        if matches!(self.types.kind(r), TyKind::Complex) {
+                            self.types.decimal
+                        } else {
+                            self.types.widen(t, t)
+                        }
+                    }
+                    None => self.types.whole,
                 }
-                self.types.whole
             }
             Form::SquareRootOf => {
                 if let Some((e, t)) = arg(0) {
@@ -1844,6 +1940,63 @@ impl<'a> Checker<'a> {
     // -----------------------------------------------------------------
     // Things that might not work out
     // -----------------------------------------------------------------
+
+    /// A short way of naming an expression, for a message about it.
+    fn describe_expr(&self, e: ExprId) -> String {
+        match self.ast.expr(e).kind {
+            ExprKind::Phrase { phrase, .. } => {
+                let p = self.vocab.phrase(phrase);
+                format!("`{}` always works out here", p.pattern)
+            }
+            ExprKind::Binary { op: BinOp::Div, .. } => {
+                "dividing by that number always works out".to_string()
+            }
+            _ => "this always works out".to_string(),
+        }
+    }
+
+    /// The value of an expression, when it is written out in full right there.
+    fn plain_number(&self, e: ExprId) -> Option<f64> {
+        match self.ast.expr(e).kind {
+            ExprKind::Int(v) => Some(v as f64),
+            ExprKind::Dec(v) => Some(v),
+            ExprKind::Unary {
+                op: UnOp::Negate,
+                operand,
+            } => self.plain_number(operand).map(|v| -v),
+            _ => None,
+        }
+    }
+
+    /// Whether a use of a risky phrase genuinely cannot go wrong.
+    ///
+    /// `1 over 3` can no more fail than `1 plus 3` can, and being made to say what happens if it
+    /// does would be nagging rather than helping. Where the answer is written out in front of the
+    /// language, it works it out and stays quiet. Where anything is unknown it asks, as always.
+    fn cannot_fail(&self, form: Form, args: &[ExprId]) -> bool {
+        let at = |k: usize| args.get(k).and_then(|e| self.plain_number(*e));
+        match form {
+            Form::MakeFraction | Form::RemainderOf | Form::AsPercentageOf => {
+                matches!(at(1), Some(v) if v != 0.0)
+            }
+            Form::SmallestCommonMultiple => {
+                matches!((at(0), at(1)), (Some(a), Some(b)) if a != 0.0 && b != 0.0)
+            }
+            Form::SquareRootOf => matches!(at(0), Some(v) if v >= 0.0),
+            Form::ArcSineOf | Form::ArcCosineOf => {
+                matches!(at(0), Some(v) if (-1.0..=1.0).contains(&v))
+            }
+            Form::NaturalLogarithm | Form::CommonLogarithm => {
+                matches!(at(0), Some(v) if v > 0.0)
+            }
+            Form::LogarithmInBase => {
+                matches!((at(0), at(1)), (Some(v), Some(b)) if v > 0.0 && b > 0.0 && b != 1.0)
+            }
+            Form::FactorialOf => matches!(at(0), Some(v) if (0.0..=20.0).contains(&v)),
+            Form::DivideBy => matches!(at(0), Some(v) if v != 0.0),
+            _ => false,
+        }
+    }
 
     fn handle_risk(&mut self, risk: Option<Risk>, _at: Span) {
         let risk = match risk {

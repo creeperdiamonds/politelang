@@ -4,9 +4,10 @@
 //! program runs. This is a small Hindley–Milner style engine: type variables in a flat arena,
 //! union-find with path compression, no `Rc` anywhere.
 //!
-//! One deliberate v1 simplification: whole and decimal numbers mix freely, and the result of
-//! mixing them is a decimal. Text and numbers still do not mix, which is what catches the
-//! mistake in spec section 8.
+//! Numbers form a tower: whole numbers sit inside fractions, fractions sit inside decimals, and
+//! decimals sit inside complex numbers. Any two kinds of number mix freely, and the answer comes
+//! back in whichever sits further out. Text and numbers still do not mix, which is what catches
+//! the mistake in spec section 8.
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct TyId(pub u32);
@@ -16,7 +17,9 @@ pub enum TyKind {
     /// Not worked out yet. The number indexes the substitution.
     Var(u32),
     Whole,
+    Fraction,
     Decimal,
+    Complex,
     Text,
     YesNo,
     Nothing,
@@ -29,6 +32,8 @@ pub struct Types {
     subst: Vec<Option<TyId>>,
     /// Cached ids for the types with no arguments, so they are made once.
     pub whole: TyId,
+    pub fraction: TyId,
+    pub complex: TyId,
     pub decimal: TyId,
     pub text: TyId,
     pub yes_no: TyId,
@@ -55,6 +60,8 @@ impl Types {
         kinds.push(TyKind::Text);
         kinds.push(TyKind::YesNo);
         kinds.push(TyKind::Nothing);
+        kinds.push(TyKind::Fraction);
+        kinds.push(TyKind::Complex);
         Types {
             kinds,
             subst: Vec::new(),
@@ -63,6 +70,8 @@ impl Types {
             text: TyId(2),
             yes_no: TyId(3),
             nothing: TyId(4),
+            fraction: TyId(5),
+            complex: TyId(6),
         }
     }
 
@@ -111,17 +120,44 @@ impl Types {
 
     pub fn is_number(&mut self, id: TyId) -> bool {
         let r = self.resolve(id);
-        matches!(self.kind(r), TyKind::Whole | TyKind::Decimal)
+        matches!(
+            self.kind(r),
+            TyKind::Whole | TyKind::Fraction | TyKind::Decimal | TyKind::Complex
+        )
     }
 
-    /// The wider of two number types, so mixing whole and decimal gives a decimal.
+    /// How far out in the tower a kind sits.
+    fn rank(k: TyKind) -> u8 {
+        match k {
+            TyKind::Whole => 0,
+            TyKind::Fraction => 1,
+            TyKind::Decimal => 2,
+            TyKind::Complex => 3,
+            _ => 0,
+        }
+    }
+
+    /// The further out of two number types. Whole meets fraction and gives a fraction; anything
+    /// meets complex and gives complex.
     pub fn widen(&mut self, a: TyId, b: TyId) -> TyId {
         let a = self.resolve(a);
         let b = self.resolve(b);
-        match (self.kind(a), self.kind(b)) {
-            (TyKind::Decimal, _) | (_, TyKind::Decimal) => self.decimal,
+        let ka = self.kind(a);
+        let kb = self.kind(b);
+        let wanted = if Self::rank(ka) >= Self::rank(kb) { ka } else { kb };
+        match wanted {
+            TyKind::Complex => self.complex,
+            TyKind::Decimal => self.decimal,
+            TyKind::Fraction => self.fraction,
             _ => self.whole,
         }
+    }
+
+    /// Whether ordering makes sense. There is no sense in which one point on a plane comes before
+    /// another, so complex numbers can be the same or different but never greater or lesser.
+    pub fn has_order(&mut self, id: TyId) -> bool {
+        let r = self.resolve(id);
+        !matches!(self.kind(r), TyKind::Complex)
     }
 
     pub fn unify(&mut self, a: TyId, b: TyId) -> Result<(), Mismatch> {
@@ -151,8 +187,18 @@ impl Types {
                 self.subst[v as usize] = Some(ra);
                 Ok(())
             }
-            // Numbers mix.
-            (TyKind::Whole, TyKind::Decimal) | (TyKind::Decimal, TyKind::Whole) => Ok(()),
+            // Any two kinds of number mix.
+            (x, y)
+                if matches!(
+                    x,
+                    TyKind::Whole | TyKind::Fraction | TyKind::Decimal | TyKind::Complex
+                ) && matches!(
+                    y,
+                    TyKind::Whole | TyKind::Fraction | TyKind::Decimal | TyKind::Complex
+                ) =>
+            {
+                Ok(())
+            }
             (TyKind::List(x), TyKind::List(y)) => self.unify(x, y),
             (TyKind::Lookup(x), TyKind::Lookup(y)) => self.unify(x, y),
             (x, y) if x == y => Ok(()),
@@ -178,7 +224,9 @@ impl Types {
         match self.kind(r) {
             TyKind::Var(_) => "something I have not worked out yet".to_string(),
             TyKind::Whole => "a whole number".to_string(),
+            TyKind::Fraction => "a fraction".to_string(),
             TyKind::Decimal => "a decimal number".to_string(),
+            TyKind::Complex => "a complex number".to_string(),
             TyKind::Text => "text".to_string(),
             TyKind::YesNo => "a yes or no".to_string(),
             TyKind::Nothing => "nothing".to_string(),
@@ -228,6 +276,24 @@ mod tests {
     fn text_and_numbers_do_not_mix() {
         let mut t = Types::new();
         assert!(t.unify(t.text, t.whole).is_err());
+    }
+
+    #[test]
+    fn the_tower_widens_outwards() {
+        let mut t = Types::new();
+        let (w, f, d, c) = (t.whole, t.fraction, t.decimal, t.complex);
+        let wf = t.widen(w, f);
+        assert_eq!(t.kind(wf), TyKind::Fraction);
+        let wd = t.widen(f, d);
+        assert_eq!(t.kind(wd), TyKind::Decimal);
+        let wc = t.widen(w, c);
+        assert_eq!(t.kind(wc), TyKind::Complex);
+        assert!(t.unify(w, c).is_ok());
+        assert!(t.unify(f, d).is_ok());
+        assert!(!t.has_order(c));
+        assert!(t.has_order(d));
+        assert_eq!(t.describe(f), "a fraction");
+        assert_eq!(t.describe(c), "a complex number");
     }
 
     #[test]

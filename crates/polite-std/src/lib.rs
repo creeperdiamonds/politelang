@@ -16,13 +16,29 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
+pub mod big;
+pub mod exact;
+pub mod numbers;
+
+pub use big::Big;
+pub use exact::{Complex, Fraction};
+pub use numbers::{from_big, from_complex, from_fraction};
+
 pub type Reason = String;
 pub type Answer<T> = Result<T, Reason>;
 
 #[derive(Clone, Debug)]
 pub enum Value {
+    /// A whole number small enough to be quick about.
     Whole(i64),
+    /// A whole number that outgrew the one above. The two are the same kind of thing to anybody
+    /// writing a program; only the machine knows the difference.
+    Big(Rc<Big>),
+    /// An exact share: a third really is a third.
+    Fraction(Rc<Fraction>),
     Decimal(f64),
+    /// A number with a part above the line as well as across.
+    Complex(Complex),
     Text(Rc<String>),
     YesNo(bool),
     Nothing,
@@ -49,11 +65,20 @@ impl Value {
         Value::Lookup(Rc::new(RefCell::new(BTreeMap::new())))
     }
 
+    pub fn is_number(&self) -> bool {
+        matches!(
+            self,
+            Value::Whole(_) | Value::Big(_) | Value::Fraction(_) | Value::Decimal(_) | Value::Complex(_)
+        )
+    }
+
     /// The name of this kind of thing, as a person would say it.
     pub fn kind_name(&self) -> &'static str {
         match self {
-            Value::Whole(_) => "a whole number",
+            Value::Whole(_) | Value::Big(_) => "a whole number",
+            Value::Fraction(_) => "a fraction",
             Value::Decimal(_) => "a decimal number",
+            Value::Complex(_) => "a complex number",
             Value::Text(_) => "text",
             Value::YesNo(_) => "a yes or no",
             Value::Nothing => "nothing",
@@ -65,7 +90,14 @@ impl Value {
     pub fn as_whole(&self) -> i64 {
         match self {
             Value::Whole(v) => *v,
+            Value::Big(b) => b.to_i64().unwrap_or(if b.is_negative() { i64::MIN } else { i64::MAX }),
+            Value::Fraction(f) => f
+                .top()
+                .div_rem(f.bottom())
+                .and_then(|(q, _)| q.to_i64())
+                .unwrap_or(0),
             Value::Decimal(v) => *v as i64,
+            Value::Complex(c) => c.across as i64,
             Value::YesNo(b) => i64::from(*b),
             _ => 0,
         }
@@ -74,7 +106,10 @@ impl Value {
     pub fn as_decimal(&self) -> f64 {
         match self {
             Value::Whole(v) => *v as f64,
+            Value::Big(b) => b.to_f64(),
+            Value::Fraction(f) => f.to_f64(),
             Value::Decimal(v) => *v,
+            Value::Complex(c) => c.across,
             _ => 0.0,
         }
     }
@@ -98,6 +133,9 @@ impl Value {
     pub fn showable(&self) -> String {
         match self {
             Value::Whole(v) => v.to_string(),
+            Value::Big(b) => b.to_decimal(),
+            Value::Fraction(f) => f.showable(),
+            Value::Complex(c) => c.showable(),
             Value::Decimal(v) => {
                 if v.fract() == 0.0 && v.is_finite() {
                     format!("{v:.1}")
@@ -125,12 +163,14 @@ impl Value {
     }
 
     pub fn same_as(&self, other: &Value) -> bool {
+        // Numbers of any kind are compared as numbers, so that a whole one, a big one, a fraction
+        // and a decimal all agree about what they are worth.
+        if self.is_number() && other.is_number() {
+            return numbers::same(self, other);
+        }
         match (self, other) {
             (Value::Whole(a), Value::Whole(b)) => a == b,
             (Value::Decimal(a), Value::Decimal(b)) => a == b,
-            (Value::Whole(a), Value::Decimal(b)) | (Value::Decimal(b), Value::Whole(a)) => {
-                (*a as f64) == *b
-            }
             (Value::Text(a), Value::Text(b)) => a == b,
             (Value::YesNo(a), Value::YesNo(b)) => a == b,
             (Value::Nothing, Value::Nothing) => true,
@@ -706,6 +746,71 @@ pub fn percent_of(percent: &Value, value: &Value) -> Value {
     Value::Decimal(percent.as_decimal() / 100.0 * value.as_decimal())
 }
 
+/// One whole number over another, kept exact.
+pub fn make_fraction(top: &Value, bottom: &Value) -> Answer<Value> {
+    let top = numbers::as_big(top);
+    let bottom = numbers::as_big(bottom);
+    match Fraction::new(top, bottom) {
+        Some(f) => Ok(numbers::from_fraction(f)),
+        None => Err("nothing can be shared into zero parts".to_string()),
+    }
+}
+
+pub fn fraction_top(v: &Value) -> Value {
+    numbers::from_big(numbers::as_fraction(v).top().clone())
+}
+
+pub fn fraction_bottom(v: &Value) -> Value {
+    numbers::from_big(numbers::as_fraction(v).bottom().clone())
+}
+
+pub fn as_fraction_value(v: &Value) -> Value {
+    numbers::from_fraction(numbers::as_fraction(v))
+}
+
+pub fn as_decimal_value(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal())
+}
+
+pub fn as_whole_number_value(v: &Value) -> Value {
+    match v {
+        Value::Whole(_) | Value::Big(_) => v.clone(),
+        other => numbers::from_big(numbers::as_big(other)),
+    }
+}
+
+/// Read text as a whole number of any size at all.
+pub fn whole_number_in(text: &str) -> Answer<Value> {
+    match Big::from_decimal(text.trim()) {
+        Some(b) => Ok(numbers::from_big(b)),
+        None => Err(format!("\"{}\" is not a whole number", text.trim())),
+    }
+}
+
+pub fn imaginary_number(v: &Value) -> Value {
+    Value::Complex(Complex::imaginary(v.as_decimal()))
+}
+
+pub fn real_part(v: &Value) -> Value {
+    Value::Decimal(numbers::as_complex(v).across)
+}
+
+pub fn imaginary_part(v: &Value) -> Value {
+    Value::Decimal(numbers::as_complex(v).up)
+}
+
+pub fn conjugate(v: &Value) -> Value {
+    Value::Complex(numbers::as_complex(v).conjugate())
+}
+
+pub fn direction(v: &Value) -> Value {
+    Value::Decimal(numbers::as_complex(v).direction())
+}
+
+pub fn complex_square_root(v: &Value) -> Value {
+    Value::Complex(numbers::as_complex(v).square_root())
+}
+
 pub fn remainder(a: &Value, b: &Value) -> Answer<Value> {
     let d = b.as_whole();
     if d == 0 {
@@ -821,7 +926,16 @@ pub fn rounded(v: &Value) -> Value {
 pub fn absolute(v: &Value) -> Value {
     match v {
         Value::Decimal(d) => Value::Decimal(d.abs()),
-        other => Value::Whole(other.as_whole().abs()),
+        Value::Complex(c) => Value::Decimal(c.size()),
+        Value::Big(b) => numbers::from_big(b.abs()),
+        Value::Fraction(f) => {
+            let positive = if f.top().is_negative() { f.negated() } else { (**f).clone() };
+            numbers::from_fraction(positive)
+        }
+        other => match other.as_whole().checked_abs() {
+            Some(v) => Value::Whole(v),
+            None => numbers::from_big(numbers::as_big(other).abs()),
+        },
     }
 }
 

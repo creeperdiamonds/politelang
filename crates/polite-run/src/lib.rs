@@ -213,26 +213,19 @@ impl Runner<'_> {
                     set!(dst, v);
                 }
 
-                Instr::AddWhole { dst, a, b } => {
-                    let (x, y) = (slots[*a as usize].as_whole(), slots[*b as usize].as_whole());
-                    match x.checked_add(y) {
-                        Some(v) => set!(dst, Value::Whole(v)),
-                        None => return Err(too_big()),
-                    }
+                // These take the small fast path when both sides are small, and step out into
+                // the wider tower only when they have to. A whole number has no limit.
+                Instr::AddWhole { dst, a, b } | Instr::AddNumber { dst, a, b } => {
+                    let v = std_lib::numbers::add(&slots[*a as usize], &slots[*b as usize]);
+                    set!(dst, v);
                 }
-                Instr::SubWhole { dst, a, b } => {
-                    let (x, y) = (slots[*a as usize].as_whole(), slots[*b as usize].as_whole());
-                    match x.checked_sub(y) {
-                        Some(v) => set!(dst, Value::Whole(v)),
-                        None => return Err(too_big()),
-                    }
+                Instr::SubWhole { dst, a, b } | Instr::SubNumber { dst, a, b } => {
+                    let v = std_lib::numbers::sub(&slots[*a as usize], &slots[*b as usize]);
+                    set!(dst, v);
                 }
-                Instr::MulWhole { dst, a, b } => {
-                    let (x, y) = (slots[*a as usize].as_whole(), slots[*b as usize].as_whole());
-                    match x.checked_mul(y) {
-                        Some(v) => set!(dst, Value::Whole(v)),
-                        None => return Err(too_big()),
-                    }
+                Instr::MulWhole { dst, a, b } | Instr::MulNumber { dst, a, b } => {
+                    let v = std_lib::numbers::mul(&slots[*a as usize], &slots[*b as usize]);
+                    set!(dst, v);
                 }
                 Instr::AddDecimal { dst, a, b } => {
                     let v = slots[*a as usize].as_decimal() + slots[*b as usize].as_decimal();
@@ -250,9 +243,9 @@ impl Runner<'_> {
                     let v = slots[*src as usize].as_decimal();
                     set!(dst, Value::Decimal(v));
                 }
-                Instr::NegateWhole { dst, src } => {
-                    let v = -slots[*src as usize].as_whole();
-                    set!(dst, Value::Whole(v));
+                Instr::NegateWhole { dst, src } | Instr::NegateNumber { dst, src } => {
+                    let v = std_lib::numbers::negate(&slots[*src as usize]);
+                    set!(dst, v);
                 }
                 Instr::NegateDecimal { dst, src } => {
                     let v = -slots[*src as usize].as_decimal();
@@ -584,7 +577,22 @@ impl Runner<'_> {
             Builtin::Absolute => Some(std_lib::absolute(&a0())),
             Builtin::SquareRoot => Some(std_lib::square_root(&a0())?),
             Builtin::DividesEvenly => Some(std_lib::divides_evenly(&a0(), &a1())),
-            Builtin::DivideNumbers => Some(std_lib::divide(&a0(), &a1())?),
+            Builtin::DivideNumbers => Some(std_lib::numbers::divide(&a0(), &a1())?),
+
+            Builtin::MakeFraction => Some(std_lib::make_fraction(&a0(), &a1())?),
+            Builtin::FractionTop => Some(std_lib::fraction_top(&a0())),
+            Builtin::FractionBottom => Some(std_lib::fraction_bottom(&a0())),
+            Builtin::AsFraction => Some(std_lib::as_fraction_value(&a0())),
+            Builtin::AsDecimal => Some(std_lib::as_decimal_value(&a0())),
+            Builtin::AsWholeNumber => Some(std_lib::as_whole_number_value(&a0())),
+            Builtin::WholeNumberIn => Some(std_lib::whole_number_in(&a0().as_text())?),
+
+            Builtin::ImaginaryNumber => Some(std_lib::imaginary_number(&a0())),
+            Builtin::RealPart => Some(std_lib::real_part(&a0())),
+            Builtin::ImaginaryPart => Some(std_lib::imaginary_part(&a0())),
+            Builtin::Conjugate => Some(std_lib::conjugate(&a0())),
+            Builtin::Direction => Some(std_lib::direction(&a0())),
+            Builtin::ComplexSquareRoot => Some(std_lib::complex_square_root(&a0())),
 
             Builtin::Pi => Some(Value::Decimal(std_lib::PI)),
             Builtin::EulerE => Some(Value::Decimal(std_lib::E)),
@@ -766,7 +774,18 @@ fn as_lookup(v: &Value) -> Result<LookupRef, String> {
 
 fn compare(a: &Value, b: &Value, op: Compare, kind: CmpKind) -> bool {
     let ordering = match kind {
-        CmpKind::Whole => a.as_whole().cmp(&b.as_whole()),
+        CmpKind::Number => match std_lib::numbers::compare(a, b) {
+            Some(o) => o,
+            // Complex numbers have no order. Sameness still means something, and the checker has
+            // already refused to let anything else be asked of them.
+            None => {
+                return match op {
+                    Compare::Equal => std_lib::numbers::same(a, b),
+                    Compare::NotEqual => !std_lib::numbers::same(a, b),
+                    _ => false,
+                }
+            }
+        },
         CmpKind::Decimal => a
             .as_decimal()
             .partial_cmp(&b.as_decimal())
@@ -789,12 +808,6 @@ fn compare(a: &Value, b: &Value, op: Compare, kind: CmpKind) -> bool {
         Compare::AtLeast => ordering.is_ge(),
         Compare::AtMost => ordering.is_le(),
     }
-}
-
-fn too_big() -> String {
-    "That number grew larger than I can hold. Whole numbers here go up to about nine million \
-     million million."
-        .to_string()
 }
 
 fn capitalise(s: &str) -> String {

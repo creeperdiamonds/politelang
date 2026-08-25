@@ -22,7 +22,9 @@ pub type FuncId = u32;
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Ty {
     Whole,
+    Fraction,
     Decimal,
+    Complex,
     Text,
     YesNo,
     List,
@@ -103,6 +105,21 @@ pub enum Builtin {
     Power,
     RoundedDown,
     RoundedUp,
+
+    MakeFraction,
+    FractionTop,
+    FractionBottom,
+    AsFraction,
+    AsDecimal,
+    AsWholeNumber,
+    WholeNumberIn,
+
+    ImaginaryNumber,
+    RealPart,
+    ImaginaryPart,
+    Conjugate,
+    Direction,
+    ComplexSquareRoot,
 
     Pi,
     EulerE,
@@ -185,6 +202,8 @@ impl Builtin {
                 | Builtin::Median
                 | Builtin::Spread
                 | Builtin::AsPercentageOf
+                | Builtin::MakeFraction
+                | Builtin::WholeNumberIn
         )
     }
 }
@@ -202,7 +221,9 @@ pub enum Compare {
 /// Which specialised comparison to use. Chosen at lowering, never at runtime.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum CmpKind {
-    Whole,
+    /// Numbers, compared exactly across the whole tower: a whole number of any size, a fraction,
+    /// a decimal. Small whole numbers take a fast path and never leave it.
+    Number,
     Decimal,
     Text,
     YesNo,
@@ -268,6 +289,27 @@ pub enum Instr {
     },
     /// Widening a whole number to a decimal one, decided at lowering.
     WholeToDecimal {
+        dst: Slot,
+        src: Slot,
+    },
+    /// Arithmetic where the kinds of number are not both plain, so the tower decides. Fractions
+    /// and complex numbers come through here; whole numbers and decimals have their own.
+    AddNumber {
+        dst: Slot,
+        a: Slot,
+        b: Slot,
+    },
+    SubNumber {
+        dst: Slot,
+        a: Slot,
+        b: Slot,
+    },
+    MulNumber {
+        dst: Slot,
+        a: Slot,
+        b: Slot,
+    },
+    NegateNumber {
         dst: Slot,
         src: Slot,
     },
@@ -448,6 +490,10 @@ fn show_instr(instr: &Instr, p: &Program) -> String {
         Instr::SubDecimal { dst, a, b } => format!("%{dst} = sub.decimal %{a}, %{b}"),
         Instr::MulDecimal { dst, a, b } => format!("%{dst} = mul.decimal %{a}, %{b}"),
         Instr::WholeToDecimal { dst, src } => format!("%{dst} = widen %{src}"),
+        Instr::AddNumber { dst, a, b } => format!("%{dst} = add.number %{a}, %{b}"),
+        Instr::SubNumber { dst, a, b } => format!("%{dst} = sub.number %{a}, %{b}"),
+        Instr::MulNumber { dst, a, b } => format!("%{dst} = mul.number %{a}, %{b}"),
+        Instr::NegateNumber { dst, src } => format!("%{dst} = negate.number %{src}"),
         Instr::NegateWhole { dst, src } => format!("%{dst} = negate.whole %{src}"),
         Instr::NegateDecimal { dst, src } => format!("%{dst} = negate.decimal %{src}"),
         Instr::ConcatText { dst, a, b } => format!("%{dst} = concat.text %{a}, %{b}"),

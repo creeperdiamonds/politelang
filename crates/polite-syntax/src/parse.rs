@@ -148,22 +148,37 @@ enum Stopper {
 struct Ctx {
     allow_and: bool,
     allow_or: bool,
+    /// Whether the holes of this phrase take only the value right beside them.
+    ///
+    /// `1 over 3 plus 1 over 3` is two thirds, because the bottom of a fraction is the number
+    /// underneath it and not everything that follows. The same goes for a power and for a
+    /// percentage: arithmetic written after them belongs outside, not inside.
+    close_holes: bool,
 }
 
 impl Ctx {
     const FULL: Ctx = Ctx {
         allow_and: true,
         allow_or: true,
+        close_holes: false,
     };
     /// Inside a value-producing phrase: leave `and` and `or` to whoever wrote the phrase.
     const TIGHT: Ctx = Ctx {
         allow_and: false,
         allow_or: false,
+        close_holes: false,
+    };
+    /// Inside a phrase that binds to the value beside it.
+    const CLOSE: Ctx = Ctx {
+        allow_and: false,
+        allow_or: false,
+        close_holes: true,
     };
     /// A call argument: `and` separates arguments, but a fallback still attaches.
     const ARG: Ctx = Ctx {
         allow_and: false,
         allow_or: true,
+        close_holes: false,
     };
 }
 
@@ -1071,7 +1086,12 @@ impl<'a> Parser<'a> {
                         if matches!(self.tok(), Tok::Colon | Tok::Newline | Tok::End) {
                             return None;
                         }
-                        args.push(self.parse_expr(ctx, &stops));
+                        let filled = if ctx.close_holes {
+                            self.parse_unary(ctx, &stops)
+                        } else {
+                            self.parse_expr(ctx, &stops)
+                        };
+                        args.push(filled);
                     }
                 }
             }
@@ -1325,8 +1345,9 @@ impl<'a> Parser<'a> {
             let form = vocab.phrase(pid).form;
             let mut names = Vec::new();
             let mut args = vec![lhs];
+            let inside = if tight { Ctx::CLOSE } else { Ctx::TIGHT };
             if self
-                .match_pieces_from(pieces, 1, Ctx::TIGHT, &mut names, &mut args)
+                .match_pieces_from(pieces, 1, inside, &mut names, &mut args)
                 .is_some()
             {
                 let span = self.ast.expr(lhs).span.join(self.span());

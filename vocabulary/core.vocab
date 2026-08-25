@@ -297,6 +297,37 @@ expr  full      spread_of          :: the spread of {list} :: risky
 expr  everyday  as_percentage_of   :: {part} as a percentage of {whole} :: risky
 expr  everyday  percent_of         :: {percent} percent of {value} :: tight
 
+
+# ---------------------------------------------------------------------------
+# Fractions
+#
+# A fraction is exact. A third really is a third, and three of them make one, which is something
+# no decimal number can honestly say.
+# ---------------------------------------------------------------------------
+
+expr  everyday  make_fraction  :: {top} over {bottom} :: risky tight
+expr  everyday  make_fraction  :: the fraction {top} over {bottom} :: risky
+expr  working   top_of         :: the top of {value}
+expr  working   bottom_of      :: the bottom of {value}
+expr  working   as_fraction    :: {value} as a fraction
+expr  working   as_decimal     :: {value} as a decimal
+expr  working   as_whole_number :: {value} as a whole number
+expr  working   whole_number_in :: the whole number in {value} :: risky
+
+
+# ---------------------------------------------------------------------------
+# Complex numbers
+#
+# Written the way they are read: three plus the imaginary number four is 3+4i.
+# ---------------------------------------------------------------------------
+
+expr  full      imaginary_number   :: the imaginary number {value}
+expr  full      real_part          :: the real part of {value}
+expr  full      imaginary_part     :: the imaginary part of {value}
+expr  full      conjugate_of       :: the conjugate of {value}
+expr  full      direction_of       :: the direction of {value}
+expr  full      complex_square_root :: the complex square root of {value}
+
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
 # purpose 1 of the language is that you learn more English.
@@ -416,3 +447,16 @@ explain median_of          :: The median is the one in the middle once they are 
 explain spread_of          :: The spread says how far from the average the numbers usually sit. It might not work out, because an empty list has no spread.
 explain as_percentage_of   :: This is how many hundredths of the whole the part comes to. It might not work out, because nothing is a share of zero.
 explain percent_of         :: A percentage is a number of hundredths. This takes that many hundredths of a value.
+explain make_fraction  :: A fraction is one whole number shared into another, kept exact for ever. It might not work out, because nothing can be shared into zero parts.
+explain top_of         :: The top of a fraction is the number above the line, once the fraction is in its smallest form.
+explain bottom_of      :: The bottom of a fraction is the number below the line, once the fraction is in its smallest form.
+explain as_fraction    :: This finds the fraction a person would have written for a number, so three quarters comes back as three quarters rather than as something enormous.
+explain as_decimal     :: This works a number out as a decimal, which may lose a little of a fraction but is often what you want to show.
+explain as_whole_number :: This throws away anything after the dot, without rounding either way.
+explain whole_number_in :: This reads text as a whole number of any size at all. It might not work out, because the text may not be a whole number.
+explain imaginary_number :: An imaginary number is a number of steps up rather than across. One of them, times itself, is minus one.
+explain real_part        :: The real part is how far across a complex number sits.
+explain imaginary_part   :: The imaginary part is how far up a complex number sits.
+explain conjugate_of     :: The conjugate of a complex number is the same distance across and the same distance the other way up.
+explain direction_of     :: This is the way a complex number points, as an angle in radians.
+explain complex_square_root :: Every number has a square root once the imaginary ones are allowed, so this one always works out.

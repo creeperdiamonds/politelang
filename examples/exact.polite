@@ -1,0 +1,34 @@
+-- Whole numbers with no limit, exact fractions, and complex numbers.
+
+-- A whole number simply keeps going. Nothing wraps round, nothing is thrown away.
+please remember f is 1
+please repeat for every n from 1 to 100:
+    multiply f by n
+thank you for repeating
+please show "100 factorial is {f}"
+please show "which is {the length of the text of f} digits long"
+
+please show 2 to the power of 10
+please remember big is the whole number in "123456789012345678901234567890" or 0
+please show big times big
+
+-- Fractions are exact, in a way decimals never are.
+please show 1 over 3
+please show 1 over 3 plus 1 over 3 plus 1 over 3
+please show 1 over 2 plus 1 over 3
+please show 6 over 8
+please show the top of 6 over 8
+please show the bottom of 6 over 8
+please show 0.75 as a fraction
+please show 1 over 3 as a decimal
+
+-- Complex numbers, written the way they are read.
+please remember here is 3 plus the imaginary number 4
+please show here
+please show the size of here
+please show the real part of here
+please show the imaginary part of here
+please show the conjugate of here
+please show here times here
+please show the complex square root of 0 minus 1
+please show the complex square root of 0 minus 9

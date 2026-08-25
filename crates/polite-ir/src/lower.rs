@@ -137,7 +137,9 @@ impl Lower<'_, '_> {
         let r = self.ck.types.resolve(t);
         match self.ck.types.kind(r) {
             TyKind::Whole => Ty::Whole,
+            TyKind::Fraction => Ty::Fraction,
             TyKind::Decimal => Ty::Decimal,
+            TyKind::Complex => Ty::Complex,
             TyKind::Text => Ty::Text,
             TyKind::YesNo => Ty::YesNo,
             TyKind::List(_) => Ty::List,
@@ -538,7 +540,7 @@ impl Lower<'_, '_> {
         self.emit(Instr::Cmp {
             dst: c,
             op: Compare::Under,
-            kind: CmpKind::Whole,
+            kind: CmpKind::Number,
             a: counter,
             b: limit,
         });
@@ -652,7 +654,7 @@ impl Lower<'_, '_> {
         self.emit(Instr::Cmp {
             dst: c,
             op: Compare::Under,
-            kind: CmpKind::Whole,
+            kind: CmpKind::Number,
             a: index,
             b: count,
         });
@@ -731,7 +733,7 @@ impl Lower<'_, '_> {
         self.emit(Instr::Cmp {
             dst: c,
             op: Compare::AtMost,
-            kind: CmpKind::Whole,
+            kind: CmpKind::Number,
             a: var,
             b: to,
         });
@@ -891,10 +893,10 @@ impl Lower<'_, '_> {
                     a::UnOp::Not => self.emit(Instr::Not { dst, src: s }),
                     a::UnOp::Negate => {
                         let t = self.ty_of(operand);
-                        self.emit(if t == Ty::Decimal {
-                            Instr::NegateDecimal { dst, src: s }
-                        } else {
-                            Instr::NegateWhole { dst, src: s }
+                        self.emit(match t {
+                            Ty::Decimal => Instr::NegateDecimal { dst, src: s },
+                            Ty::Whole => Instr::NegateWhole { dst, src: s },
+                            _ => Instr::NegateNumber { dst, src: s },
                         });
                     }
                 }
@@ -909,7 +911,7 @@ impl Lower<'_, '_> {
                 let kind = if decimal {
                     CmpKind::Decimal
                 } else {
-                    CmpKind::Whole
+                    CmpKind::Number
                 };
                 let v = self.value_as(value, want);
                 let l = self.value_as(low, want);
@@ -1051,17 +1053,19 @@ impl Lower<'_, '_> {
                 self.emit(Instr::ConcatText { dst, a, b });
             }
             B::Add | B::Sub | B::Mul => {
-                let decimal = lt == Ty::Decimal || rt == Ty::Decimal;
-                let want = if decimal { Ty::Decimal } else { Ty::Whole };
+                let want = wider(lt, rt);
                 let a = self.value_as(lhs, want);
                 let b = self.value_as(rhs, want);
-                self.emit(match (op, decimal) {
-                    (B::Add, false) => Instr::AddWhole { dst, a, b },
-                    (B::Add, true) => Instr::AddDecimal { dst, a, b },
-                    (B::Sub, false) => Instr::SubWhole { dst, a, b },
-                    (B::Sub, true) => Instr::SubDecimal { dst, a, b },
-                    (_, false) => Instr::MulWhole { dst, a, b },
-                    (_, true) => Instr::MulDecimal { dst, a, b },
+                self.emit(match (op, want) {
+                    (B::Add, Ty::Whole) => Instr::AddWhole { dst, a, b },
+                    (B::Add, Ty::Decimal) => Instr::AddDecimal { dst, a, b },
+                    (B::Add, _) => Instr::AddNumber { dst, a, b },
+                    (B::Sub, Ty::Whole) => Instr::SubWhole { dst, a, b },
+                    (B::Sub, Ty::Decimal) => Instr::SubDecimal { dst, a, b },
+                    (B::Sub, _) => Instr::SubNumber { dst, a, b },
+                    (_, Ty::Whole) => Instr::MulWhole { dst, a, b },
+                    (_, Ty::Decimal) => Instr::MulDecimal { dst, a, b },
+                    (_, _) => Instr::MulNumber { dst, a, b },
                 });
             }
             B::Div => {
@@ -1075,25 +1079,14 @@ impl Lower<'_, '_> {
                     (Ty::YesNo, _) | (_, Ty::YesNo) => CmpKind::YesNo,
                     (Ty::List, _) | (_, Ty::List) => CmpKind::Value,
                     (Ty::Lookup, _) | (_, Ty::Lookup) => CmpKind::Value,
-                    (Ty::Decimal, _) | (_, Ty::Decimal) => CmpKind::Decimal,
+                    // Fractions and big whole numbers are compared exactly, so only a pair that
+                    // is genuinely decimal takes the decimal path.
+                    (Ty::Decimal, Ty::Decimal) => CmpKind::Decimal,
                     (Ty::Nothing, Ty::Nothing) => CmpKind::Value,
-                    _ => CmpKind::Whole,
+                    _ => CmpKind::Number,
                 };
-                let want = match kind {
-                    CmpKind::Decimal => Ty::Decimal,
-                    CmpKind::Whole => Ty::Whole,
-                    _ => lt,
-                };
-                let a = if matches!(kind, CmpKind::Whole | CmpKind::Decimal) {
-                    self.value_as(lhs, want)
-                } else {
-                    self.value(lhs)
-                };
-                let b = if matches!(kind, CmpKind::Whole | CmpKind::Decimal) {
-                    self.value_as(rhs, want)
-                } else {
-                    self.value(rhs)
-                };
+                let a = self.value(lhs);
+                let b = self.value(rhs);
                 let cmp = match op {
                     B::Is => Compare::Equal,
                     B::IsNot => Compare::NotEqual,
@@ -1199,6 +1192,26 @@ impl Lower<'_, '_> {
     }
 }
 
+/// The further out of two kinds of number.
+fn wider(a: Ty, b: Ty) -> Ty {
+    let rank = |t: Ty| match t {
+        Ty::Whole => 0,
+        Ty::Fraction => 1,
+        Ty::Decimal => 2,
+        Ty::Complex => 3,
+        _ => 0,
+    };
+    if rank(a) >= rank(b) {
+        if rank(a) == 0 {
+            Ty::Whole
+        } else {
+            a
+        }
+    } else {
+        b
+    }
+}
+
 /// Which standard-library operation a form means. This is the whole of the V-to-N collapse: many
 /// phrasings, one entry each.
 fn builtin_for(form: Form) -> Option<Builtin> {
@@ -1253,6 +1266,21 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::PowerOf => Builtin::Power,
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
+
+        Form::MakeFraction => Builtin::MakeFraction,
+        Form::TopOf => Builtin::FractionTop,
+        Form::BottomOf => Builtin::FractionBottom,
+        Form::AsFraction => Builtin::AsFraction,
+        Form::AsDecimal => Builtin::AsDecimal,
+        Form::AsWholeNumber => Builtin::AsWholeNumber,
+        Form::WholeNumberIn => Builtin::WholeNumberIn,
+
+        Form::ImaginaryNumber => Builtin::ImaginaryNumber,
+        Form::RealPart => Builtin::RealPart,
+        Form::ImaginaryPart => Builtin::ImaginaryPart,
+        Form::ConjugateOf => Builtin::Conjugate,
+        Form::DirectionOf => Builtin::Direction,
+        Form::ComplexSquareRoot => Builtin::ComplexSquareRoot,
 
         Form::NumberPi => Builtin::Pi,
         Form::NumberE => Builtin::EulerE,

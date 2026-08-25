@@ -66,7 +66,7 @@ fn fold_constants(f: &mut Function) {
                 Instr::Cmp {
                     dst,
                     op,
-                    kind: CmpKind::Whole,
+                    kind: CmpKind::Number,
                     a,
                     b,
                 } => match (known_whole.get(a).copied(), known_whole.get(b).copied()) {
@@ -139,6 +139,7 @@ fn written_slot(instr: &Instr) -> Vec<Slot> {
         | Instr::ConstNothing { dst }
         | Instr::Move { dst, .. }
         | Instr::WholeToDecimal { dst, .. }
+        | Instr::NegateNumber { dst, .. }
         | Instr::NegateWhole { dst, .. }
         | Instr::NegateDecimal { dst, .. }
         | Instr::Not { dst, .. } => vec![*dst],
@@ -148,6 +149,9 @@ fn written_slot(instr: &Instr) -> Vec<Slot> {
         | Instr::AddDecimal { dst, .. }
         | Instr::SubDecimal { dst, .. }
         | Instr::MulDecimal { dst, .. }
+        | Instr::AddNumber { dst, .. }
+        | Instr::SubNumber { dst, .. }
+        | Instr::MulNumber { dst, .. }
         | Instr::ConcatText { dst, .. }
         | Instr::Cmp { dst, .. } => vec![*dst],
         Instr::Call { dst, args, .. } => {

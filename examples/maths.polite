@@ -5,15 +5,15 @@ please show 7 plus 3
 please show 7 + 3
 please show 7 minus 3
 please show 7 times 3
-please show 7 divided by 2 or 0
+please show 7 divided by 2
 
 -- Dividing might not work out, because nothing can be shared into zero parts.
 please show 7 divided by 0 or 0
-please show the remainder of 17 divided by 5 or 0
+please show the remainder of 17 divided by 5
 
 -- Powers and roots.
 please show 2 to the power of 10
-please show the square root of 144 or 0
+please show the square root of 144
 please show the square root of 0 minus 4 or 0
 
 -- Rounding, three ways.
@@ -29,7 +29,7 @@ please show 15 divides evenly by 5
 
 -- Whole and decimal numbers mix freely, and mixing gives a decimal.
 please show 1 plus 0.5
-please show 10 divided by 4 or 0
+please show 10 divided by 4
 
 -- Working on a whole list of numbers at once.
 please remember scores is an empty list

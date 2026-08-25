@@ -127,6 +127,21 @@ forms! {
     AppendFile => "append_file",
     StopEverything => "stop_everything",
 
+    MakeFraction => "make_fraction",
+    TopOf => "top_of",
+    BottomOf => "bottom_of",
+    AsFraction => "as_fraction",
+    AsDecimal => "as_decimal",
+    AsWholeNumber => "as_whole_number",
+    WholeNumberIn => "whole_number_in",
+
+    ImaginaryNumber => "imaginary_number",
+    RealPart => "real_part",
+    ImaginaryPart => "imaginary_part",
+    ConjugateOf => "conjugate_of",
+    DirectionOf => "direction_of",
+    ComplexSquareRoot => "complex_square_root",
+
     NumberPi => "number_pi",
     NumberE => "number_e",
 
