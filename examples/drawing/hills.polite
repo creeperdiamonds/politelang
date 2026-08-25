@@ -1,0 +1,30 @@
+-- The language can draw.
+--
+-- A terminal cell holds two dots, one above the other, so the picture below is 96 across
+-- and 60 down in real colour.
+
+please open a canvas 96 across and 60 down
+
+please remember sky is the colour called "sky" or 0
+please remember sun is the colour called "lamp" or 0
+please remember near is the colour called "moss" or 0
+please remember far is the colour called "dark green" or 0
+
+please clear the canvas to sky
+
+-- The sun, and the light around it.
+please draw a circle at the point 74 and 14 of size 12 in the colour with red 240 green 200 blue 120
+please draw a circle at the point 74 and 14 of size 8 in sun
+
+-- Hills, the far one first so the near one sits in front of it.
+please repeat for every x from 0 to 95:
+    remember height is 40 plus the rounded version of 6 times the sine of x divided by 9
+    draw a line from the point x and height to the point x and 59 in far
+thank you for repeating
+
+please repeat for every x from 0 to 95:
+    remember height is 48 plus the rounded version of 5 times the sine of x divided by 5
+    draw a line from the point x and height to the point x and 59 in near
+thank you for repeating
+
+please reveal the canvas

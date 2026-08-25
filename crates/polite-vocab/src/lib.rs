@@ -221,6 +221,22 @@ forms! {
     MatrixInverse => "matrix_inverse",
     IdentityMatrix => "identity_matrix",
 
+    OpenCanvas => "open_canvas",
+    ClearCanvas => "clear_canvas",
+    PaintPoint => "paint_point",
+    DrawLine => "draw_line",
+    DrawBox => "draw_box",
+    FillBox => "fill_box",
+    DrawCircle => "draw_circle",
+    RevealCanvas => "reveal_canvas",
+    RevealLetters => "reveal_letters",
+    APoint => "a_point",
+    MakeColour => "make_colour",
+    NamedColour => "named_colour",
+    CanvasWidth => "canvas_width",
+    CanvasHeight => "canvas_height",
+    ColourAt => "colour_at",
+
     UseModule => "use_module",
     Share => "share",
 }

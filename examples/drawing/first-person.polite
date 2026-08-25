@@ -1,0 +1,136 @@
+-- A FIRST PERSON VIEW, CAST IN POLITELANG
+--
+-- For every column of the picture, a ray is walked forward from where you are standing until it
+-- meets a wall. How far it went decides how tall that slice of wall is drawn. That is the whole
+-- of it, and it is enough to stand inside a room and look around.
+
+please define the world:
+    remember rows is an empty list
+    add "################" to rows
+    add "#..............#" to rows
+    add "#..............#" to rows
+    add "#....####...##.#" to rows
+    add "#....#..#......#" to rows
+    add "#....#..#...##.#" to rows
+    add "#....####...##.#" to rows
+    add "#..............#" to rows
+    add "#....######....#" to rows
+    add "#..............#" to rows
+    add "#..##....##....#" to rows
+    add "#..##....##....#" to rows
+    add "#..............#" to rows
+    add "#......##......#" to rows
+    add "#..............#" to rows
+    add "################" to rows
+    give back rows
+thank you for defining
+
+
+-- Is the square at this place a wall?
+please define a wall at with an ex and a why and a rows:
+    check if ex is under 0:
+        give back yes
+    thanks
+    check if why is under 0:
+        give back yes
+    thanks
+    remember row is item the whole part of why plus 1 of rows or "################"
+    remember cell is the letter the whole part of ex plus 1 of row or "#"
+    give back cell is "#"
+thank you for defining
+
+
+-- Walls further away are drawn darker, so distance can be seen as well as measured.
+please define dimmed with a shade and a far:
+    remember amount is 1 minus far divided by 18
+    remember kept is amount kept between 0.15 and 1
+    give back the rounded version of shade times kept
+thank you for defining
+
+
+please remember rows is the world
+please remember ex is 2.5
+please remember why is 1.5
+please remember facing is 0.6
+please remember playing is yes
+
+please open a canvas 100 across and 64 down
+
+please keep going forever:
+    check if not playing:
+        stop repeating
+    thanks
+
+    -- Sky above the middle, floor below it.
+    clear the canvas to the colour called "night" or 0
+    fill a box from the point 0 and 0 to the point 99 and 31 in the colour with red 26 green 34 blue 48
+    fill a box from the point 0 and 32 to the point 99 and 63 in the colour with red 40 green 34 blue 28
+
+    -- One ray for every column across.
+    repeat for every column from 0 to 99:
+        remember angle is facing minus 0.45 plus column times 0.009
+        remember dx is the cosine of angle
+        remember dy is the sine of angle
+
+        remember far is 0.0
+        remember found is no
+        keep going forever:
+            change far to far plus 0.06
+            check if far is over 18:
+                stop repeating
+            thanks
+            check if a wall at with ex plus dx times far and why plus dy times far and rows:
+                change found to yes
+                stop repeating
+            thanks
+        thanks
+
+        check if found:
+            -- Straightening the distance stops the walls bending outward at the edges.
+            remember straight is far times the cosine of angle minus facing
+            remember tall is the rounded version of 30 divided by straight or 30
+            remember half is tall kept between 1 and 31
+
+            remember shade is dimmed with 200 and far
+            remember wall is the colour with red shade green (dimmed with 190 and far) blue (dimmed with 165 and far)
+            draw a line from the point column and 32 minus half to the point column and 32 plus half in wall
+        thanks
+    thanks
+
+    reveal the canvas
+
+    show ""
+    show "  you are at {the rounded version of ex times 10} , {the rounded version of why times 10} tenths, looking {the rounded version of facing in degrees} degrees round"
+    show "  forward, back, left, right, or done"
+    ask "  > " as said
+
+    remember step is 0.45
+    check if said is "forward":
+        remember nx is ex plus the cosine of facing times step
+        remember ny is why plus the sine of facing times step
+        check if not (a wall at with nx and ny and rows):
+            change ex to nx
+            change why to ny
+        otherwise:
+            show "  The wall does not move."
+        thank you for checking
+    otherwise if said is "back":
+        remember bx is ex minus the cosine of facing times step
+        remember by is why minus the sine of facing times step
+        check if not (a wall at with bx and by and rows):
+            change ex to bx
+            change why to by
+        thanks
+    otherwise if said is "left":
+        change facing to facing minus 0.3
+    otherwise if said is "right":
+        change facing to facing plus 0.3
+    otherwise if said is "done":
+        change playing to no
+    otherwise:
+        show "  I know forward, back, left, right and done."
+    thank you for checking
+thank you for repeating
+
+please show ""
+please show "  You step back out of it."

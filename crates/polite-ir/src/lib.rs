@@ -106,6 +106,21 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    OpenCanvas,
+    ClearCanvas,
+    PaintPoint,
+    DrawLine,
+    DrawBox,
+    FillBox,
+    DrawCircle,
+    RevealCanvas,
+    RevealLetters,
+    MakeColour,
+    NamedColour,
+    CanvasWidth,
+    CanvasHeight,
+    ColourAt,
+
     IsPrime,
     PrimeFactors,
     Divisors,
@@ -259,6 +274,7 @@ impl Builtin {
                 | Builtin::Determinant
                 | Builtin::MatrixInverse
                 | Builtin::IdentityMatrix
+                | Builtin::NamedColour
         )
     }
 }

@@ -95,23 +95,27 @@ fn optimising_never_changes_what_a_program_does() {
     }
 }
 
-/// Every lesson in the guide really runs.
+/// Every lesson in the guide, and every drawing, really runs.
 ///
-/// A learning guide whose programs do not work is worse than none at all, so the guide's
-/// examples live in the repository and are run here rather than being typed into prose and
-/// hoped for.
+/// A learning guide whose programs do not work is worse than none at all, and a drawing kit that
+/// draws nothing is worse still. Both live in the repository and are run here rather than being
+/// written into prose and hoped for.
 #[test]
 fn every_lesson_in_the_guide_runs() {
     let vocab = Vocabulary::embedded();
-    let dir = common::root().join("examples").join("guide");
-    let mut lessons: Vec<std::path::PathBuf> = std::fs::read_dir(&dir)
-        .unwrap_or_else(|e| panic!("could not read {}: {e}", dir.display()))
-        .filter_map(|e| e.ok())
-        .map(|e| e.path())
-        .filter(|p| p.extension().map(|x| x == "polite").unwrap_or(false))
-        .collect();
+    let mut lessons: Vec<std::path::PathBuf> = Vec::new();
+    for folder in ["guide", "drawing"] {
+        let dir = common::root().join("examples").join(folder);
+        lessons.extend(
+            std::fs::read_dir(&dir)
+                .unwrap_or_else(|e| panic!("could not read {}: {e}", dir.display()))
+                .filter_map(|e| e.ok())
+                .map(|e| e.path())
+                .filter(|p| p.extension().map(|x| x == "polite").unwrap_or(false)),
+        );
+    }
     lessons.sort();
-    assert!(lessons.len() >= 12, "the guide is thinner than it should be");
+    assert!(lessons.len() >= 14, "the examples are thinner than they should be");
 
     for lesson in lessons {
         let name = lesson.file_name().unwrap().to_string_lossy().to_string();

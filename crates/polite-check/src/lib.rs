@@ -792,6 +792,59 @@ impl<'a> Checker<'a> {
                 }
             }
 
+            // Drawing. A place is a list of two numbers and a colour is a whole number, so
+            // there is no new kind of thing to learn in order to draw.
+            Form::OpenCanvas => {
+                for (k, a) in args.iter().enumerate() {
+                    self.want_number(*a, arg_ty[k], "how many dots");
+                }
+            }
+
+            Form::ClearCanvas => {
+                if let Some(c) = args.first() {
+                    self.want_number(*c, arg_ty[0], "a colour");
+                }
+            }
+
+            Form::PaintPoint => {
+                if let Some(w) = args.first() {
+                    let whole = self.types.whole;
+                    let point = self.types.list_of(whole);
+                    self.want(*w, arg_ty[0], point, "a point");
+                }
+                if let Some(c) = args.get(1) {
+                    self.want_number(*c, arg_ty[1], "a colour");
+                }
+            }
+
+            Form::DrawLine | Form::DrawBox | Form::FillBox => {
+                let whole = self.types.whole;
+                let point = self.types.list_of(whole);
+                for k in 0..2 {
+                    if let Some(a) = args.get(k) {
+                        self.want(*a, arg_ty[k], point, "a point");
+                    }
+                }
+                if let Some(c) = args.get(2) {
+                    self.want_number(*c, arg_ty[2], "a colour");
+                }
+            }
+
+            Form::DrawCircle => {
+                if let Some(m) = args.first() {
+                    let whole = self.types.whole;
+                    let point = self.types.list_of(whole);
+                    self.want(*m, arg_ty[0], point, "a point");
+                }
+                for k in 1..3 {
+                    if let Some(a) = args.get(k) {
+                        self.want_number(*a, arg_ty[k], "a number");
+                    }
+                }
+            }
+
+            Form::RevealCanvas | Form::RevealLetters => {}
+
             Form::WaitFor => {
                 if let Some(v) = args.first() {
                     self.want_number(*v, arg_ty[0], "how long to wait");
@@ -1468,6 +1521,44 @@ impl<'a> Checker<'a> {
                 if let Some((e, t)) = arg(1) {
                     let list = self.types.list_of(item);
                     self.want(e, t, list, "a list");
+                }
+                self.types.whole
+            }
+
+            Form::APoint => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "how far along");
+                    }
+                }
+                let whole = self.types.whole;
+                self.types.list_of(whole)
+            }
+
+            Form::MakeColour => {
+                for k in 0..3 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a part of a colour, from 0 to 255");
+                    }
+                }
+                self.types.whole
+            }
+
+            Form::NamedColour => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "the name of a colour");
+                }
+                self.types.whole
+            }
+
+            Form::CanvasWidth | Form::CanvasHeight => self.types.whole,
+
+            Form::ColourAt => {
+                if let Some((e, t)) = arg(0) {
+                    let whole = self.types.whole;
+                    let point = self.types.list_of(whole);
+                    self.want(e, t, point, "a point");
                 }
                 self.types.whole
             }

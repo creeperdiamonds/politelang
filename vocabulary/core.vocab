@@ -394,6 +394,35 @@ expr  full      determinant_of   :: the determinant of {matrix} :: risky
 expr  full      matrix_inverse   :: the inverse matrix of {matrix} :: risky
 expr  full      identity_matrix  :: the identity matrix of size {size} :: risky
 
+
+# ---------------------------------------------------------------------------
+# Drawing
+#
+# A terminal is a grid of cells, and one cell can hold two dots: the top painted as the letter and
+# the bottom as the ground behind it. So the language really does draw, with nothing fetched and
+# no window asked for.
+#
+# A place on the canvas is a point, which is a list of two numbers. A colour is a whole number,
+# made either from its three parts or by its name.
+# ---------------------------------------------------------------------------
+
+stmt  working   open_canvas    :: open a canvas {wide} across and {tall} down
+stmt  working   clear_canvas   :: clear the canvas to {colour}
+stmt  working   paint_point    :: paint {where} in {colour}
+stmt  working   draw_line      :: draw a line from {start} to {finish} in {colour}
+stmt  working   draw_box       :: draw a box from {start} to {finish} in {colour}
+stmt  working   fill_box       :: fill a box from {start} to {finish} in {colour}
+stmt  working   draw_circle    :: draw a circle at {middle} of size {radius} in {colour}
+stmt  working   reveal_canvas  :: reveal the canvas
+stmt  full      reveal_letters :: reveal the letters of the canvas
+
+expr  working   a_point        :: the point {across} and {down}
+expr  working   make_colour    :: the colour with red {red} green {green} blue {blue}
+expr  working   named_colour   :: the colour called {shade} :: risky
+expr  working   canvas_width   :: the canvas width
+expr  working   canvas_height  :: the canvas height
+expr  full      colour_at      :: the colour at {where}
+
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
 # purpose 1 of the language is that you learn more English.
@@ -856,3 +885,39 @@ english write          :: verb         :: To put words down.
 english wrong          :: adjective    :: Not correct; not as it should be.
 english yes            :: interjection :: The word used to agree.
 english you            :: pronoun      :: The person being spoken to.
+explain open_canvas    :: To open a canvas is to make a fresh surface to draw on, so many dots across and so many down. Everything drawn after this goes onto it.
+explain clear_canvas   :: This washes the whole canvas over in one colour, which is how a picture usually begins.
+explain paint_point    :: This colours in a single dot. A point is a list of two numbers: how far across, and how far down.
+explain draw_line      :: This draws a straight line between two points, one dot at a time, with no gaps in it.
+explain draw_box       :: This draws the four sides of a box between two opposite corners, leaving the middle alone.
+explain fill_box       :: This colours in the whole of a box between two opposite corners, middle and all.
+explain draw_circle    :: This colours in a round patch of the given size around a point.
+explain reveal_canvas  :: To reveal is to let something be seen. This puts the canvas on the screen in full colour, two rows of dots to every row of the screen.
+explain reveal_letters :: This puts the canvas on the screen as letters rather than colour, from a space for the darkest to a hash for the brightest. It works anywhere at all, even where colour does not.
+explain a_point        :: A point is a place on the canvas: how far across, then how far down, counting from the top left corner.
+explain make_colour    :: A colour is made of three parts, each from nought to two hundred and fifty five: how much red, how much green, and how much blue.
+explain named_colour   :: This is the colour that goes by a name, such as red, sky, moss or lamp. It might not work out, because not every name has a colour.
+explain canvas_width   :: This is how many dots across the canvas is.
+explain canvas_height  :: This is how many dots down the canvas is.
+explain colour_at      :: This is the colour of one dot, so a picture can be read as well as drawn.
+english across         :: preposition  :: From one side to the other; the way you measure sideways.
+english across         :: adverb       :: In the direction that crosses something.
+english blue           :: noun         :: The colour of a clear sky, and one of the three a screen mixes.
+english box            :: noun         :: A shape with four straight sides and four square corners.
+english called         :: verb         :: Named; known by.
+english canvas         :: noun         :: The cloth a picture is painted on, and here the surface a program draws on.
+english circle         :: noun         :: A round shape, every part of its edge the same distance from the middle.
+english clear          :: verb         :: To empty something, or to wipe it back to nothing.
+english clear          :: adjective    :: Easy to see through, or easy to understand.
+english colour         :: noun         :: What red, green and blue are. Light of a particular sort.
+english draw           :: verb         :: To make a picture with lines.
+english fill           :: verb         :: To put something into every part of a space until none is left.
+english green          :: noun         :: The colour of grass, and one of the three a screen mixes.
+english height         :: noun         :: How far something reaches from bottom to top.
+english line           :: noun         :: A mark drawn from one place straight to another.
+english open           :: verb         :: To make something ready to be used or gone into.
+english paint          :: verb         :: To put colour onto a surface.
+english point          :: noun         :: One exact place, with no size of its own.
+english red            :: noun         :: The colour of blood, and one of the three a screen mixes.
+english reveal         :: verb         :: To let something be seen that was hidden.
+english width          :: noun         :: How far something reaches from one side to the other.

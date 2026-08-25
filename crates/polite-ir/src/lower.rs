@@ -492,6 +492,34 @@ impl Lower<'_, '_> {
                 }
             }
 
+            Form::OpenCanvas
+            | Form::ClearCanvas
+            | Form::PaintPoint
+            | Form::DrawLine
+            | Form::DrawBox
+            | Form::FillBox
+            | Form::DrawCircle
+            | Form::RevealCanvas
+            | Form::RevealLetters => {
+                let which = match form {
+                    Form::OpenCanvas => Builtin::OpenCanvas,
+                    Form::ClearCanvas => Builtin::ClearCanvas,
+                    Form::PaintPoint => Builtin::PaintPoint,
+                    Form::DrawLine => Builtin::DrawLine,
+                    Form::DrawBox => Builtin::DrawBox,
+                    Form::FillBox => Builtin::FillBox,
+                    Form::DrawCircle => Builtin::DrawCircle,
+                    Form::RevealCanvas => Builtin::RevealCanvas,
+                    _ => Builtin::RevealLetters,
+                };
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.emit(Instr::Call {
+                    dst: None,
+                    which,
+                    args: slots,
+                });
+            }
+
             Form::WaitFor => {
                 if let Some(v) = args.first() {
                     let s = self.value(*v);
@@ -1108,6 +1136,25 @@ impl Lower<'_, '_> {
     }
 
     fn lower_phrase(&mut self, form: Form, phrase: u32, args: &[ExprId], dst: Slot) {
+        // A point is a list of two numbers, built the way any short list is. There is nothing
+        // new here for a backend to learn, which is the whole idea.
+        if form == Form::APoint {
+            self.emit(Instr::Call {
+                dst: Some(dst),
+                which: Builtin::NewList,
+                args: Vec::new(),
+            });
+            for a in args {
+                let v = self.value_whole(*a);
+                self.emit(Instr::Call {
+                    dst: None,
+                    which: Builtin::ListAppend,
+                    args: vec![dst, v],
+                });
+            }
+            return;
+        }
+
         // The length of text and the length of a list are the same question, so they are the
         // same word; which one it is was settled by the checker.
         if form == Form::LengthOf {
@@ -1212,7 +1259,10 @@ fn wider(a: Ty, b: Ty) -> Ty {
     }
 }
 
-/// Which standard-library operation a form means. This is the whole of the V-to-N collapse: many
+/// Which standard-library operation a form means.
+///
+/// `the point x and y` has none: a point is a list of two numbers, so it is made the way any
+/// short list is and there is nothing new for a backend to learn. This is the whole of the V-to-N collapse: many
 /// phrasings, one entry each.
 fn builtin_for(form: Form) -> Option<Builtin> {
     Some(match form {
@@ -1266,6 +1316,12 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::PowerOf => Builtin::Power,
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
+
+        Form::MakeColour => Builtin::MakeColour,
+        Form::NamedColour => Builtin::NamedColour,
+        Form::CanvasWidth => Builtin::CanvasWidth,
+        Form::CanvasHeight => Builtin::CanvasHeight,
+        Form::ColourAt => Builtin::ColourAt,
 
         Form::IsPrime => Builtin::IsPrime,
         Form::PrimeFactors => Builtin::PrimeFactors,

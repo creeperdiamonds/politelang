@@ -1,0 +1,17 @@
+the canvas is 40 across and 24 down
+=                                       
+  @@@@@@@@@@@   @=========@   ==        
+  @@@@@@@@@@@   @         @     ==      
+  @@@@@@@@@@@   @         @       ==    
+  @@@@@@@@@@@   @         @         ==  
+  ===========   ===========           = 
+                 ===@===                
+                @@@@@@@@@               
+               =@@@@@@@@@=              
+                @@@@@@@@@               
+                =@@@@@@@=               
+                    =                   
+
+the corner dot is 16777215
+and the dot beside it is 1053981
+as expected: I do not know a colour called "chartreuse"

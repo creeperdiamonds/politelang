@@ -17,6 +17,7 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 pub mod big;
+pub mod canvas;
 pub mod exact;
 pub mod maths;
 pub mod numbers;

@@ -1,0 +1,23 @@
+-- The drawing kit. Shown as letters, because that is the same everywhere and can be checked.
+
+please open a canvas 40 across and 24 down
+please show "the canvas is {the canvas width} across and {the canvas height} down"
+
+please clear the canvas to the colour called "night" or 0
+please fill a box from the point 2 and 2 to the point 12 and 10 in the colour called "white" or 0
+please draw a box from the point 16 and 2 to the point 26 and 10 in the colour called "white" or 0
+please draw a line from the point 30 and 2 to the point 38 and 10 in the colour called "white" or 0
+please draw a circle at the point 20 and 17 of size 5 in the colour called "white" or 0
+please paint the point 0 and 0 in the colour with red 255 green 255 blue 255
+
+please reveal the letters of the canvas
+
+please show "the corner dot is {the colour at the point 0 and 0}"
+please show "and the dot beside it is {the colour at the point 1 and 0}"
+
+please try to:
+    remember bad is the colour called "chartreuse"
+    show bad
+otherwise if it does not work out:
+    show "as expected: {what went wrong}"
+thank you for trying

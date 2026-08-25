@@ -116,6 +116,7 @@ pub fn run_with(
     let mut r = Runner {
         program,
         world,
+        canvas: None,
         dice: match seed {
             Some(s) => Dice::with_seed(s),
             None => Dice::new(),
@@ -144,6 +145,8 @@ enum Outcome {
 struct Runner<'a> {
     program: &'a Program,
     world: &'a mut dyn World,
+    /// The surface being drawn on, once a program has asked for one.
+    canvas: Option<std_lib::canvas::Canvas>,
     dice: Dice,
     limits: Limits,
     steps: u64,
@@ -704,6 +707,74 @@ impl Runner<'_> {
                 Some(Value::list(std_lib::vectors::identity_matrix(a0().as_whole())?))
             }
 
+            // ---- drawing ------------------------------------------------------
+            Builtin::OpenCanvas => {
+                self.canvas = Some(std_lib::canvas::Canvas::new(a0().as_whole(), a1().as_whole()));
+                None
+            }
+            Builtin::ClearCanvas => {
+                self.surface()?.clear(a0().as_whole() as u32);
+                None
+            }
+            Builtin::PaintPoint => {
+                let (x, y) = as_point(&a0())?;
+                self.surface()?.paint(x, y, a1().as_whole() as u32);
+                None
+            }
+            Builtin::DrawLine | Builtin::DrawBox | Builtin::FillBox => {
+                let (x0, y0) = as_point(&a0())?;
+                let (x1, y1) = as_point(&a1())?;
+                let colour = a2().as_whole() as u32;
+                let surface = self.surface()?;
+                match which {
+                    Builtin::DrawLine => surface.line(x0, y0, x1, y1, colour),
+                    Builtin::DrawBox => surface.outline_box(x0, y0, x1, y1, colour),
+                    _ => surface.fill_box(x0, y0, x1, y1, colour),
+                }
+                None
+            }
+            Builtin::DrawCircle => {
+                let (x, y) = as_point(&a0())?;
+                let radius = a1().as_whole();
+                let colour = a2().as_whole() as u32;
+                self.surface()?.circle(x, y, radius, colour);
+                None
+            }
+            Builtin::RevealCanvas => {
+                let picture = self.surface()?.to_blocks();
+                self.world.show(&picture);
+                None
+            }
+            Builtin::RevealLetters => {
+                let picture = self.surface()?.to_letters();
+                self.world.show(&picture);
+                None
+            }
+            Builtin::MakeColour => Some(Value::Whole(std_lib::canvas::colour_of(
+                a0().as_whole(),
+                a1().as_whole(),
+                a2().as_whole(),
+            ) as i64)),
+            Builtin::NamedColour => {
+                let name = a0().as_text();
+                match std_lib::canvas::colour_called(&name) {
+                    Some(c) => Some(Value::Whole(c as i64)),
+                    None => {
+                        return Err(format!(
+                            "I do not know a colour called \"{}\"",
+                            name.trim()
+                        ))
+                    }
+                }
+            }
+            Builtin::CanvasWidth => Some(Value::Whole(self.surface()?.wide as i64)),
+            Builtin::CanvasHeight => Some(Value::Whole(self.surface()?.tall as i64)),
+            Builtin::ColourAt => {
+                let (x, y) = as_point(&a0())?;
+                let c = self.surface()?.dot_at(x, y);
+                Some(Value::Whole(c as i64))
+            }
+
             Builtin::MakeFraction => Some(std_lib::make_fraction(&a0(), &a1())?),
             Builtin::FractionTop => Some(std_lib::fraction_top(&a0())),
             Builtin::FractionBottom => Some(std_lib::fraction_bottom(&a0())),
@@ -842,6 +913,15 @@ impl Runner<'_> {
         Ok(value)
     }
 
+    /// The canvas, or a word about why there is not one.
+    fn surface(&mut self) -> Result<&mut std_lib::canvas::Canvas, String> {
+        match self.canvas {
+            Some(ref mut c) => Ok(c),
+            None => Err("there is nothing to draw on yet. Open a canvas first, with something                          like: please open a canvas 120 across and 80 down"
+                .to_string()),
+        }
+    }
+
     /// Ask, and keep asking gently if the reply is not the kind of thing that was wanted.
     fn ask_for(&mut self, prompt: &str, wanted: Option<&str>) -> Result<String, String> {
         loop {
@@ -874,6 +954,28 @@ impl Runner<'_> {
         }
     }
 }
+
+/// A point is a list of two numbers: how far across, then how far down.
+fn as_point(v: &Value) -> Answer2 {
+    match v {
+        Value::List(items) => {
+            let items = items.borrow();
+            if items.len() != 2 {
+                return Err(format!(
+                    "a point is two numbers, across and down, and this list holds {}",
+                    items.len()
+                ));
+            }
+            Ok((items[0].as_whole(), items[1].as_whole()))
+        }
+        other => Err(format!(
+            "a point is a list of two numbers, and this is {}",
+            other.kind_name()
+        )),
+    }
+}
+
+type Answer2 = Result<(i64, i64), String>;
 
 fn as_list(v: &Value) -> Result<std::rc::Rc<std::cell::RefCell<Vec<Value>>>, String> {
     match v {
