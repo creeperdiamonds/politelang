@@ -843,11 +843,13 @@ impl<'a> Parser<'a> {
             Tok::Word(w) => w,
             _ => return None,
         };
-        let word = self.word_text(first).to_string();
-        let candidates: Vec<u32> = self.vocab.starting_with(&word).to_vec();
+        // The candidate list belongs to the vocabulary, not to the parser, so it can be held
+        // across the parsing below without copying it. Spec 10.1: matching is a lookup.
+        let vocab = self.vocab;
+        let candidates: &[u32] = vocab.starting_with(self.word_text(first));
         let save = self.pos;
 
-        for pid in candidates {
+        for &pid in candidates {
             let phrase = self.vocab.phrase(pid);
             if phrase.kind == Kind::Expr {
                 continue;
@@ -932,10 +934,10 @@ impl<'a> Parser<'a> {
     ///
     /// Returns the `{name}` holes and the expression holes, in the order written.
     fn match_pieces(&mut self, pid: u32, ctx: Ctx) -> Option<(Vec<Sym>, Vec<ExprId>)> {
-        let pieces: Vec<Piece> = self.vocab.phrase(pid).pieces.clone();
+        let pieces: &[Piece] = &self.vocab.phrase(pid).pieces;
         let mut names = Vec::new();
         let mut args = Vec::new();
-        self.match_pieces_from(&pieces, 0, ctx, &mut names, &mut args)?;
+        self.match_pieces_from(pieces, 0, ctx, &mut names, &mut args)?;
         Some((names, args))
     }
 
@@ -1195,20 +1197,20 @@ impl<'a> Parser<'a> {
                 Tok::Word(w) if !stops.contains(&w) => w,
                 _ => break,
             };
-            let key_text = self.word_text(key).to_string();
-            let candidates: Vec<u32> = self.vocab.infix_with(&key_text).to_vec();
+            let vocab = self.vocab;
+            let candidates: &[u32] = vocab.infix_with(self.word_text(key));
             if candidates.is_empty() {
                 break;
             }
             let save = self.pos;
             let mut matched = false;
-            for pid in candidates {
-                let pieces: Vec<Piece> = self.vocab.phrase(pid).pieces.clone();
-                let form = self.vocab.phrase(pid).form;
+            for &pid in candidates {
+                let pieces: &[Piece] = &vocab.phrase(pid).pieces;
+                let form = vocab.phrase(pid).form;
                 let mut names = Vec::new();
                 let mut args = vec![lhs];
                 if self
-                    .match_pieces_from(&pieces, 1, Ctx::TIGHT, &mut names, &mut args)
+                    .match_pieces_from(pieces, 1, Ctx::TIGHT, &mut names, &mut args)
                     .is_some()
                 {
                     let span = self.ast.expr(lhs).span.join(self.span());
@@ -1293,14 +1295,14 @@ impl<'a> Parser<'a> {
                 }
 
                 // A value-producing phrase from the table.
-                let word = self.word_text(w).to_string();
-                let candidates: Vec<u32> = self.vocab.starting_with(&word).to_vec();
+                let vocab = self.vocab;
+                let candidates: &[u32] = vocab.starting_with(self.word_text(w));
                 let save = self.pos;
-                for pid in candidates {
-                    if self.vocab.phrase(pid).kind != Kind::Expr {
+                for &pid in candidates {
+                    if vocab.phrase(pid).kind != Kind::Expr {
                         continue;
                     }
-                    let form = self.vocab.phrase(pid).form;
+                    let form = vocab.phrase(pid).form;
                     if let Some((_names, args)) = self.match_pieces(pid, Ctx::TIGHT) {
                         let range = self.ast.push_args(&args);
                         let full = span.join(self.toks[self.pos.saturating_sub(1)].span);

@@ -116,6 +116,37 @@ pub fn run(args: &[String], vocab: &Vocabulary) -> ExitCode {
         None => println!("{}", built.messages),
     }
 
+    // ---- The same loop, in CPython -------------------------------------------
+    // Spec 10.4 budgets the interpreter against CPython. Comparing against a number written down
+    // months ago would be worthless, so the comparison is run here, now, on this machine.
+    match cpython_loop_ms() {
+        Some(python_ms) => {
+            let ours = results
+                .iter()
+                .find(|m| m.name == "300,000 turn numeric loop")
+                .map(|m| m.value)
+                .unwrap_or(python_ms);
+            results.push(Measure {
+                name: "same loop in CPython",
+                value: python_ms,
+                unit: "ms",
+                bigger_is_better: false,
+                budget: None,
+            });
+            results.push(Measure {
+                name: "times faster than CPython",
+                value: python_ms / ours.max(0.0001),
+                unit: "x",
+                bigger_is_better: true,
+                budget: Some(2.0),
+            });
+        }
+        None => println!(
+            "(CPython is not on the path, so the comparison in spec 10.4 was not run.)
+"
+        ),
+    }
+
     // ---- Report --------------------------------------------------------------
     let previous = load_baseline();
     let mut slipped = Vec::new();
@@ -243,6 +274,33 @@ fn time_parse(vocab: &Vocabulary, source: &str) -> f64 {
         let _ = polite_syntax::parse(source, vocab);
     }
     start.elapsed().as_secs_f64() / rounds as f64
+}
+
+/// The same loop, timed in CPython, if CPython is here to ask.
+fn cpython_loop_ms() -> Option<f64> {
+    let script = "
+import time
+best = 1e9
+for _ in range(5):
+    t = time.perf_counter()
+    total = 0
+    for n in range(1, 300001):
+        total += n
+    best = min(best, (time.perf_counter() - t) * 1000)
+print(best)
+";
+    for exe in ["python", "python3", "py"] {
+        if let Ok(out) = std::process::Command::new(exe).arg("-c").arg(script).output() {
+            if out.status.success() {
+                if let Ok(text) = String::from_utf8(out.stdout) {
+                    if let Ok(ms) = text.trim().parse::<f64>() {
+                        return Some(ms);
+                    }
+                }
+            }
+        }
+    }
+    None
 }
 
 fn synthetic_program(lines: usize) -> String {

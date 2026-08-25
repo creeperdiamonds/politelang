@@ -1,0 +1,55 @@
+{
+  "name": "politelang",
+  "displayName": "PoliteLang",
+  "description": "Syntax highlighting and editing support for PoliteLang, a language you ask nicely.",
+  "version": "0.1.0",
+  "publisher": "creeperdiamonds",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "politelang",
+    "polite",
+    "beginner",
+    "teaching"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "polite",
+        "aliases": [
+          "PoliteLang",
+          "polite"
+        ],
+        "extensions": [
+          ".polite"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "polite",
+        "scopeName": "source.polite",
+        "path": "./syntaxes/politelang.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "polite",
+        "path": "./snippets/politelang.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[polite]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.wordBasedSuggestions": "currentDocument"
+      }
+    }
+  }
+}

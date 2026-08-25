@@ -94,11 +94,14 @@ pub fn check(ast: &Ast, vocab: &Vocabulary) -> (Checked, Bag) {
     c.prepare_functions();
 
     // Riskiness travels outward through calls (spec 7.4), so settle it before saying anything.
-    let rounds = ast.actions.len() + 2;
-    for _ in 0..rounds {
-        c.reporting = false;
-        if !c.run_pass() {
-            break;
+    // With no actions of your own there is nothing to travel, and one pass is the whole job.
+    if !ast.actions.is_empty() {
+        let rounds = ast.actions.len() + 2;
+        for _ in 0..rounds {
+            c.reporting = false;
+            if !c.run_pass() {
+                break;
+            }
         }
     }
     c.reporting = true;

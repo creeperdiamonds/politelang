@@ -1,0 +1,64 @@
+{
+  "Show something": {
+    "prefix": "show",
+    "body": ["please show ${1:\"hello\"}"],
+    "description": "Put a value on the screen."
+  },
+  "Remember a value": {
+    "prefix": "remember",
+    "body": ["please remember ${1:score} is ${2:0}"],
+    "description": "Introduce a new name and give it a value."
+  },
+  "Ask a question": {
+    "prefix": "ask",
+    "body": ["please ask ${1:\"What is your name? \"} as ${2:name}"],
+    "description": "Wait for the person to type something."
+  },
+  "Repeat a number of times": {
+    "prefix": "repeat",
+    "body": ["please repeat ${1:3} times:", "\t$0", "thank you for repeating"],
+    "description": "Do the same thing a set number of times."
+  },
+  "Go through every item": {
+    "prefix": "every",
+    "body": ["please for every ${1:thing} in ${2:things}:", "\t$0", "thank you for repeating"],
+    "description": "Do the block once for every item in a list."
+  },
+  "Check something": {
+    "prefix": "check",
+    "body": [
+      "please check if ${1:score is over 10}:",
+      "\t$0",
+      "otherwise:",
+      "\t",
+      "thank you for checking"
+    ],
+    "description": "Do one thing or another."
+  },
+  "Define an action": {
+    "prefix": "define",
+    "body": ["please define ${1:greet} with a ${2:name}:", "\tgive back $0", "thank you for defining"],
+    "description": "Teach the language a word of your own."
+  },
+  "Try something that might not work out": {
+    "prefix": "try",
+    "body": [
+      "please try to:",
+      "\t$0",
+      "otherwise if it does not work out:",
+      "\tshow \"Oh dear: {what went wrong}\"",
+      "thank you for trying"
+    ],
+    "description": "Handle something that might not work out."
+  },
+  "Give something to fall back on": {
+    "prefix": "or",
+    "body": ["${1:the contents of \"save.txt\"} or ${2:\"nothing yet\"}"],
+    "description": "Say what happens if something does not work out."
+  },
+  "A courtesy block": {
+    "prefix": "please",
+    "body": ["please:", "\t$0", "thank you for everything"],
+    "description": "One courtesy word covering a run of actions."
+  }
+}
