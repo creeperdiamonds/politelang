@@ -1,0 +1,109 @@
+-- THE BUILDING
+--
+-- Five rooms and the walls between them, written as a picture. A full stop is floor and every
+-- other letter is a wall of some material, so that each room is built out of its own stuff and
+-- you can tell where you are by the colour of the wall beside you.
+--
+--     w  the wallpaper of your own flat
+--     b  the green panelling of the room that is also a bus
+--     #  the stone of the corridor
+--     d  the filing cabinets of the Department
+--     L  the shelved spines of the library
+--
+-- Nothing here knows anything about drawing. It only knows what is where.
+
+
+please define the building:
+    remember rows is an empty list
+    add "#wwwwwwww###################" to rows
+    add "w........#.................#" to rows
+    add "w........#.................#" to rows
+    add "w..........................#" to rows
+    add "w........#.................#" to rows
+    add "w........#.................#" to rows
+    add "#bbbb.bbb#.................#" to rows
+    add "b........#.................#" to rows
+    add "b........#.................#" to rows
+    add "b..........................#" to rows
+    add "b........#.................#" to rows
+    add "b........#.................#" to rows
+    add "#bbbbbbbb##.########.#######" to rows
+    add "#dddddddddd.d#LLLLLL.LLLLLL#" to rows
+    add "d............L.............L" to rows
+    add "d............L.............L" to rows
+    add "d..........................L" to rows
+    add "d............L.............L" to rows
+    add "d............L.............L" to rows
+    add "d............L.............L" to rows
+    add "#dddddddddddd#LLLLLLLLLLLLL#" to rows
+    give back rows
+thank you for defining
+
+
+-- What stands at this square. Anywhere off the edge of the world counts as stone, so that a ray
+-- cast out of the building still meets something and stops.
+please define the stuff at with an ex and a why and a rows:
+    check if ex is under 0:
+        give back "#"
+    thanks
+    check if why is under 0:
+        give back "#"
+    thanks
+    remember row is item the whole part of why plus 1 of rows or "#"
+    give back the letter the whole part of ex plus 1 of row or "#"
+thank you for defining
+
+
+please define a wall at with an ex and a why and a rows:
+    remember stuff is the stuff at with ex and why and rows
+    give back stuff is not "."
+thank you for defining
+
+
+-- The three parts of the colour a material is painted in, before the light gets to it.
+please define the paint of with a stuff:
+    remember paint is an empty list
+    check if stuff is "w":
+        add 198 to paint
+        add 174 to paint
+        add 141 to paint
+    otherwise if stuff is "b":
+        add 74 to paint
+        add 148 to paint
+        add 118 to paint
+    otherwise if stuff is "d":
+        add 186 to paint
+        add 176 to paint
+        add 146 to paint
+    otherwise if stuff is "L":
+        add 158 to paint
+        add 94 to paint
+        add 74 to paint
+    otherwise:
+        add 132 to paint
+        add 136 to paint
+        add 146 to paint
+    thank you for checking
+    give back paint
+thank you for defining
+
+
+-- Which room a square belongs to, so that the screen can say where you are standing.
+please define the room at with an ex and a why:
+    check if why is under 12:
+        check if ex is under 9:
+            check if why is under 6:
+                give back "Your Flat"
+            thanks
+            give back "The Room That Is Also A Bus"
+        thanks
+        give back "The Corridor"
+    thanks
+    check if ex is under 13:
+        give back "The Department of Slightly Wrong Things"
+    thanks
+    give back "The Library"
+thank you for defining
+
+
+please share the building and the stuff at and a wall at and the paint of and the room at

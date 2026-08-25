@@ -852,6 +852,27 @@ impl<'a> Checker<'a> {
                 }
             }
 
+            Form::WriteText => {
+                if let Some(w) = args.first() {
+                    let text = self.types.text;
+                    self.want(*w, arg_ty[0], text, "some writing");
+                }
+                if let Some(p) = args.get(1) {
+                    let whole = self.types.whole;
+                    let point = self.types.list_of(whole);
+                    self.want(*p, arg_ty[1], point, "a point");
+                }
+                if let Some(c) = args.get(2) {
+                    self.want_number(*c, arg_ty[2], "a colour");
+                }
+            }
+
+            Form::LetterSize => {
+                if let Some(n) = args.first() {
+                    self.want_number(*n, arg_ty[0], "how many across");
+                }
+            }
+
             Form::DotSize => {
                 if let Some(n) = args.first() {
                     self.want_number(*n, arg_ty[0], "how many across");
@@ -1561,6 +1582,14 @@ impl<'a> Checker<'a> {
                 if let Some((e, t)) = arg(0) {
                     let text = self.types.text;
                     self.want(e, t, text, "the name of a colour");
+                }
+                self.types.whole
+            }
+
+            Form::WrittenWidth => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "some writing");
                 }
                 self.types.whole
             }

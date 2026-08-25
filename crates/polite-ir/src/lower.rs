@@ -511,6 +511,20 @@ impl Lower<'_, '_> {
                 }
             }
 
+            Form::WriteText | Form::LetterSize => {
+                let which = if form == Form::WriteText {
+                    Builtin::WriteText
+                } else {
+                    Builtin::LetterSize
+                };
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.emit(Instr::Call {
+                    dst: None,
+                    which,
+                    args: slots,
+                });
+            }
+
             Form::OpenCanvas
             | Form::ClearCanvas
             | Form::PaintPoint
@@ -1336,6 +1350,7 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
 
+        Form::WrittenWidth => Builtin::WrittenWidth,
         Form::MakeColour => Builtin::MakeColour,
         Form::NamedColour => Builtin::NamedColour,
         Form::CanvasWidth => Builtin::CanvasWidth,

@@ -118,6 +118,7 @@ pub fn run_with(
         world,
         canvas: None,
         dot_size: 4,
+        letter_size: 1,
         window: None,
         dice: match seed {
             Some(s) => Dice::with_seed(s),
@@ -151,6 +152,8 @@ struct Runner<'a> {
     canvas: Option<std_lib::canvas::Canvas>,
     /// How many across each dot is drawn in a saved picture or a window.
     dot_size: usize,
+    /// How many dots across one dot of a letter is drawn.
+    letter_size: i64,
     /// Whether a window has already been opened, so it is only ever opened once.
     window: Option<String>,
     dice: Dice,
@@ -756,6 +759,23 @@ impl Runner<'_> {
                 self.world.show(&picture);
                 None
             }
+            Builtin::WriteText => {
+                let words = a0().as_text();
+                let (x, y) = as_point(&a1())?;
+                let colour = a2().as_whole() as u32;
+                let size = self.letter_size;
+                self.surface()?.write(&words, x, y, colour, size);
+                None
+            }
+            Builtin::LetterSize => {
+                self.letter_size = a0().as_whole().clamp(1, 16);
+                None
+            }
+            Builtin::WrittenWidth => Some(Value::Whole(std_lib::letters::width_of(
+                &a0().as_text(),
+                self.letter_size,
+            ))),
+
             Builtin::DotSize => {
                 self.dot_size = a0().as_whole().clamp(1, 16) as usize;
                 None
@@ -961,13 +981,27 @@ impl Runner<'_> {
             .map(|p| p.to_string_lossy().trim_start_matches("\\?\\").to_string())
             .unwrap_or_else(|_| PAGE.to_string());
 
-        let opened = if cfg!(target_os = "windows") {
-            std::process::Command::new("cmd").args(["/C", "start", "", &full]).spawn()
+        // Whatever opens the page must not be handed this program's own screen. If it were, a
+        // program run with its output collected would appear to hang until the window was closed,
+        // because the collecting would wait on a screen the window was still holding.
+        let mut opener = if cfg!(target_os = "windows") {
+            let mut c = std::process::Command::new("cmd");
+            c.args(["/C", "start", "", &full]);
+            c
         } else if cfg!(target_os = "macos") {
-            std::process::Command::new("open").arg(&full).spawn()
+            let mut c = std::process::Command::new("open");
+            c.arg(&full);
+            c
         } else {
-            std::process::Command::new("xdg-open").arg(&full).spawn()
+            let mut c = std::process::Command::new("xdg-open");
+            c.arg(&full);
+            c
         };
+        let opened = opener
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn();
 
         match opened {
             Ok(_) => {

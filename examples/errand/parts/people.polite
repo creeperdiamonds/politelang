@@ -1,0 +1,271 @@
+-- WHAT IS IN THE BUILDING
+--
+-- Everything that stands somewhere and can be looked at, talked to, or picked up.
+--
+-- Each one is a line with its parts divided by an upright bar:
+--
+--     name | shape | what it says | what it wants | what it hands over
+--
+-- Wanting nothing and handing nothing over makes a thing scenery. Handing something over while
+-- wanting nothing makes it something you can simply take. Wanting something and handing something
+-- over makes it a swap. Wanting something and handing nothing over makes it the end of the errand.
+--
+-- None of it relates to any of the rest of it. That is the arrangement here.
+
+
+please define the folk:
+    remember folk is an empty list
+    add "your own front door|door|It is your front door. From this side it is a door. From the other side the neighbours insist it is a lake. You have stopped arguing about it.||" to folk
+    add "a chair that is sorry|chair|The chair is sorry. It will not say what for, and you have decided not to press it.||" to folk
+    add "a second moon, indoors|moon|There is a second moon in your flat, about the size of a dinner plate, hanging at shoulder height. It has been there since Thursday. You no longer mention it to people.||" to folk
+    add "a man who is legally a staircase|person|Morning, says the man who is legally a staircase. Mind how you go on me. I am not insured for people who are in a hurry.||" to folk
+    add "a wet floor sign|sign|The wet floor sign reads: SORRY. THE FLOOR IS DRY. WE ARE LOOKING INTO IT.||" to folk
+    add "a pigeon|bird|The pigeon has an apology. Written down and signed and everything. A hat, says the pigeon. Bring me a hat and the apology is yours. I have heard a great deal about hats.|a hat|an apology" to folk
+    add "a door marked NOT A DOOR|door|A door. On it, in official lettering: NOT A DOOR. It is locked, which does rather settle the argument.||" to folk
+    add "a vending machine|machine|The machine sells Tuesdays. One apology each. A note taped to the glass says EXACT APOLOGY ONLY.|an apology|a Tuesday" to folk
+    add "a fire extinguisher in a hat|hat|A fire extinguisher wearing a small hat. A sign beside it says DO NOT WEAR. It does not say which of the two.||a hat" to folk
+    add "the Department of Slightly Wrong Things|sign|A desk, unstaffed, under a sign reading DEPARTMENT OF SLIGHTLY WRONG THINGS. There is a bell. Beside the bell: PLEASE DO NOT RING THE BELL, IT IS SLIGHTLY WRONG.||" to folk
+    add "a queue of one person|queue|A queue of one person, who is not queuing for anything and would rather you did not join.||" to folk
+    add "the Librarian|person|The book, says the Librarian, without looking up. Yes. I cannot take it back from you. You are not holding a Tuesday. Nobody returns a book except on a Tuesday. It is not one. You will have to bring me one.|a Tuesday|" to folk
+    add "the returns slot|slot|A slot in the wall marked RETURNS. It is exactly the width of your book and roughly a mile deep.||" to folk
+    give back folk
+thank you for defining
+
+
+please define the acrosses:
+    remember places is an empty list
+    add 8 to places
+    add 3 to places
+    add 6 to places
+    add 5 to places
+    add 3 to places
+    add 18 to places
+    add 25 to places
+    add 12 to places
+    add 4 to places
+    add 9 to places
+    add 11 to places
+    add 20 to places
+    add 25 to places
+    give back places
+thank you for defining
+
+
+please define the downs:
+    remember places is an empty list
+    add 3 to places
+    add 2 to places
+    add 4 to places
+    add 9 to places
+    add 8 to places
+    add 4 to places
+    add 7 to places
+    add 10 to places
+    add 17 to places
+    add 16 to places
+    add 18 to places
+    add 16 to places
+    add 18 to places
+    give back places
+thank you for defining
+
+
+-- One part of one line. The parts are numbered the way they are written above.
+please define the part with a line and a which:
+    remember parts is the pieces of line split by "|"
+    give back item which of parts or ""
+thank you for defining
+
+
+-- Every shape a thing can have, drawn as a small picture.
+--
+--     .  nothing, so whatever is behind shows through
+--     #  the thing's own colour
+--     o  a lit part of it
+--     *  a part in shadow
+please define the shape called with a shape:
+    remember picture is an empty list
+    check if shape is "person":
+        add "..ooo.." to picture
+        add ".ooooo." to picture
+        add "..ooo.." to picture
+        add ".#####." to picture
+        add "#######" to picture
+        add "#######" to picture
+        add ".#####." to picture
+        add ".#####." to picture
+        add "..#.#.." to picture
+        add "..#.#.." to picture
+        add "..#.#.." to picture
+        add ".**.**." to picture
+    otherwise if shape is "bird":
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+        add "..ooo.." to picture
+        add "..ooo*." to picture
+        add ".#####." to picture
+        add "#######" to picture
+        add "#######" to picture
+        add ".#####." to picture
+        add "..*.*.." to picture
+        add "......." to picture
+        add "......." to picture
+    otherwise if shape is "machine":
+        add "*******" to picture
+        add "*ooooo*" to picture
+        add "*o***o*" to picture
+        add "*o***o*" to picture
+        add "*ooooo*" to picture
+        add "*#####*" to picture
+        add "*#ooo#*" to picture
+        add "*#####*" to picture
+        add "*##.##*" to picture
+        add "*#####*" to picture
+        add "*******" to picture
+        add ".*...*." to picture
+    otherwise if shape is "sign":
+        add "ooooooo" to picture
+        add "o*****o" to picture
+        add "o*****o" to picture
+        add "o*****o" to picture
+        add "ooooooo" to picture
+        add "...#..." to picture
+        add "...#..." to picture
+        add "...#..." to picture
+        add "...#..." to picture
+        add "...#..." to picture
+        add "..***.." to picture
+        add ".*****." to picture
+    otherwise if shape is "chair":
+        add "..###.." to picture
+        add "..#o#.." to picture
+        add "..#o#.." to picture
+        add "..#o#.." to picture
+        add ".#####." to picture
+        add "#######" to picture
+        add "#######" to picture
+        add "*.....*" to picture
+        add "*.....*" to picture
+        add "*.....*" to picture
+        add "*.....*" to picture
+        add "*.....*" to picture
+    otherwise if shape is "moon":
+        add "......." to picture
+        add "..ooo.." to picture
+        add ".ooooo." to picture
+        add "ooo#ooo" to picture
+        add "oo###oo" to picture
+        add ".ooo#o." to picture
+        add "..ooo.." to picture
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+    otherwise if shape is "door":
+        add "#######" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#***o*#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#*****#" to picture
+        add "#######" to picture
+    otherwise if shape is "slot":
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+        add "#######" to picture
+        add "#*****#" to picture
+        add "#ooooo#" to picture
+        add "#*****#" to picture
+        add "#######" to picture
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+        add "......." to picture
+    otherwise if shape is "hat":
+        add "..***.." to picture
+        add ".*****." to picture
+        add "*******" to picture
+        add "..ooo.." to picture
+        add "..###.." to picture
+        add "..###.." to picture
+        add ".#####." to picture
+        add ".#####." to picture
+        add ".#####." to picture
+        add ".#####." to picture
+        add ".#####." to picture
+        add ".*****." to picture
+    otherwise:
+        add "..ooo.." to picture
+        add ".ooooo." to picture
+        add "..ooo.." to picture
+        add ".#####." to picture
+        add "###.###" to picture
+        add "###.###" to picture
+        add ".##.##." to picture
+        add ".##.##." to picture
+        add "..#.#.." to picture
+        add "..#.#.." to picture
+        add "..#.#.." to picture
+        add ".**.**." to picture
+    thank you for checking
+    give back picture
+thank you for defining
+
+
+-- The colour a shape is painted in, as its three parts.
+please define the colour of a with a shape:
+    remember paint is an empty list
+    check if shape is "person":
+        add 216 to paint
+        add 132 to paint
+        add 96 to paint
+    otherwise if shape is "bird":
+        add 150 to paint
+        add 156 to paint
+        add 168 to paint
+    otherwise if shape is "machine":
+        add 96 to paint
+        add 128 to paint
+        add 176 to paint
+    otherwise if shape is "sign":
+        add 226 to paint
+        add 196 to paint
+        add 72 to paint
+    otherwise if shape is "chair":
+        add 172 to paint
+        add 108 to paint
+        add 68 to paint
+    otherwise if shape is "moon":
+        add 232 to paint
+        add 236 to paint
+        add 224 to paint
+    otherwise if shape is "door":
+        add 138 to paint
+        add 92 to paint
+        add 62 to paint
+    otherwise if shape is "slot":
+        add 88 to paint
+        add 92 to paint
+        add 104 to paint
+    otherwise if shape is "hat":
+        add 208 to paint
+        add 72 to paint
+        add 72 to paint
+    otherwise:
+        add 190 to paint
+        add 190 to paint
+        add 190 to paint
+    thank you for checking
+    give back paint
+thank you for defining
+
+
+please share the folk and the acrosses and the downs and the part and the shape called and the colour of a

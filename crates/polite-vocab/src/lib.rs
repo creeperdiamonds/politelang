@@ -221,6 +221,10 @@ forms! {
     MatrixInverse => "matrix_inverse",
     IdentityMatrix => "identity_matrix",
 
+    WriteText => "write_text",
+    LetterSize => "letter_size",
+    WrittenWidth => "written_width",
+
     SaveCanvas => "save_canvas",
     PutInWindow => "put_in_window",
     DotSize => "dot_size",

@@ -106,6 +106,10 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    WriteText,
+    LetterSize,
+    WrittenWidth,
+
     SaveCanvas,
     PutInWindow,
     DotSize,

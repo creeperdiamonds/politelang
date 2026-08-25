@@ -432,6 +432,9 @@ expr  full      colour_at      :: the colour at {where}
 # is seen again, without anybody reaching for the keyboard.
 # ---------------------------------------------------------------------------
 
+stmt  working   write_text     :: write {words} at {where} in {colour}
+stmt  working   letter_size    :: make the letters {size} across
+expr  working   written_width  :: the width of {words} written
 stmt  working   save_canvas    :: save the canvas to {path} :: risky
 stmt  working   put_in_window  :: put the canvas in a window :: risky
 stmt  working   dot_size       :: make each dot {size} across
@@ -934,6 +937,9 @@ english point          :: noun         :: One exact place, with no size of its o
 english red            :: noun         :: The colour of blood, and one of the three a screen mixes.
 english reveal         :: verb         :: To let something be seen that was hidden.
 english width          :: noun         :: How far something reaches from one side to the other.
+explain write_text     :: This writes words onto the canvas itself, so a picture can say something without the terminal saying it. Where the letter leaves a dot blank, the picture underneath still shows.
+explain letter_size    :: A letter is five dots across and seven down. This says how many dots across each of those dots should be drawn, so writing can be made bigger without a second set of letters.
+explain written_width  :: This is how many dots across a line of writing will take up, at the size letters are being drawn. It is how writing is put in the middle of something, or lined up on the right.
 explain save_canvas    :: This writes the canvas out as a picture file that any machine can open. It might not work out, because the place may not be writable.
 explain put_in_window  :: This puts the canvas in a window of its own rather than in the terminal, and the window keeps up with it by itself. It might not work out, because there may be no way to open a window here.
 explain dot_size       :: A dot on the canvas is small. This says how many across it should be drawn in a saved picture or a window, so a small canvas still fills the screen.
@@ -942,3 +948,8 @@ english window         :: noun         :: An opening that lets you see through; 
 english each           :: determiner   :: Every one, thought of separately.
 english path           :: noun         :: A way from one place to another; on a machine, where a file is kept.
 english size           :: noun         :: How big something is.
+english write          :: verb         :: To make letters or words on a surface so that they can be read.
+english words          :: noun         :: Units of language; here, the writing that is to be drawn.
+english letters        :: noun         :: The written marks that stand for the sounds of a language.
+english width          :: noun         :: How far something reaches from one side to the other.
+english written        :: adjective    :: Set down in letters rather than spoken. Here, the writing as it would be drawn.

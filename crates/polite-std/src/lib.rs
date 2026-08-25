@@ -19,6 +19,7 @@ use std::rc::Rc;
 pub mod big;
 pub mod canvas;
 pub mod exact;
+pub mod letters;
 pub mod maths;
 pub mod numbers;
 pub mod picture;

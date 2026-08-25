@@ -1,0 +1,538 @@
+-- A PERFECTLY ORDINARY ERRAND
+--
+-- You are a real person. You have a library book that is due back. That is the whole of your
+-- ambition today and it is a reasonable one.
+--
+-- The building disagrees with you about almost everything else.
+--
+-- This is a first person game with a real window: every turn the view you are standing in is
+-- drawn, saved as a picture, and shown in a window that keeps up with it by itself. The walls are
+-- cast a ray at a time, the things in the rooms are drawn as flat pictures turned to face you, and
+-- the writing on the screen is drawn dot by dot out of PoliteLang's own letters. Nothing is
+-- fetched from anywhere.
+--
+-- Written in PoliteLang by Creeperdiamonds Studios.
+
+
+please use "parts/world.polite"
+please use "parts/people.polite"
+
+
+-- ---------------------------------------------------------------------------
+-- The view
+--
+-- The screen is three hundred dots across and a hundred and sixty down:
+--
+--     0 to 9      a bar saying where you are and what you are carrying
+--     10 to 111   what you can see, with the horizon at 61
+--     112 down    what just happened, in words
+--
+-- One ray is cast for each of the three hundred columns. Rather than creep forward in tiny steps,
+-- each ray jumps straight to the next line of the grid it would cross, so it takes about twenty
+-- jumps to cross the whole building instead of several hundred small ones. Which line it crossed
+-- last also says which face of the wall it struck, and the two faces are lit differently, which is
+-- the whole reason a corner looks like a corner.
+--
+-- What comes back is the distance to the wall in every column, which is what tells the things in
+-- the room whether they are in front of the wall or behind it.
+-- ---------------------------------------------------------------------------
+
+please define the walls seen with a rows and an ex and a why and a facing:
+    remember depth is an empty list
+
+    repeat for every column from 0 to 299:
+        remember angle is facing minus 0.55 plus column times 0.003667
+        remember dx is the cosine of angle
+        remember dy is the sine of angle
+
+        remember cellx is the rounded down version of ex
+        remember celly is the rounded down version of why
+
+        -- How far along the ray it costs to cross one whole square each way.
+        remember stridex is the size of (1 divided by dx or 999999)
+        remember stridey is the size of (1 divided by dy or 999999)
+
+        remember stepx is 1
+        remember runx is 0.0
+        check if dx is under 0:
+            change stepx to 0 minus 1
+            change runx to (ex minus cellx) times stridex
+        otherwise:
+            change runx to (cellx plus 1 minus ex) times stridex
+        thank you for checking
+
+        remember stepy is 1
+        remember runy is 0.0
+        check if dy is under 0:
+            change stepy to 0 minus 1
+            change runy to (why minus celly) times stridey
+        otherwise:
+            change runy to (celly plus 1 minus why) times stridey
+        thank you for checking
+
+        remember flat is no
+        remember stuff is "#"
+        remember jumps is 0
+        keep going forever:
+            change jumps to jumps plus 1
+            check if jumps is over 90:
+                stop repeating
+            thanks
+            check if runx is under runy:
+                change runx to runx plus stridex
+                change cellx to cellx plus stepx
+                change flat to no
+            otherwise:
+                change runy to runy plus stridey
+                change celly to celly plus stepy
+                change flat to yes
+            thank you for checking
+            change stuff to the stuff at with cellx and celly and rows
+            check if stuff is not ".":
+                stop repeating
+            thanks
+        thanks
+
+        -- Backing off the last jump gives the distance straight ahead rather than along the ray,
+        -- which is what stops the walls bulging outward at the edges of the screen.
+        remember far is 0.05
+        check if flat:
+            change far to runy minus stridey
+        otherwise:
+            change far to runx minus stridex
+        thank you for checking
+        check if far is under 0.05:
+            change far to 0.05
+        thanks
+        add far to depth
+
+        remember high is the rounded version of 90 divided by far or 90
+        remember half is high kept between 1 and 50
+        remember paint is the paint of with stuff
+        remember lit is 1.0
+        check if flat:
+            change lit to 0.64
+        thanks
+        remember shade is ((1 minus far divided by 22) kept between 0.16 and 1) times lit
+        remember rr is the rounded version of (item 1 of paint or 130) times shade
+        remember gg is the rounded version of (item 2 of paint or 130) times shade
+        remember bb is the rounded version of (item 3 of paint or 130) times shade
+        draw a line from the point column and 61 minus half to the point column and 61 plus half in the colour with red rr green gg blue bb
+    thanks
+
+    give back depth
+thank you for defining
+
+
+-- One thing in the room, drawn as a small picture turned to face you.
+--
+-- How far ahead of you it is decides how big it is drawn; how far to one side decides where
+-- across. Each column of it is only drawn if it is nearer than the wall behind that column, which
+-- is what lets a thing stand properly behind a corner.
+please define a thing shown with a shape and a forward and a side and a depth:
+    remember sx is 150 plus (side divided by forward or 0) times 244.7
+    remember high is 90 divided by forward or 90
+    remember picture is the shape called with shape
+    remember down is the number of items in picture
+    remember across is the length of (item 1 of picture or ".")
+    remember cell is (high times 0.95) divided by down or 1
+    check if cell is under 0.4:
+        change cell to 0.4
+    thanks
+
+    remember foot is 61 plus high divided by 2
+    remember left is sx minus (cell times across) divided by 2
+    remember paint is the colour of a with shape
+    remember shade is (1 minus forward divided by 22) kept between 0.2 and 1
+    remember baser is item 1 of paint or 190
+    remember baseg is item 2 of paint or 190
+    remember baseb is item 3 of paint or 190
+
+    repeat for every c from 0 to across minus 1:
+        remember colx is the rounded version of left plus c times cell
+        check if (colx is under 300) and not (colx is under 0):
+            remember behind is item colx plus 1 of depth or 999
+            check if forward is under behind:
+                remember colright is the rounded version of left plus (c plus 1) times cell minus 1
+                check if colright is under colx:
+                    change colright to colx
+                thanks
+                repeat for every r from 0 to down minus 1:
+                    remember line is item r plus 1 of picture or ""
+                    remember mark is the letter c plus 1 of line or "."
+                    check if mark is not ".":
+                        remember lift is 0
+                        check if mark is "o":
+                            change lift to 52
+                        otherwise if mark is "*":
+                            change lift to 0 minus 46
+                        thank you for checking
+                        remember rr is the rounded version of baser times shade plus lift
+                        remember gg is the rounded version of baseg times shade plus lift
+                        remember bb is the rounded version of baseb times shade plus lift
+                        remember boxtop is the rounded version of foot minus (down minus r) times cell
+                        remember boxlow is the rounded version of foot minus (down minus r minus 1) times cell
+                        fill a box from the point colx and boxtop to the point colright and boxlow in the colour with red rr green gg blue bb
+                    thanks
+                thanks
+            thanks
+        thanks
+    thanks
+thank you for defining
+
+
+-- The building seen from above, small, in the corner. Two dots to a square.
+please define the little map with a rows and an ex and a why:
+    fill a box from the point 236 and 12 to the point 295 and 57 in the colour with red 12 green 14 blue 20
+    repeat for every down from 0 to 20:
+        repeat for every across from 0 to 27:
+            remember stuff is the stuff at with across and down and rows
+            remember left is 238 plus across times 2
+            remember top is 14 plus down times 2
+            check if stuff is ".":
+                fill a box from the point left and top to the point left plus 1 and top plus 1 in the colour with red 58 green 64 blue 78
+            otherwise:
+                fill a box from the point left and top to the point left plus 1 and top plus 1 in the colour with red 120 green 126 blue 140
+            thank you for checking
+        thanks
+    thanks
+    remember mex is 238 plus (the whole part of ex) times 2
+    remember mwhy is 14 plus (the whole part of why) times 2
+    fill a box from the point mex minus 1 and mwhy minus 1 to the point mex plus 2 and mwhy plus 2 in the colour with red 240 green 196 blue 64
+thank you for defining
+
+
+-- Which of the sixteen ways round you are looking. Turning always lands on one of these, so a
+-- direction can be named, and so that turning right four times and left four times leaves you
+-- looking at exactly what you started at rather than nearly at it.
+please define the way named with a way:
+    remember points is an empty list
+    add "east" to points
+    add "east south east" to points
+    add "south east" to points
+    add "south south east" to points
+    add "south" to points
+    add "south south west" to points
+    add "south west" to points
+    add "west south west" to points
+    add "west" to points
+    add "west north west" to points
+    add "north west" to points
+    add "north north west" to points
+    add "north" to points
+    add "north north east" to points
+    add "north east" to points
+    add "east north east" to points
+    give back item way plus 1 of points or "east"
+thank you for defining
+
+
+-- The same sixteen headings in their short form, for the bar along the top.
+please define the way lettered with a way:
+    remember points is an empty list
+    add "E" to points
+    add "ESE" to points
+    add "SE" to points
+    add "SSE" to points
+    add "S" to points
+    add "SSW" to points
+    add "SW" to points
+    add "WSW" to points
+    add "W" to points
+    add "WNW" to points
+    add "NW" to points
+    add "NNW" to points
+    add "N" to points
+    add "NNE" to points
+    add "NE" to points
+    add "ENE" to points
+    give back item way plus 1 of points or "E"
+thank you for defining
+
+
+-- Words broken into lines that fit the panel.
+please define the lines of with a saying and a room:
+    remember lines is an empty list
+    remember line is ""
+    for every word in the words in saying:
+        remember tryout is word
+        check if line is not "":
+            change tryout to "{line} {word}"
+        thanks
+        check if (the length of tryout) is over room:
+            add line to lines
+            change line to word
+        otherwise:
+            change line to tryout
+        thank you for checking
+    thanks
+    check if line is not "":
+        add line to lines
+    thanks
+    give back lines
+thank you for defining
+
+
+-- ---------------------------------------------------------------------------
+-- Setting out
+-- ---------------------------------------------------------------------------
+
+please remember rows is the building
+please remember cast is the folk
+please remember acrosses is the acrosses
+please remember downs is the downs
+
+-- The names of everything that has been picked up and is no longer standing there.
+please remember gone is an empty list
+
+please remember ex is 3.5
+please remember why is 3.5
+please remember way is 0
+please remember bag is an empty list
+please remember note is "You are late returning a library book. Your own front door is straight ahead of you. Nothing else about today is going to be as straightforward as that sentence."
+please remember playing is yes
+please remember won is no
+
+please open a canvas 300 across and 160 down
+please make each dot 4 across
+
+please show ""
+please show "  A PERFECTLY ORDINARY ERRAND"
+please show ""
+please show "  You have a library book. It is due back. That is all you want."
+please show ""
+please show "  w  walk forward      a  turn left       look   at what is in front of you"
+please show "  s  step back         d  turn right      talk   to it"
+please show "                                          take   it"
+please show "                                          give   it what you are carrying"
+please show "                                          bag    what you have"
+please show "                                          done   give up on the errand"
+please show ""
+
+please keep going forever:
+    check if not playing:
+        stop repeating
+    thanks
+
+    remember facing is way times 0.3926991
+
+    -- The ceiling darkens upward and the floor darkens downward, away from the horizon.
+    repeat for every band from 0 to 50:
+        remember lift is the rounded version of band times 0.5
+        draw a line from the point 0 and 10 plus band to the point 299 and 10 plus band in the colour with red 16 plus lift green 19 plus lift blue 26 plus lift
+        remember fall is the rounded version of (50 minus band) times 0.5
+        draw a line from the point 0 and 61 plus band to the point 299 and 61 plus band in the colour with red 38 plus fall green 33 plus fall blue 27 plus fall
+    thanks
+
+    remember depth is the walls seen with rows and ex and why and facing
+
+    -- How far away each thing is, kept once so it is not worked out again and again below.
+    remember aways is an empty list
+    repeat for every n from 1 to the number of items in cast:
+        remember tx is (item n of acrosses or 0) plus 0.5
+        remember ty is (item n of downs or 0) plus 0.5
+        add ((tx minus ex) times (tx minus ex)) plus ((ty minus why) times (ty minus why)) to aways
+    thanks
+
+    -- Furthest first, so that a nearer thing paints over one behind it. Each turn round the loop
+    -- takes the furthest thing that is still nearer than the one taken last time.
+    remember cutoff is 999999.0
+    repeat for every pass from 1 to the number of items in cast:
+        remember worst is 0
+        remember worstaway is 0 minus 1
+        repeat for every n from 1 to the number of items in cast:
+            check if not (gone contains (the part with (item n of cast or "") and 1)):
+                remember away is item n of aways or 0
+                check if (away is under cutoff) and (away is over worstaway):
+                    change worstaway to away
+                    change worst to n
+                thanks
+            thanks
+        thanks
+        check if worst is over 0:
+            change cutoff to worstaway
+            remember tx is (item worst of acrosses or 0) plus 0.5
+            remember ty is (item worst of downs or 0) plus 0.5
+            remember rx is tx minus ex
+            remember ry is ty minus why
+            remember forward is rx times (the cosine of facing) plus ry times (the sine of facing)
+            check if forward is over 0.35:
+                remember side is ry times (the cosine of facing) minus rx times (the sine of facing)
+                a thing shown with (the part with (item worst of cast or "") and 2) and forward and side and depth
+            thanks
+        thanks
+    thanks
+
+    the little map with rows and ex and why
+
+    -- The bar along the top, and the panel along the bottom.
+    fill a box from the point 0 and 0 to the point 299 and 9 in the colour with red 18 green 20 blue 27
+    make the letters 1 across
+    remember carrying is "carrying nothing"
+    check if (the number of items in bag) is over 0:
+        change carrying to "carrying {the join of bag with ", "}"
+    thanks
+    remember rightside is 296 minus (the width of carrying written)
+
+    remember here is "{the room at with (the whole part of ex) and (the whole part of why)}  {the way lettered with way}"
+    remember room is the rounded down version of (rightside minus 10) divided by 6
+    check if (the length of here) is over room:
+        change here to the piece of here from 1 to (room kept between 1 and 90)
+    thanks
+
+    write here at the point 4 and 2 in the colour with red 226 green 208 blue 150
+    write carrying at the point rightside and 2 in the colour with red 150 green 196 blue 226
+
+    fill a box from the point 0 and 112 to the point 299 and 159 in the colour with red 18 green 20 blue 27
+    draw a line from the point 0 and 112 to the point 299 and 112 in the colour with red 70 green 76 blue 92
+    remember lines is the lines of with note and 49
+    repeat for every n from 1 to 5:
+        write item n of lines or "" at the point 5 and 108 plus n times 9 in the colour with red 214 green 216 blue 220
+    thanks
+
+    try to:
+        save the canvas to "errand.png"
+        put the canvas in a window
+    otherwise if it does not work out:
+        show "  (the window is not available here, so this is the terminal only)"
+    thank you for trying
+
+    -- Whatever you are nearest to is what the words act on.
+    remember near is 0
+    remember bestaway is 2.6
+    repeat for every n from 1 to the number of items in cast:
+        check if not (gone contains (the part with (item n of cast or "") and 1)):
+            remember away is the square root of (item n of aways or 0) or 99
+            check if away is under bestaway:
+                change bestaway to away
+                change near to n
+            thanks
+        thanks
+    thanks
+
+    remember entry is item near of cast or ""
+    remember name is the part with entry and 1
+    remember wants is the part with entry and 4
+    remember gives is the part with entry and 5
+
+    show ""
+    show "  {note}"
+    check if near is over 0:
+        show ""
+        show "  Near you: {name}"
+    thanks
+    show ""
+    ask "  > " as said
+    change said to the small letters of the trimmed version of said
+
+    remember step is 0.42
+    check if said is "w":
+        remember nx is ex plus (the cosine of facing) times step
+        remember ny is why plus (the sine of facing) times step
+        check if not (a wall at with nx and ny and rows):
+            change ex to nx
+            change why to ny
+            change note to "You walk on."
+        otherwise:
+            change note to "The wall stays where it is. You have tried this in other buildings and it has always gone this way."
+        thank you for checking
+    otherwise if said is "s":
+        remember bx is ex minus (the cosine of facing) times step
+        remember by is why minus (the sine of facing) times step
+        check if not (a wall at with bx and by and rows):
+            change ex to bx
+            change why to by
+            change note to "You step back."
+        otherwise:
+            change note to "There is a wall behind you as well. It is a building. This is what they do."
+        thank you for checking
+    otherwise if said is "a":
+        change way to way minus 1
+        check if way is under 0:
+            change way to 15
+        thanks
+        change note to "You turn to your left, and are now looking {the way named with way}."
+    otherwise if said is "d":
+        change way to way plus 1
+        check if way is over 15:
+            change way to 0
+        thanks
+        change note to "You turn to your right, and are now looking {the way named with way}."
+    otherwise if said is "look":
+        check if near is over 0:
+            change note to "You look at {name}."
+        otherwise:
+            change note to "There is nothing close enough to look at properly. Walk up to a thing and it will let you."
+        thank you for checking
+    otherwise if said is "talk":
+        check if near is over 0:
+            change note to the part with entry and 3
+        otherwise:
+            change note to "There is nobody close enough to talk to, which on the whole has been the shape of the day."
+        thank you for checking
+    otherwise if said is "take":
+        check if near is under 1:
+            change note to "There is nothing close enough to take."
+        otherwise if gives is "":
+            change note to "You cannot take {name}, and you suspect it would be worse if you could."
+        otherwise if wants is not "":
+            change note to "It will not simply be taken. It wants {wants} first."
+        otherwise:
+            add gives to bag
+            add name to gone
+            change note to "You take {gives}. Nobody stops you. Nobody was ever going to."
+        thank you for checking
+    otherwise if said is "give":
+        check if near is under 1:
+            change note to "There is nobody close enough to give anything to."
+        otherwise if wants is "":
+            change note to "{name} wants nothing from you. You are, in fairness, holding very little."
+        otherwise if not (bag contains wants):
+            change note to "It wants {wants}. You do not have {wants}."
+        otherwise:
+            -- Hand it over: keep everything in the bag except the one thing asked for.
+            remember kept is an empty list
+            for every held in bag:
+                check if held is not wants:
+                    add held to kept
+                thanks
+            thanks
+            change bag to kept
+            check if gives is "":
+                change won to yes
+                change playing to no
+            otherwise:
+                add gives to bag
+                add name to gone
+                change note to "You hand over {wants}. You are given {gives}. Neither of you remarks on it."
+            thank you for checking
+        thank you for checking
+    otherwise if said is "bag":
+        check if (the number of items in bag) is over 0:
+            change note to "You are carrying: {the join of bag with ", "}. And the book, which you are always carrying."
+        otherwise:
+            change note to "You are carrying the library book and nothing else."
+        thank you for checking
+    otherwise if said is "done":
+        change playing to no
+    otherwise:
+        change note to "The words are w, s, a, d, look, talk, take, give, bag and done."
+    thank you for checking
+thank you for repeating
+
+
+please show ""
+please check if won:
+    show "  You hand the Librarian a Tuesday."
+    show ""
+    show "  The Librarian takes it, checks it against something under the desk, and nods once."
+    show "  The book goes into the returns slot. It falls for a noticeably long time."
+    show ""
+    show "  THE ERRAND IS COMPLETE."
+    show ""
+    show "  You are on time. You are, in fact, early. Outside, your front door is a lake,"
+    show "  and you will deal with that tomorrow."
+otherwise:
+    show "  You give up on the errand. The book is still due. It will keep."
+thank you for checking
+please show ""
