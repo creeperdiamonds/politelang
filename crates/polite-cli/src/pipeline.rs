@@ -16,6 +16,9 @@ pub struct Built {
     /// Numbers for `polite bench`.
     pub lines: usize,
     pub tree_bytes: usize,
+    /// How many pieces of text this program asked to keep hidden. `polite run` will not start
+    /// while this is above nought unless somebody agrees to it first.
+    pub hidden: usize,
 }
 
 /// Build one piece of text, borrowing nothing.
@@ -84,5 +87,6 @@ fn build_bundle(mut bundle: Bundle, vocab: &Vocabulary, optimise: bool) -> Built
         had_problems,
         lines: text.lines().count(),
         tree_bytes: parsed.ast.footprint_bytes(),
+        hidden: parsed.hidden,
     }
 }

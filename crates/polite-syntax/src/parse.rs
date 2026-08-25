@@ -185,6 +185,8 @@ impl Ctx {
 pub struct Parsed {
     pub ast: Ast,
     pub problems: Vec<Diagnostic>,
+    /// How many pieces of text this program asked to keep hidden. See [`crate::hidden`].
+    pub hidden: usize,
 }
 
 struct Parser<'a> {
@@ -226,11 +228,13 @@ pub fn parse(src: &str, vocab: &Vocabulary) -> Parsed {
     // Anything written so as not to say what it says is decoded now, before anybody looks at the
     // tree, so that every pass after this one sees what the program actually means.
     let revealed = crate::hidden::reveal(&mut p.ast);
-    p.problems.extend(revealed);
+    p.problems.extend(revealed.said);
+    let hidden = revealed.kept;
 
     Parsed {
         ast: p.ast,
         problems: p.problems,
+        hidden,
     }
 }
 

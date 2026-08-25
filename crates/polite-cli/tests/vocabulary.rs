@@ -43,12 +43,17 @@ fn every_phrase_in_the_table_parses_to_the_form_it_claims() {
         let src = sentence_for(phrase);
         let parsed = polite_syntax::parse(&src, &vocab);
 
-        if !parsed.problems.is_empty() {
+        // Only something that actually stops the program counts. A notice means it parsed
+        // perfectly well and the language had something to say about it, which is its job.
+        let stopped: Vec<_> = parsed
+            .problems
+            .iter()
+            .filter(|d| d.severity == polite_diag::Severity::Problem)
+            .collect();
+        if !stopped.is_empty() {
             trouble.push(format!(
                 "`{}` (vocabulary line {}) did not parse: {}",
-                phrase.pattern,
-                phrase.line,
-                parsed.problems[0].title
+                phrase.pattern, phrase.line, stopped[0].title
             ));
             continue;
         }

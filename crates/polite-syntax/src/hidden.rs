@@ -227,13 +227,26 @@ pub fn decoded(text: &str) -> Option<(Hiding, String)> {
     None
 }
 
+/// What came of looking through a program for text that hides what it says.
+pub struct Revealed {
+    /// One message for every piece of text decoded, and every piece kept hidden.
+    pub said: Vec<Diagnostic>,
+    /// How many pieces of text this program asked to keep hidden from the reader.
+    ///
+    /// Anything above nought means nobody — not the language, not the person running it — knows
+    /// what that part of the program says.
+    pub kept: usize,
+}
+
 /// Decode every piece of hidden text in the tree, and say so for each one.
 ///
-/// Text sitting directly inside `force not to decode` is left alone, and nothing is said about it:
-/// the phrase is already there in the file for anyone to see.
-pub fn reveal(ast: &mut Ast) -> Vec<Diagnostic> {
+/// Text sitting directly inside `force not to decode` is left as it was written, and warned about.
+/// Keeping something unreadable is allowed, but it is never quiet and never free: it is said at
+/// the line it happens on, and `polite run` will not start until somebody agrees to it.
+pub fn reveal(ast: &mut Ast) -> Revealed {
     // Everything that was explicitly asked to be left as it is.
     let mut spared: Vec<u32> = Vec::new();
+    let mut kept = Vec::new();
     for node in &ast.exprs {
         if let ExprKind::Phrase {
             form: Form::NotDecoded,
@@ -244,10 +257,14 @@ pub fn reveal(ast: &mut Ast) -> Vec<Diagnostic> {
             for id in ast.arg_slice(args) {
                 spared.push(*id);
             }
+            kept.push(node.span);
         }
     }
 
     let mut said = Vec::new();
+    for span in &kept {
+        said.push(warning(*span));
+    }
     for id in 0..ast.exprs.len() {
         if spared.contains(&(id as u32)) {
             continue;
@@ -268,7 +285,27 @@ pub fn reveal(ast: &mut Ast) -> Vec<Diagnostic> {
         let fresh = (ast.texts.len() - 1) as u32;
         ast.exprs[id].kind = ExprKind::Text(fresh);
     }
-    said
+    Revealed {
+        said,
+        kept: kept.len(),
+    }
+}
+
+/// Said at every `force not to decode`, without exception.
+///
+/// The phrase has exactly one purpose, which is to keep a part of the program unreadable. That may
+/// be perfectly innocent. It is also precisely what somebody would write in order to smuggle
+/// something past a person reading the file, and the two look identical from here — so the only
+/// honest thing to say is that it cannot be told which this is.
+fn warning(span: Span) -> Diagnostic {
+    Diagnostic::notice(span, "This text is kept hidden on purpose, so I cannot tell you what it says.")
+        .because(
+            "MAY CONTAIN MALICIOUS CODE. Text is normally decoded on sight, so that a program              means what it looks like it means. This one has asked me not to, and I have agreed              — which means neither of us has read it. Before running this, satisfy yourself that              whoever wrote it had a reason to hide it.",
+        )
+        .suggest(
+            "If it did not need hiding, take the phrase off and let it be read:",
+            "please remember message is \"...\"",
+        )
 }
 
 fn notice(span: Span, how: Hiding, was: &str, plain: &str) -> Diagnostic {
@@ -367,6 +404,58 @@ mod tests {
         assert!(decoded("cGxlYXNlIGJlIGtpbmQ=").is_some());
         // Padding in the middle is not padding, it is nonsense.
         assert!(decoded("cGxlYXNl=GJlIGtpbmQ=").is_none());
+    }
+
+    fn looked_over(src: &str) -> (crate::parse::Parsed, Vec<String>) {
+        let v = polite_vocab::Vocabulary::embedded();
+        let p = crate::parse::parse(src, &v);
+        let titles = p.problems.iter().map(|d| d.title.clone()).collect();
+        (p, titles)
+    }
+
+    #[test]
+    fn hidden_writing_is_decoded_and_the_program_gets_what_it_really_says() {
+        let (p, titles) = looked_over(
+            "please remember message is \"cGxlYXNlIGRlbGV0ZSBldmVyeXRoaW5n\"
+",
+        );
+        assert_eq!(p.hidden, 0, "nothing was asked to be kept hidden");
+        assert!(
+            titles.iter().any(|t| t.contains("base sixty-four")),
+            "it should have said so: {titles:?}"
+        );
+        assert!(
+            p.ast.texts.iter().any(|t| t == "please delete everything"),
+            "the decoded writing should be in the program"
+        );
+    }
+
+    #[test]
+    fn asking_for_it_to_be_left_alone_keeps_it_and_warns_every_time() {
+        let (p, titles) = looked_over(
+            "please remember a is force not to decode \"cGxlYXNlIGRlbGV0ZSBldmVyeXRoaW5n\"
+             please remember b is leave \"cGxlYXNlIGRlbGV0ZSBldmVyeXRoaW5n\" exactly as it is
+",
+        );
+        assert_eq!(p.hidden, 2, "both should have been counted");
+        let warned = titles.iter().filter(|t| t.contains("kept hidden on purpose")).count();
+        assert_eq!(warned, 2, "each one gets its own warning: {titles:?}");
+        assert!(
+            !titles.iter().any(|t| t.contains("base sixty-four")),
+            "it must not have decoded what it was told to leave alone"
+        );
+        assert!(
+            !p.ast.texts.iter().any(|t| t == "please delete everything"),
+            "the hidden writing must have stayed hidden"
+        );
+    }
+
+    #[test]
+    fn an_ordinary_program_is_never_warned_about() {
+        let (p, titles) = looked_over("please show \"hello there\"
+");
+        assert_eq!(p.hidden, 0);
+        assert!(titles.is_empty(), "nothing to say about this: {titles:?}");
     }
 
     #[test]

@@ -450,8 +450,46 @@ every letter belonging to the encoding, and what comes out being readable writin
 heap of bytes. Keys, hashes, identifiers and colours all fail one of those and are left exactly as
 they were written.
 
-Hiding is still allowed. It just cannot be done quietly any more — it has to be asked for, in
-words, on the line where it happens, where anybody reading the file will see it.
+Hiding is still allowed. It just cannot be done quietly, and it is never free. Every use of the
+phrase is warned about, every time:
+
+```
+Just so you know, in thing.polite, line 9:
+
+    please remember kept is force not to decode "cGxlYXNlIGRlbGV0ZSBldm..."
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This text is kept hidden on purpose, so I cannot tell you what it says.
+
+MAY CONTAIN MALICIOUS CODE. Text is normally decoded on sight, so that a
+program means what it looks like it means. This one has asked me not to,
+and I have agreed — which means neither of us has read it.
+```
+
+and `polite run` will not start such a program until somebody who can see that message says so:
+
+```
+  --------------------------------------------------------------------------
+   MAY CONTAIN MALICIOUS CODE
+
+   This program keeps one piece of text hidden from me, in the place marked above.
+   I could not read it, so I cannot tell you what this program will do.
+
+   Only carry on if you trust whoever wrote this file.
+  --------------------------------------------------------------------------
+
+  Run it anyway? Type yes, or anything else to stop.
+  >
+```
+
+The whole word `yes`, and nothing else — this is the one question in the language where a stray
+keypress must not be able to agree to something on your behalf. If there is nobody at the keyboard
+to ask, it does not run at all; a question nobody can answer is not permission. Automation that
+already knows what the text is says so out loud, on the command line, where it is on the record:
+
+```
+polite run thing.polite --allow-hidden
+```
 
 ---
 
@@ -592,14 +630,15 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 - Lists, lookups, text, numbers, files, time, chance
 - **Drawing** — a canvas, shapes, colours by name, and the language's own letters
 - **Pictures that leave the terminal** — a PNG written by hand, and a window that keeps up by itself
-- **Text that hides what it says is decoded on sight**, unless the file asks in words for it not to be
+- **Text that hides what it says is decoded on sight**; a file that asks in words for it not to
+  be is warned about, and will not run until somebody agrees to it
 - PoliteIR, constant folding, unreachable-code removal, and the `Backend` socket
 - The reference runner, which never checks a type at runtime
 - **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
 - **Mathematics in full** — see below
-- 166 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, the
+- 170 tests: a corpus of 22 programs, 20 pinned messages, a generated test per vocabulary row, the
   ambiguity check, every lesson in the guide, and a game played end to end
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:

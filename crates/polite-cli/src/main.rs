@@ -11,6 +11,7 @@ const USAGE: &str = "\
 polite — the PoliteLang toolchain
 
   polite run <file.polite>        run a program
+      --allow-hidden              run it even though part of it is kept unreadable
       --seed <number>             make anything it leaves to chance repeatable
   polite check <file.polite>      look it over without running it
       --show-middle               also print the middle language
@@ -61,10 +62,15 @@ fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
     // A seed makes a run repeatable, which is what you want when a program uses chance and you
     // are trying to work out what it did.
     let mut seed: Option<u64> = None;
+    // Agreeing to hidden text on the command line, for when there is nobody to ask.
+    let mut allow_hidden = false;
     let mut rest: Vec<String> = Vec::new();
     let mut i = 0;
     while i < args.len() {
-        if args[i] == "--seed" {
+        if args[i] == "--allow-hidden" {
+            allow_hidden = true;
+            i += 1;
+        } else if args[i] == "--seed" {
             match args.get(i + 1).and_then(|v| v.parse::<u64>().ok()) {
                 Some(v) => seed = Some(v),
                 None => {
@@ -101,6 +107,12 @@ fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
         None => return ExitCode::FAILURE,
     };
 
+    // Text the program asked to keep hidden has already been pointed at, above. Nothing runs
+    // until somebody who can see it says so.
+    if built.hidden > 0 && !agreed_to_hidden(built.hidden, &path, allow_hidden) {
+        return ExitCode::FAILURE;
+    }
+
     let mut world = polite_run::Terminal;
     match polite_run::run_with(&program, &mut world, polite_run::Limits::none(), seed) {
         Ok(()) => ExitCode::SUCCESS,
@@ -109,6 +121,75 @@ fn command_run(args: &[String], vocab: &Vocabulary) -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+/// Ask before running a program that keeps part of itself unreadable.
+///
+/// The phrase `force not to decode` is allowed, and this is the price of it. Nobody has read that
+/// text — not the language, not whoever is about to run it — so the only safe default is to stop
+/// and say so. If there is nobody at the keyboard to ask, it stops anyway: a question nobody can
+/// answer is not permission.
+fn agreed_to_hidden(count: usize, path: &str, allowed_already: bool) -> bool {
+    use std::io::{IsTerminal, Write};
+
+    let pieces = if count == 1 {
+        "one piece of text".to_string()
+    } else {
+        format!("{count} pieces of text")
+    };
+    let them = if count == 1 { "it" } else { "them" };
+
+    if allowed_already {
+        println!("\n  Running with {pieces} kept hidden, because you said so on the command line.");
+        return true;
+    }
+
+    let rule = "-".repeat(74);
+    println!("\n  {rule}");
+    println!("   MAY CONTAIN MALICIOUS CODE");
+    println!();
+    println!("   This program keeps {pieces} hidden from me, in the place marked above.");
+    println!("   I could not read {them}, so I cannot tell you what this program will do.");
+    println!();
+    println!("   Only carry on if you trust whoever wrote this file.");
+    println!("  {rule}");
+
+    if !std::io::stdin().is_terminal() {
+        println!();
+        println!("  There is nobody at the keyboard for me to ask, so I have not run it.");
+        println!();
+        println!("  Run it yourself and answer the question, or, if you already know what that");
+        println!("  text says:");
+        println!();
+        println!("      polite run {path} --allow-hidden");
+        println!();
+        return false;
+    }
+
+    print!("\n  Run it anyway? Type yes, or anything else to stop.\n  > ");
+    let _ = std::io::stdout().flush();
+
+    let mut said = String::new();
+    if std::io::stdin().read_line(&mut said).is_err() {
+        println!("\n  I did not catch that, so I have not run it.");
+        return false;
+    }
+    if is_yes(&said) {
+        println!();
+        true
+    } else {
+        println!("\n  Stopped. Nothing was run.");
+        false
+    }
+}
+
+
+/// Whether an answer to the hidden-text question was a yes.
+///
+/// The whole word, and nothing else. This is the one question in the language where a stray
+/// keypress must not be able to agree to something on your behalf.
+fn is_yes(said: &str) -> bool {
+    said.trim().eq_ignore_ascii_case("yes")
 }
 
 fn command_check(args: &[String], vocab: &Vocabulary) -> ExitCode {
@@ -175,5 +256,23 @@ fn command_check_vocabulary(vocab: &Vocabulary) -> ExitCode {
              different words."
         );
         ExitCode::FAILURE
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_yes;
+
+    #[test]
+    fn only_the_whole_word_agrees_to_hidden_text() {
+        for said in ["yes", "Yes", "YES", "  yes  ", "yes
+"] {
+            assert!(is_yes(said), "{said:?} should have been taken as a yes");
+        }
+        // Everything else is a no, including the things people type without reading.
+        for said in ["y", "Y", "", "
+", "ok", "sure", "yeah", "yes please", "no", "n"] {
+            assert!(!is_yes(said), "{said:?} should not have agreed to anything");
+        }
     }
 }
