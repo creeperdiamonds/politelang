@@ -171,6 +171,39 @@ thank you for defining
 please show greet with "Creeperdiamonds Studios" and "Good morning"
 ```
 
+**And a good deal more**, because a large vocabulary is the whole point. `polite words` lists
+every one of them, and `polite explain` says what any of them means:
+
+```polite
+please show the piece of "hello there" from 1 to 5
+please show "the rain in spain" with "ain" changed to "AIN"
+please show the letter 2 of "hello" or "?"
+please show the remainder of 17 divided by 5 or 0
+please show the smaller of 3 and 8
+please show 2 to the power of 10
+please show the average of numbers or 0
+please show the rest of numbers
+please show the first 2 items of numbers
+please show numbers is empty
+```
+
+And several ways to say things you could already say, because `please` is not the only word
+somebody might reach for:
+
+```polite
+please have a look at "another way of showing something"
+please remember that greeting is "hello"
+please update greeting to "good day"
+
+please if greeting is "good day":
+    show "a shorter way of checking"
+thanks
+
+please look at every letter in the letters of "hi":
+    show letter
+thanks
+```
+
 **Borrowing between files.** A file keeps everything to itself unless it offers it — which is
 both safer and exactly the manner of offering something rather than leaving your things lying
 about.
@@ -304,6 +337,9 @@ The same table generates the editor highlighting, the documentation, the typo su
 test per row. And **`polite check-vocabulary` runs on every build**, refusing any two phrases that
 could both match the same sentence, because the language must never guess which one you meant.
 
+That claim has been paid for once already: the vocabulary grew from 88 phrases to 117 in a single
+sitting — a third again as many words — and the measured cost of matching them did not move.
+
 ---
 
 ## Speed, on a school laptop
@@ -316,14 +352,14 @@ Measured there, by `polite bench`:
 
 | | measured | budget |
 |---|---|---|
-| check a 1,000 line program | **5.3 ms** | < 10 ms |
-| checking throughput | **189,000 lines/sec** | ≥ 150,000 |
+| check a 1,000 line program | **5.7 ms** | < 10 ms |
+| checking throughput | **176,000 lines/sec** | ≥ 150,000 |
 | compiler memory per line | **181 bytes** | < 2 KB |
 | compile and run `hello` | **0.03 ms** | < 3 ms |
 | 300,000 turn numeric loop | **10.5 ms** | — |
 | the same loop in CPython | 43.8 ms | — |
-| **times faster than CPython** | **3.3–4.6×** | ≥ 2× |
-| **parse slowdown at 40× the vocabulary** | **0.0%** | < 5% |
+| **times faster than CPython** | **4.3×** | ≥ 2× |
+| **parse slowdown at 40× the vocabulary** | **0.4–1.0%** | < 5% |
 | `polite` binary, stripped | **768 KB** | < 3 MB |
 
 That last row is the one that matters most, because it tests a *claim* rather than a speed: the
@@ -343,7 +379,7 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 
 **Working today**
 
-- The four rules, and 88 phrases across 60 meanings
+- The four rules, and 117 phrases across 80 meanings
 - Full type inference — you never write a type, and mistakes are caught before the program runs
 - The `or` / `try` / `I am sure` system, and riskiness that spreads by itself
 - Actions, including multi-word names, recursion, and calling before defining
@@ -353,7 +389,7 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 - **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
-- 68 tests: a corpus of 18 programs, 20 pinned messages, a generated test per vocabulary row, and
+- 73 tests: a corpus of 19 programs, 20 pinned messages, a generated test per vocabulary row, and
   the ambiguity check
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:

@@ -792,7 +792,15 @@ impl<'a> Checker<'a> {
                 }
             }
 
-            Form::WriteFile => {
+            Form::WaitFor => {
+                if let Some(v) = args.first() {
+                    self.want_number(*v, arg_ty[0], "how long to wait");
+                }
+            }
+
+            Form::StopEverything => {}
+
+            Form::AppendFile | Form::WriteFile => {
                 let text = self.types.text;
                 for (k, a) in args.iter().enumerate() {
                     self.want(*a, arg_ty[k], text, "text");
@@ -1275,9 +1283,158 @@ impl<'a> Checker<'a> {
                 self.types.yes_no
             }
             Form::LengthOf => {
+                // The length of text is its letters; the length of a list is its items. Both are
+                // the same question, so both are the same word.
+                if let Some((e, t)) = arg(0) {
+                    let r = self.types.resolve(t);
+                    if !matches!(self.types.kind(r), TyKind::List(_)) {
+                        let text = self.types.text;
+                        self.want(e, t, text, "text, or a list");
+                    }
+                }
+                self.types.whole
+            }
+
+            Form::SliceOf => {
                 if let Some((e, t)) = arg(0) {
                     let text = self.types.text;
                     self.want(e, t, text, "text");
+                }
+                for k in 1..3 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a position");
+                    }
+                }
+                self.types.text
+            }
+
+            Form::ReplaceIn => {
+                let text = self.types.text;
+                for k in 0..3 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want(e, t, text, "text");
+                    }
+                }
+                self.types.text
+            }
+
+            Form::LetterOf => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a position");
+                }
+                if let Some((e, t)) = arg(1) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "text");
+                }
+                self.types.text
+            }
+
+            Form::LettersOf => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "text");
+                }
+                let text = self.types.text;
+                self.types.list_of(text)
+            }
+
+            Form::RepeatedText => {
+                if let Some((e, t)) = arg(0) {
+                    let text = self.types.text;
+                    self.want(e, t, text, "text");
+                }
+                if let Some((e, t)) = arg(1) {
+                    self.want_number(e, t, "how many times");
+                }
+                self.types.text
+            }
+
+            Form::IsEmpty => self.types.yes_no,
+
+            Form::RemainderOf => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                self.types.whole
+            }
+
+            Form::SmallerOf | Form::LargerOf => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                match (arg(0), arg(1)) {
+                    (Some((_, a)), Some((_, b))) => self.types.widen(a, b),
+                    _ => self.types.whole,
+                }
+            }
+
+            Form::PowerOf => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                self.types.decimal
+            }
+
+            Form::RoundedDown | Form::RoundedUp => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.whole
+            }
+
+            Form::RestOf => {
+                let item = self.types.fresh();
+                let list = self.types.list_of(item);
+                if let Some((e, t)) = arg(0) {
+                    self.want(e, t, list, "a list");
+                }
+                list
+            }
+
+            Form::FirstFew => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "how many to take");
+                }
+                let item = self.types.fresh();
+                let list = self.types.list_of(item);
+                if let Some((e, t)) = arg(1) {
+                    self.want(e, t, list, "a list");
+                }
+                list
+            }
+
+            Form::AverageOf => {
+                if let Some((e, t)) = arg(0) {
+                    let whole = self.types.whole;
+                    let list = self.types.list_of(whole);
+                    self.want(e, t, list, "a list of numbers");
+                }
+                self.types.decimal
+            }
+
+            Form::CountIn => {
+                let item = self.types.fresh();
+                if let Some((e, t)) = arg(0) {
+                    self.want(e, t, item, "an item");
+                }
+                if let Some((e, t)) = arg(1) {
+                    let list = self.types.list_of(item);
+                    self.want(e, t, list, "a list");
+                }
+                self.types.whole
+            }
+
+            Form::LookupCount => {
+                if let Some((e, t)) = arg(0) {
+                    let value = self.types.fresh();
+                    let lookup = self.types.lookup_of(value);
+                    self.want(e, t, lookup, "a lookup");
                 }
                 self.types.whole
             }

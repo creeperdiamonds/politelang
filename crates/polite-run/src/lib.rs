@@ -316,6 +316,10 @@ impl Runner<'_> {
                     return Ok(Outcome::Returned(v));
                 }
 
+                Instr::StopEverything => {
+                    return Err("The program said to stop everything, so it did.".to_string())
+                }
+
                 Instr::StopBecauseSure { reason, what } => {
                     let why = slots[*reason as usize].showable();
                     let claim = &self.program.texts[*what as usize];
@@ -581,6 +585,67 @@ impl Runner<'_> {
             Builtin::SquareRoot => Some(std_lib::square_root(&a0())?),
             Builtin::DividesEvenly => Some(std_lib::divides_evenly(&a0(), &a1())),
             Builtin::DivideNumbers => Some(std_lib::divide(&a0(), &a1())?),
+
+            Builtin::TextSlice => Some(Value::text(std_lib::text_slice(
+                &a0().as_text(),
+                a1().as_whole(),
+                a2().as_whole(),
+            ))),
+            Builtin::TextReplace => Some(Value::text(std_lib::text_replace(
+                &a0().as_text(),
+                &a1().as_text(),
+                &a2().as_text(),
+            ))),
+            Builtin::TextLetter => Some(std_lib::text_letter(&a0().as_text(), a1().as_whole())?),
+            Builtin::TextLetters => Some(Value::list(std_lib::text_letters(&a0().as_text()))),
+            Builtin::TextRepeated => Some(Value::text(std_lib::text_repeated(
+                &a0().as_text(),
+                a1().as_whole(),
+            ))),
+            Builtin::IsEmpty => Some(Value::YesNo(std_lib::is_empty(&a0()))),
+
+            Builtin::Remainder => Some(std_lib::remainder(&a0(), &a1())?),
+            Builtin::Smaller => Some(std_lib::smaller(&a0(), &a1())),
+            Builtin::Larger => Some(std_lib::larger(&a0(), &a1())),
+            Builtin::Power => Some(std_lib::power(&a0(), &a1())),
+            Builtin::RoundedDown => Some(std_lib::rounded_down(&a0())),
+            Builtin::RoundedUp => Some(std_lib::rounded_up(&a0())),
+
+            Builtin::ListRest => {
+                let items = as_list(&a0())?;
+                let v = std_lib::list_rest(&items.borrow());
+                Some(Value::list(v))
+            }
+            Builtin::ListFirstFew => {
+                let items = as_list(&a0())?;
+                let v = std_lib::list_first_few(&items.borrow(), a1().as_whole());
+                Some(Value::list(v))
+            }
+            Builtin::ListAverage => {
+                let items = as_list(&a0())?;
+                let v = std_lib::list_average(&items.borrow())?;
+                Some(v)
+            }
+            Builtin::ListCountIn => {
+                let items = as_list(&a0())?;
+                let wanted = a1();
+                let n = std_lib::list_count_in(&items.borrow(), &wanted);
+                Some(Value::Whole(n))
+            }
+            Builtin::LookupCount => {
+                let map = as_lookup(&a0())?;
+                let n = map.borrow().len() as i64;
+                Some(Value::Whole(n))
+            }
+
+            Builtin::WaitFor => {
+                std_lib::wait_for(a0().as_decimal());
+                None
+            }
+            Builtin::FileAppend => {
+                std_lib::file_append(&a1().as_text(), &a0().as_text())?;
+                None
+            }
 
             Builtin::FileContents => Some(std_lib::file_contents(&a0().as_text())?),
             Builtin::FileWrite => {

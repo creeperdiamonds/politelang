@@ -1,0 +1,74 @@
+-- The vocabulary added after the first version. A large vocabulary is the whole point,
+-- and a new word costs one row in the table and nothing else.
+
+-- More text
+please show the piece of "hello there" from 1 to 5
+please show the piece of "hello" from 1 to 99
+please show "the rain in spain" with "ain" changed to "AIN"
+please show the letter 2 of "hello" or "?"
+please show the letter 99 of "hello" or "?"
+please show the join of the letters of "abc" with "-"
+please show "ab" repeated 3 times
+please show "" is empty
+please show "a" is empty
+please show the length of "hello"
+
+-- More numbers
+please show the remainder of 17 divided by 5 or 0
+please show the smaller of 3 and 8
+please show the larger of 3 and 8
+please show 2 to the power of 10
+please show the rounded down version of 3.9
+please show the rounded up version of 3.1
+
+-- More lists
+please remember numbers is an empty list
+please repeat for every n from 1 to 5:
+    add n to numbers
+thanks
+
+please show the length of numbers
+please show the join of the rest of numbers with ", "
+please show the join of the first 2 items of numbers with ", "
+please show the average of numbers or 0
+please show the total of numbers
+please add 3 to numbers
+please show the count of 3 in numbers
+please show numbers is empty
+
+-- More lookups
+please remember ages is an empty lookup
+please put 11 for "ada" in ages
+please put 42 for "grace" in ages
+please show the number of things in ages
+please show ages is empty
+
+-- More ways to say what you already could
+please have a look at "another way to show something"
+please remember that greeting is "hello"
+please update greeting to "good day"
+please show greeting
+
+please if greeting is "good day":
+    show "the short way of checking"
+thanks
+
+please look at every letter in the letters of "hi":
+    show letter
+thanks
+
+please remember n is 0
+please for as long as n is under 2:
+    add 1 to n
+    show n
+thanks
+
+please repeat 5 times:
+    show "only once"
+    enough of that
+thanks
+
+please define answer:
+    return 42
+thanks
+please show answer

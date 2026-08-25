@@ -46,7 +46,7 @@
     },
     "vocabulary": {
       "name": "support.function.polite",
-      "match": "(?i)\\b(repeating|capitals|contains|contents|mentions|multiply|position|remember|smallest|biggest|display|divides|forever|letters|reverse|rounded|trimmed|version|whether|answer|borrow|change|divide|evenly|forget|length|lookup|number|pieces|random|remove|repeat|sorted|square|starts|about|along|break|check|count|empty|every|first|going|items|knows|leave|print|share|small|split|there|times|until|value|while|whole|words|write|back|ends|file|from|give|hand|into|item|join|keep|keys|last|list|loop|make|many|move|next|note|root|show|size|skip|stop|take|tell|text|this|time|when|with|add|are|ask|for|how|let|new|now|one|out|put|say|see|set|sum|the|use|an|as|at|be|by|do|if|in|is|me|of|to|a)\\b"
+      "match": "(?i)\\b(everything|remainder|repeating|capitals|contains|contents|mentions|multiply|position|remember|repeated|smallest|average|biggest|changed|display|divided|divides|forever|letters|reverse|rounded|seconds|smaller|trimmed|version|whether|answer|append|borrow|change|divide|enough|evenly|forget|larger|length|letter|lookup|number|pieces|random|remove|repeat|return|sorted|square|starts|things|update|about|along|break|check|count|empty|every|first|going|items|knows|leave|piece|power|print|share|small|split|there|times|total|until|value|while|whole|words|write|back|down|ends|file|from|give|hand|have|into|item|join|keep|keys|last|list|long|look|loop|make|many|move|next|note|rest|root|show|size|skip|stop|take|tell|text|that|this|time|wait|when|with|add|and|are|ask|for|how|let|new|now|one|out|put|say|see|set|sum|the|use|an|as|at|be|by|do|if|in|is|me|of|to|up|a)\\b"
     }
   }
 }

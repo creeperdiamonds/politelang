@@ -477,13 +477,31 @@ impl Lower<'_, '_> {
                     });
                 }
             }
-            Form::WriteFile => {
+            Form::WriteFile | Form::AppendFile => {
                 if let (Some(v), Some(p)) = (args.first(), args.get(1)) {
                     let vs = self.value(*v);
                     let ps = self.value(*p);
-                    self.try_call(None, Builtin::FileWrite, vec![vs, ps]);
+                    let which = if form == Form::WriteFile {
+                        Builtin::FileWrite
+                    } else {
+                        Builtin::FileAppend
+                    };
+                    self.try_call(None, which, vec![vs, ps]);
                 }
             }
+
+            Form::WaitFor => {
+                if let Some(v) = args.first() {
+                    let s = self.value(*v);
+                    self.emit(Instr::Call {
+                        dst: None,
+                        which: Builtin::WaitFor,
+                        args: vec![s],
+                    });
+                }
+            }
+
+            Form::StopEverything => self.emit(Instr::StopEverything),
 
             // Anything else in statement position was already reported by the checker.
             _ => {}
@@ -1097,6 +1115,22 @@ impl Lower<'_, '_> {
     }
 
     fn lower_phrase(&mut self, form: Form, phrase: u32, args: &[ExprId], dst: Slot) {
+        // The length of text and the length of a list are the same question, so they are the
+        // same word; which one it is was settled by the checker.
+        if form == Form::LengthOf {
+            let which = match args.first().map(|a| self.ty_of(*a)) {
+                Some(Ty::List) => Builtin::ListCount,
+                _ => Builtin::TextLength,
+            };
+            let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+            self.emit(Instr::Call {
+                dst: Some(dst),
+                which,
+                args: slots,
+            });
+            return;
+        }
+
         let which = match builtin_for(form) {
             Some(b) => b,
             None => {
@@ -1131,6 +1165,24 @@ impl Lower<'_, '_> {
                 let lookup = self.value(args[0]);
                 let key = self.value(args[1]);
                 vec![lookup, key]
+            }
+            Form::LetterOf => {
+                // the letter {index} of {value}
+                let index = self.value_whole(args[0]);
+                let text = self.value(args[1]);
+                vec![text, index]
+            }
+            Form::FirstFew => {
+                // the first {count} items of {list}
+                let count = self.value_whole(args[0]);
+                let list = self.value(args[1]);
+                vec![list, count]
+            }
+            Form::CountIn => {
+                // the count of {value} in {list}
+                let value = self.value(args[0]);
+                let list = self.value(args[1]);
+                vec![list, value]
             }
             _ => args.iter().map(|a| self.value(*a)).collect(),
         };
@@ -1187,6 +1239,27 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::ContentsOf => Builtin::FileContents,
         Form::FileExists => Builtin::FileExists,
         Form::TimeNow => Builtin::TimeNow,
+
+        Form::SliceOf => Builtin::TextSlice,
+        Form::ReplaceIn => Builtin::TextReplace,
+        Form::LetterOf => Builtin::TextLetter,
+        Form::LettersOf => Builtin::TextLetters,
+        Form::RepeatedText => Builtin::TextRepeated,
+        Form::IsEmpty => Builtin::IsEmpty,
+
+        Form::RemainderOf => Builtin::Remainder,
+        Form::SmallerOf => Builtin::Smaller,
+        Form::LargerOf => Builtin::Larger,
+        Form::PowerOf => Builtin::Power,
+        Form::RoundedDown => Builtin::RoundedDown,
+        Form::RoundedUp => Builtin::RoundedUp,
+
+        Form::RestOf => Builtin::ListRest,
+        Form::FirstFew => Builtin::ListFirstFew,
+        Form::AverageOf => Builtin::ListAverage,
+        Form::CountIn => Builtin::ListCountIn,
+        Form::LookupCount => Builtin::LookupCount,
+
         _ => return None,
     })
 }

@@ -103,6 +103,30 @@ forms! {
     FileExists => "file_exists",
     TimeNow => "time_now",
 
+    SliceOf => "slice_of",
+    ReplaceIn => "replace_in",
+    LetterOf => "letter_of",
+    LettersOf => "letters_of",
+    RepeatedText => "repeated_text",
+    IsEmpty => "is_empty",
+
+    RemainderOf => "remainder_of",
+    SmallerOf => "smaller_of",
+    LargerOf => "larger_of",
+    PowerOf => "power_of",
+    RoundedDown => "rounded_down",
+    RoundedUp => "rounded_up",
+
+    RestOf => "rest_of",
+    FirstFew => "first_few",
+    AverageOf => "average_of",
+    CountIn => "count_in",
+    LookupCount => "lookup_count",
+
+    WaitFor => "wait_for",
+    AppendFile => "append_file",
+    StopEverything => "stop_everything",
+
     UseModule => "use_module",
     Share => "share",
 }

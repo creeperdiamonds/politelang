@@ -196,6 +196,69 @@ pub fn text_split(t: &str, separator: &str) -> Vec<Value> {
     t.split(separator).map(Value::text).collect()
 }
 
+/// A run of letters between two positions, counting from 1 and taking both ends.
+///
+/// Positions outside the text are brought back to its edges rather than refused: asking for more
+/// than there is should give you what there is.
+pub fn text_slice(t: &str, from: i64, to: i64) -> String {
+    let letters: Vec<char> = t.chars().collect();
+    let len = letters.len() as i64;
+    let start = from.max(1).min(len + 1) - 1;
+    let end = to.max(0).min(len);
+    if start >= end {
+        return String::new();
+    }
+    letters[start as usize..end as usize].iter().collect()
+}
+
+pub fn text_replace(t: &str, old: &str, new: &str) -> String {
+    if old.is_empty() {
+        return t.to_string();
+    }
+    t.replace(old, new)
+}
+
+pub fn text_letter(t: &str, position: i64) -> Answer<Value> {
+    let letters: Vec<char> = t.chars().collect();
+    if position < 1 || position as usize > letters.len() {
+        return Err(if letters.is_empty() {
+            format!("there is no letter {position}, because the text is empty")
+        } else {
+            format!(
+                "there is no letter {position}, because the text has {} of them",
+                letters.len()
+            )
+        });
+    }
+    Ok(Value::text(letters[position as usize - 1].to_string()))
+}
+
+pub fn text_letters(t: &str) -> Vec<Value> {
+    t.chars().map(|c| Value::text(c.to_string())).collect()
+}
+
+pub fn text_repeated(t: &str, count: i64) -> String {
+    if count <= 0 || t.is_empty() {
+        return String::new();
+    }
+    // A guard against asking for more text than a small machine can hold.
+    let wanted = (t.len() as i64).saturating_mul(count);
+    if wanted > 64 * 1024 * 1024 {
+        return t.repeat((64 * 1024 * 1024 / t.len().max(1)) as usize);
+    }
+    t.repeat(count as usize)
+}
+
+pub fn is_empty(v: &Value) -> bool {
+    match v {
+        Value::Text(t) => t.is_empty(),
+        Value::List(items) => items.borrow().is_empty(),
+        Value::Lookup(map) => map.borrow().is_empty(),
+        Value::Nothing => true,
+        _ => false,
+    }
+}
+
 pub fn text_number(t: &str) -> Answer<Value> {
     let trimmed = t.trim();
     if let Ok(v) = trimmed.parse::<i64>() {
@@ -367,6 +430,90 @@ pub fn lookup_keys(map: &BTreeMap<String, Value>) -> Vec<Value> {
 // ---------------------------------------------------------------------------
 // Numbers
 // ---------------------------------------------------------------------------
+
+pub fn remainder(a: &Value, b: &Value) -> Answer<Value> {
+    let d = b.as_whole();
+    if d == 0 {
+        return Err("nothing can be shared into zero parts".to_string());
+    }
+    Ok(Value::Whole(a.as_whole() % d))
+}
+
+pub fn smaller(a: &Value, b: &Value) -> Value {
+    if a.as_decimal() <= b.as_decimal() {
+        a.clone()
+    } else {
+        b.clone()
+    }
+}
+
+pub fn larger(a: &Value, b: &Value) -> Value {
+    if a.as_decimal() >= b.as_decimal() {
+        a.clone()
+    } else {
+        b.clone()
+    }
+}
+
+pub fn power(a: &Value, b: &Value) -> Value {
+    Value::Decimal(a.as_decimal().powf(b.as_decimal()))
+}
+
+pub fn rounded_down(v: &Value) -> Value {
+    Value::Whole(v.as_decimal().floor() as i64)
+}
+
+pub fn rounded_up(v: &Value) -> Value {
+    Value::Whole(v.as_decimal().ceil() as i64)
+}
+
+pub fn list_rest(items: &[Value]) -> Vec<Value> {
+    if items.len() <= 1 {
+        return Vec::new();
+    }
+    items[1..].to_vec()
+}
+
+pub fn list_first_few(items: &[Value], count: i64) -> Vec<Value> {
+    if count <= 0 {
+        return Vec::new();
+    }
+    let take = (count as usize).min(items.len());
+    items[..take].to_vec()
+}
+
+pub fn list_average(items: &[Value]) -> Answer<Value> {
+    if items.is_empty() {
+        return Err("the list is empty, so there is nothing to share out".to_string());
+    }
+    let total: f64 = items.iter().map(|v| v.as_decimal()).sum();
+    Ok(Value::Decimal(total / items.len() as f64))
+}
+
+pub fn list_count_in(items: &[Value], wanted: &Value) -> i64 {
+    items.iter().filter(|v| v.same_as(wanted)).count() as i64
+}
+
+/// Let some time pass.
+pub fn wait_for(seconds: f64) {
+    if seconds <= 0.0 {
+        return;
+    }
+    // A whole day is more waiting than anybody meant.
+    let capped = seconds.min(86_400.0);
+    std::thread::sleep(std::time::Duration::from_secs_f64(capped));
+}
+
+pub fn file_append(path: &str, contents: &str) -> Answer<()> {
+    use std::io::Write as _;
+    match std::fs::OpenOptions::new().create(true).append(true).open(path) {
+        Ok(mut f) => match f.write_all(contents.as_bytes()) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(describe_file_problem(path, &e)),
+        },
+        Err(e) => Err(describe_file_problem(path, &e)),
+    }
+}
 
 pub fn divide(a: &Value, b: &Value) -> Answer<Value> {
     let divisor = b.as_decimal();
@@ -570,6 +717,43 @@ mod tests {
             let v = d.between(1, 6);
             assert!((1..=6).contains(&v));
         }
+    }
+
+    #[test]
+    fn a_piece_of_text_counts_from_one_and_takes_both_ends() {
+        assert_eq!(text_slice("hello", 1, 3), "hel");
+        assert_eq!(text_slice("hello", 2, 4), "ell");
+        // Asking for more than there is gives what there is.
+        assert_eq!(text_slice("hello", 1, 99), "hello");
+        assert_eq!(text_slice("hello", 4, 2), "");
+    }
+
+    #[test]
+    fn a_letter_out_of_range_says_so_gently() {
+        let reason = text_letter("hi", 5).unwrap_err();
+        assert_eq!(reason, "there is no letter 5, because the text has 2 of them");
+        assert!(polite_diag::find_blame_word(&reason).is_none());
+    }
+
+    #[test]
+    fn emptiness_means_the_same_for_everything() {
+        assert!(is_empty(&Value::text("")));
+        assert!(is_empty(&Value::list(Vec::new())));
+        assert!(is_empty(&Value::lookup()));
+        assert!(!is_empty(&Value::text("a")));
+    }
+
+    #[test]
+    fn the_rest_of_a_short_list_is_simply_empty() {
+        assert!(list_rest(&[]).is_empty());
+        assert!(list_rest(&[Value::Whole(1)]).is_empty());
+        assert_eq!(list_rest(&[Value::Whole(1), Value::Whole(2)]).len(), 1);
+    }
+
+    #[test]
+    fn repeating_text_will_not_eat_the_machine() {
+        let big = text_repeated("hello", 1_000_000_000);
+        assert!(big.len() <= 64 * 1024 * 1024 + 8);
     }
 
     #[test]

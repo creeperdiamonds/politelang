@@ -187,6 +187,67 @@ stmt  working   use_module     :: borrow {name}
 stmt  working   share          :: share {name}
 
 
+
+# ---------------------------------------------------------------------------
+# More text
+# ---------------------------------------------------------------------------
+
+expr  working   slice_of       :: the piece of {value} from {from} to {to}
+expr  working   replace_in     :: {value} with {old} changed to {new}
+expr  working   letter_of      :: the letter {index} of {value} :: risky
+expr  working   letters_of     :: the letters of {value}
+expr  working   repeated_text  :: {value} repeated {count} times
+expr  everyday  is_empty       :: {value} is empty
+
+
+# ---------------------------------------------------------------------------
+# More numbers
+# ---------------------------------------------------------------------------
+
+expr  working   remainder_of   :: the remainder of {value} divided by {divisor} :: risky
+expr  everyday  smaller_of     :: the smaller of {first} and {second}
+expr  everyday  larger_of      :: the larger of {first} and {second}
+expr  working   power_of       :: {value} to the power of {power}
+expr  working   rounded_down   :: the rounded down version of {value}
+expr  working   rounded_up     :: the rounded up version of {value}
+
+
+# ---------------------------------------------------------------------------
+# More lists and lookups
+# ---------------------------------------------------------------------------
+
+expr  working   rest_of        :: the rest of {list}
+expr  working   first_few      :: the first {count} items of {list}
+expr  working   average_of     :: the average of {list} :: risky
+expr  working   count_in       :: the count of {value} in {list}
+expr  working   lookup_count   :: the number of things in {lookup}
+expr  working   sum_of         :: the total of {list}
+
+
+# ---------------------------------------------------------------------------
+# The world
+# ---------------------------------------------------------------------------
+
+stmt  full      wait_for       :: wait for {value} seconds
+stmt  working   append_file    :: append {value} to the file {path} :: risky
+stmt  working   stop_everything :: stop everything
+
+
+# ---------------------------------------------------------------------------
+# More ways to say what you already could
+#
+# Spec 4.1: a synonym costs one row and nothing else. This is what a large vocabulary is made of.
+# ---------------------------------------------------------------------------
+
+stmt  everyday  show           :: have a look at {value}
+stmt  everyday  remember       :: remember that {name} is {value}
+stmt  everyday  assign         :: update {name} to {value}
+stmt  everyday  give_back      :: return {value}
+stmt  everyday  stop_repeating :: enough of that
+block everyday  check          :: if {cond}
+block everyday  loop_each      :: look at every {var} in {list}
+block working   loop_while     :: for as long as {cond}
+
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
 # purpose 1 of the language is that you learn more English.
@@ -253,3 +314,23 @@ explain file_exists    :: This is yes when there really is a file at that place.
 explain time_now       :: This is the number of seconds since the start of 1970, which is how computers usually count time.
 explain use_module     :: To borrow is to take with the intention of giving back. This brings another file's shared words into yours.
 explain share          :: To share is to offer to others. A file keeps everything to itself unless it shares it.
+explain slice_of       :: A piece of text is any run of letters within it. This takes the run between two positions, counting from 1.
+explain replace_in     :: To change one thing to another is to put the second where the first was. This gives back the text with every one of them swapped.
+explain letter_of      :: This takes a single letter out of some text by its position, counting from 1. It might not work out, because the text may be shorter than that.
+explain letters_of     :: This breaks text into its letters, one after another, as a list.
+explain repeated_text  :: To repeat is to do again. This gives back the text written out over and over.
+explain is_empty       :: Something is empty when there is nothing in it at all. This works for text, for lists and for lookups.
+explain remainder_of   :: The remainder is what is left over when one number is shared into another as far as it will go. It might not work out, because nothing can be shared into zero parts.
+explain smaller_of     :: This is whichever of two numbers is the lesser.
+explain larger_of      :: This is whichever of two numbers is the greater.
+explain power_of       :: To raise to a power is to multiply a number by itself that many times.
+explain rounded_down   :: To round down is to go to the whole number below, however close the next one is.
+explain rounded_up     :: To round up is to go to the whole number above, however far away it is.
+explain rest_of        :: The rest is everything after the first item. An empty list has an empty rest, which is no trouble at all.
+explain first_few      :: This takes as many items from the front of a list as you asked for, or all of them if there are fewer.
+explain average_of     :: The average is the total shared equally between all of them. It might not work out, because an empty list has nothing to share.
+explain count_in       :: This is how many times something appears in a list.
+explain lookup_count   :: This is how many things a lookup is holding.
+explain wait_for       :: To wait is to let time pass without doing anything. This pauses the program for a while.
+explain append_file    :: To append is to add to the end. This puts text at the end of a file, leaving what was already there. It might not work out, because the place may not be writable.
+explain stop_everything :: This ends the whole program at once. Nothing catches it, which is exactly why it is there.

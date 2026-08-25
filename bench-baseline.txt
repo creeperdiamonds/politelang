@@ -1,8 +1,8 @@
-check a 1,000 line program	5.281700000000001
-checking throughput	189332.97991177082
+check a 1,000 line program	5.8369
+checking throughput	171323.8191505765
 tree memory per line	180.85
-compile and run hello	0.0337
-parse slowdown at 40x the vocabulary	0
-300,000 turn numeric loop	13.118
-same loop in CPython	43.84480000589974
-times faster than CPython	3.3423387716038833
+compile and run hello	0.0323
+parse slowdown at 40x the vocabulary	0.91443990555784
+300,000 turn numeric loop	10.2296
+same loop in CPython	44.25529998843558
+times faster than CPython	4.326200436814302

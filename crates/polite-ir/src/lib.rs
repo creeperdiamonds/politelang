@@ -85,8 +85,30 @@ pub enum Builtin {
 
     FileContents,
     FileWrite,
+    FileAppend,
     FileExists,
     TimeNow,
+    WaitFor,
+
+    TextSlice,
+    TextReplace,
+    TextLetter,
+    TextLetters,
+    TextRepeated,
+    IsEmpty,
+
+    Remainder,
+    Smaller,
+    Larger,
+    Power,
+    RoundedDown,
+    RoundedUp,
+
+    ListRest,
+    ListFirstFew,
+    ListAverage,
+    ListCountIn,
+    LookupCount,
 }
 
 impl Builtin {
@@ -108,6 +130,10 @@ impl Builtin {
                 | Builtin::DivideNumbers
                 | Builtin::FileContents
                 | Builtin::FileWrite
+                | Builtin::FileAppend
+                | Builtin::TextLetter
+                | Builtin::Remainder
+                | Builtin::ListAverage
         )
     }
 }
@@ -251,6 +277,9 @@ pub enum Instr {
         reason: Slot,
         what: u32,
     },
+
+    /// `stop everything`. Ends the whole program, and no `try` can catch it — that is the point.
+    StopEverything,
 
     Jump {
         to: BlockId,
@@ -419,6 +448,7 @@ fn show_instr(instr: &Instr, p: &Program) -> String {
         Instr::StopBecauseSure { reason, what } => {
             format!("stop.sure %{reason}, {:?}", p.texts[*what as usize])
         }
+        Instr::StopEverything => "stop everything".to_string(),
         Instr::Jump { to } => format!("jump block {to}"),
         Instr::Branch {
             cond,
