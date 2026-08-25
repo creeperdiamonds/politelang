@@ -106,6 +106,10 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    SaveCanvas,
+    PutInWindow,
+    DotSize,
+
     OpenCanvas,
     ClearCanvas,
     PaintPoint,
@@ -275,6 +279,8 @@ impl Builtin {
                 | Builtin::MatrixInverse
                 | Builtin::IdentityMatrix
                 | Builtin::NamedColour
+                | Builtin::SaveCanvas
+                | Builtin::PutInWindow
         )
     }
 }

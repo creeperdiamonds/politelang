@@ -843,7 +843,20 @@ impl<'a> Checker<'a> {
                 }
             }
 
-            Form::RevealCanvas | Form::RevealLetters => {}
+            Form::RevealCanvas | Form::RevealLetters | Form::PutInWindow => {}
+
+            Form::SaveCanvas => {
+                if let Some(p) = args.first() {
+                    let text = self.types.text;
+                    self.want(*p, arg_ty[0], text, "where to put the picture");
+                }
+            }
+
+            Form::DotSize => {
+                if let Some(n) = args.first() {
+                    self.want_number(*n, arg_ty[0], "how many across");
+                }
+            }
 
             Form::WaitFor => {
                 if let Some(v) = args.first() {

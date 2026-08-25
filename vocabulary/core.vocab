@@ -423,6 +423,19 @@ expr  working   canvas_width   :: the canvas width
 expr  working   canvas_height  :: the canvas height
 expr  full      colour_at      :: the colour at {where}
 
+
+# ---------------------------------------------------------------------------
+# Pictures that leave the terminal
+#
+# A canvas can be written out as a real picture file, which anything at all can open, and shown in
+# a window rather than in a terminal. The window follows the canvas by itself: draw again and it
+# is seen again, without anybody reaching for the keyboard.
+# ---------------------------------------------------------------------------
+
+stmt  working   save_canvas    :: save the canvas to {path} :: risky
+stmt  working   put_in_window  :: put the canvas in a window :: risky
+stmt  working   dot_size       :: make each dot {size} across
+
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
 # purpose 1 of the language is that you learn more English.
@@ -921,3 +934,11 @@ english point          :: noun         :: One exact place, with no size of its o
 english red            :: noun         :: The colour of blood, and one of the three a screen mixes.
 english reveal         :: verb         :: To let something be seen that was hidden.
 english width          :: noun         :: How far something reaches from one side to the other.
+explain save_canvas    :: This writes the canvas out as a picture file that any machine can open. It might not work out, because the place may not be writable.
+explain put_in_window  :: This puts the canvas in a window of its own rather than in the terminal, and the window keeps up with it by itself. It might not work out, because there may be no way to open a window here.
+explain dot_size       :: A dot on the canvas is small. This says how many across it should be drawn in a saved picture or a window, so a small canvas still fills the screen.
+english save           :: verb         :: To keep something so that it is not lost.
+english window         :: noun         :: An opening that lets you see through; on a screen, a frame with its own picture in it.
+english each           :: determiner   :: Every one, thought of separately.
+english path           :: noun         :: A way from one place to another; on a machine, where a file is kept.
+english size           :: noun         :: How big something is.

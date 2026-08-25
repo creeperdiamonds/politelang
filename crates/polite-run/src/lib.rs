@@ -117,6 +117,8 @@ pub fn run_with(
         program,
         world,
         canvas: None,
+        dot_size: 4,
+        window: None,
         dice: match seed {
             Some(s) => Dice::with_seed(s),
             None => Dice::new(),
@@ -147,6 +149,10 @@ struct Runner<'a> {
     world: &'a mut dyn World,
     /// The surface being drawn on, once a program has asked for one.
     canvas: Option<std_lib::canvas::Canvas>,
+    /// How many across each dot is drawn in a saved picture or a window.
+    dot_size: usize,
+    /// Whether a window has already been opened, so it is only ever opened once.
+    window: Option<String>,
     dice: Dice,
     limits: Limits,
     steps: u64,
@@ -750,6 +756,22 @@ impl Runner<'_> {
                 self.world.show(&picture);
                 None
             }
+            Builtin::DotSize => {
+                self.dot_size = a0().as_whole().clamp(1, 16) as usize;
+                None
+            }
+            Builtin::SaveCanvas => {
+                let path = a0().as_text();
+                let size = self.dot_size;
+                let surface = self.surface()?;
+                std_lib::picture::save_png(surface, &path, size)?;
+                None
+            }
+            Builtin::PutInWindow => {
+                self.open_window()?;
+                None
+            }
+
             Builtin::MakeColour => Some(Value::Whole(std_lib::canvas::colour_of(
                 a0().as_whole(),
                 a1().as_whole(),
@@ -911,6 +933,59 @@ impl Runner<'_> {
             Builtin::TimeNow => Some(Value::Whole(std_lib::time_now())),
         };
         Ok(value)
+    }
+
+    /// Put the canvas in a window of its own.
+    ///
+    /// The first time, a small page is written beside the picture and handed to whatever this
+    /// machine opens pages with. After that only the picture is written again — the page asks for
+    /// it over and over by itself, so the window keeps up without anybody doing anything.
+    fn open_window(&mut self) -> Result<(), String> {
+        const PICTURE: &str = "polite-window.png";
+        const PAGE: &str = "polite-window.html";
+
+        let size = self.dot_size;
+        let surface = self.surface()?;
+        std_lib::picture::save_png(surface, PICTURE, size)?;
+
+        if self.window.is_some() {
+            return Ok(());
+        }
+
+        let page = std_lib::picture::viewer_page("Drawn by PoliteLang", PICTURE);
+        if std::fs::write(PAGE, page).is_err() {
+            return Err(format!("I could not write \"{PAGE}\" to open a window with"));
+        }
+
+        let full = std::fs::canonicalize(PAGE)
+            .map(|p| p.to_string_lossy().trim_start_matches("\\?\\").to_string())
+            .unwrap_or_else(|_| PAGE.to_string());
+
+        let opened = if cfg!(target_os = "windows") {
+            std::process::Command::new("cmd").args(["/C", "start", "", &full]).spawn()
+        } else if cfg!(target_os = "macos") {
+            std::process::Command::new("open").arg(&full).spawn()
+        } else {
+            std::process::Command::new("xdg-open").arg(&full).spawn()
+        };
+
+        match opened {
+            Ok(_) => {
+                self.window = Some(PICTURE.to_string());
+                self.world.show(&format!(
+                    "  (a window was opened for the picture; it is also saved as {PICTURE})"
+                ));
+                Ok(())
+            }
+            Err(_) => {
+                // The picture is written either way, so nothing is lost.
+                self.window = Some(PICTURE.to_string());
+                self.world.show(&format!(
+                    "  (I could not open a window here, so the picture is in {PICTURE} and the                      page to view it is in {PAGE})"
+                ));
+                Ok(())
+            }
+        }
     }
 
     /// The canvas, or a word about why there is not one.

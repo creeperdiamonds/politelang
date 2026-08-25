@@ -21,6 +21,7 @@ pub mod canvas;
 pub mod exact;
 pub mod maths;
 pub mod numbers;
+pub mod picture;
 pub mod vectors;
 
 pub use big::Big;

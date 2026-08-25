@@ -3,3 +3,8 @@
 .polite-cache/
 vscode-politelang/*.vsix
 vscode-politelang/node_modules/
+
+# Pictures a program leaves behind when it draws
+polite-window.png
+polite-window.html
+room.png

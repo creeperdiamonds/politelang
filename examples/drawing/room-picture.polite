@@ -56,11 +56,9 @@ please remember playing is yes
 
 please open a canvas 100 across and 64 down
 
-please keep going forever:
-    check if not playing:
-        stop repeating
-    thanks
+-- One frame, written out as a real picture and put in a window of its own.
 
+please repeat 1 times:
     -- Sky above the middle, floor below it.
     clear the canvas to the colour called "night" or 0
     repeat for every band from 0 to 31:
@@ -114,40 +112,14 @@ please keep going forever:
         thanks
     thanks
 
-    reveal the canvas
+thanks
 
-    show ""
-    show "  you are at {the rounded version of ex times 10} , {the rounded version of why times 10} tenths, looking {the rounded version of facing in degrees} degrees round"
-    show "  forward, back, left, right, or done"
-    ask "  > " as said
+please make each dot 6 across
 
-    remember step is 0.45
-    check if said is "forward":
-        remember nx is ex plus the cosine of facing times step
-        remember ny is why plus the sine of facing times step
-        check if not (a wall at with nx and ny and rows):
-            change ex to nx
-            change why to ny
-        otherwise:
-            show "  The wall does not move."
-        thank you for checking
-    otherwise if said is "back":
-        remember bx is ex minus the cosine of facing times step
-        remember by is why minus the sine of facing times step
-        check if not (a wall at with bx and by and rows):
-            change ex to bx
-            change why to by
-        thanks
-    otherwise if said is "left":
-        change facing to facing minus 0.3
-    otherwise if said is "right":
-        change facing to facing plus 0.3
-    otherwise if said is "done":
-        change playing to no
-    otherwise:
-        show "  I know forward, back, left, right and done."
-    thank you for checking
-thank you for repeating
-
-please show ""
-please show "  You step back out of it."
+please try to:
+    save the canvas to "room.png"
+    put the canvas in a window
+    show "  The room is in room.png, and in a window."
+otherwise if it does not work out:
+    show "  I could not, because {what went wrong}."
+thank you for trying

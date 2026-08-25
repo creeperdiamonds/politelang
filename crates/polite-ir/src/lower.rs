@@ -492,6 +492,25 @@ impl Lower<'_, '_> {
                 }
             }
 
+            Form::SaveCanvas | Form::PutInWindow | Form::DotSize => {
+                let which = match form {
+                    Form::SaveCanvas => Builtin::SaveCanvas,
+                    Form::PutInWindow => Builtin::PutInWindow,
+                    _ => Builtin::DotSize,
+                };
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                // Saving and showing might not work out; setting a size cannot.
+                if form == Form::DotSize {
+                    self.emit(Instr::Call {
+                        dst: None,
+                        which,
+                        args: slots,
+                    });
+                } else {
+                    self.try_call(None, which, slots);
+                }
+            }
+
             Form::OpenCanvas
             | Form::ClearCanvas
             | Form::PaintPoint
