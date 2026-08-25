@@ -1,6 +1,13 @@
-# A Discord bot, in PoliteLang
+# Discord bots, in PoliteLang
 
-`hello-bot.polite` is a working Discord bot written entirely in English sentences. It has no
+Two working bots, written entirely in English sentences.
+
+| | |
+| --- | --- |
+| **`hello-bot.polite`** | listens for people talking, and answers |
+| **`club-bot.polite`** | slash commands, buttons, cards, reactions, roles, and people arriving |
+
+`hello-bot.polite` is the one to read first. It has no
 handlers and nothing to register — it is a loop that listens, looks at what was said, and answers.
 
 ```polite
@@ -98,6 +105,89 @@ the secret called {which}           read from the surroundings, or from .env in 
 ```
 
 `polite explain "reply with"` says what any of them mean, in PoliteLang and in English.
+
+## Everything else it can do
+
+`club-bot.polite` uses all of this. It is still a loop — it just listens for more than talking.
+
+**Listening for anything, not only messages**
+
+```
+listen for whatever happens next     wait for anything the bot can see
+watch people joining and leaving     say this BEFORE logging in, if you want arrivals
+
+it was a message      it was a command      it was a button
+it was a reaction     somebody joined       somebody left
+```
+
+**Slash commands**
+
+```
+offer the command {word} for {description}
+offer the command {word} taking {things} for {description}
+the command they used
+what they gave for {which}
+reply quietly with {text}            only the person who asked sees it
+```
+
+Commands are offered to every server the bot is in, so they appear straight away rather than in an
+hour. Discord waits **three seconds** for an answer to a command or a button, so answer before doing
+anything slow.
+
+**Cards, buttons and reactions**
+
+```
+post a card titled {title} saying {words}
+post a card made of {details}        a lookup: title, words, colour, footer, image, link
+present {text} with buttons {labels} up to five; the words on a button are also its name
+the button they pressed
+react with {emoji}
+the emoji they used
+start typing
+```
+
+**Saying things elsewhere, and taking them back**
+
+```
+announce {text} in the channel called {channel}
+correct what I said to {text}
+delete what they said
+```
+
+**Roles, and keeping order**
+
+```
+give them the role called {role}
+remove the role called {role} from them
+they have the role called {role}
+the roles they have
+let their nickname be {nick}
+quieten them for {minutes} minutes   Discord allows up to 28 days
+remove them from the server          a kick; they can be invited back
+ban them from the server
+```
+
+**Who and where**
+
+```
+their id                             never changes, unlike a name
+the people in the server
+the channels in the server
+```
+
+### One thing worth knowing about the moderation words
+
+They all act on **whoever the last thing that happened was about**. There is no way to reach across
+and act on somebody else. That is deliberate: a bot that can only act on the person in front of it
+is a much harder bot to turn into a weapon. So `quieten them` after somebody says something is
+straightforward, and `quieten whoever I name` is not something this vocabulary can express.
+
+### For `somebody joined` to work
+
+`watch people joining and leaving` must come **before** `log in to discord`, and *Server Members
+Intent* must be on in the developer portal. Without the second, Discord refuses the whole
+connection — so the intent is only ever asked for when a program says it wants it, and a bot that
+never mentions arrivals never pays that price.
 
 ## Two things it does for you
 

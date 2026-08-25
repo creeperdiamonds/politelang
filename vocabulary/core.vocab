@@ -457,6 +457,43 @@ expr  working   discord_name     :: their name
 expr  working   discord_is_bot   :: they are a bot
 expr  working   discord_channel  :: the channel it came from
 expr  working   discord_server   :: the server it came from
+# The rest of it: commands, cards, buttons, roles, and keeping order.
+
+stmt  working   discord_listen_any       :: listen for whatever happens next :: risky
+stmt  working   discord_watch_people     :: watch people joining and leaving
+expr  working   discord_was_message      :: it was a message
+expr  working   discord_was_command      :: it was a command
+expr  working   discord_was_button       :: it was a button
+expr  working   discord_was_reaction     :: it was a reaction
+expr  working   discord_joined           :: somebody joined
+expr  working   discord_left             :: somebody left
+expr  working   discord_id               :: their id
+expr  working   discord_people_here      :: the people in the server
+expr  working   discord_channels_here    :: the channels in the server
+expr  working   discord_their_roles      :: the roles they have
+stmt  working   discord_offer_command    :: offer the command {word} for {description} :: risky
+stmt  working   discord_offer_command_taking :: offer the command {word} taking {things} for {description} :: risky
+expr  working   discord_command_used     :: the command they used
+expr  working   discord_command_gave     :: what they gave for {which}
+stmt  working   discord_reply_quietly    :: reply quietly with {text} :: risky
+stmt  working   discord_announce         :: announce {text} in the channel called {channel} :: risky
+stmt  working   discord_correct          :: correct what I said to {text} :: risky
+stmt  working   discord_delete           :: delete what they said :: risky
+stmt  working   discord_react            :: react with {emoji} :: risky
+stmt  working   discord_typing           :: start typing :: risky
+stmt  working   discord_card             :: post a card titled {title} saying {words} :: risky
+stmt  working   discord_card_full        :: post a card made of {details} :: risky
+stmt  working   discord_buttons          :: present {text} with buttons {labels} :: risky
+expr  working   discord_button_pressed   :: the button they pressed
+expr  working   discord_emoji_used       :: the emoji they used
+stmt  working   discord_give_role        :: give them the role called {role} :: risky
+stmt  working   discord_take_role        :: remove the role called {role} from them :: risky
+expr  working   discord_has_role         :: they have the role called {role}
+stmt  working   discord_kick             :: remove them from the server :: risky
+stmt  working   discord_ban              :: ban them from the server :: risky
+stmt  working   discord_quieten          :: quieten them for {minutes} minutes :: risky
+stmt  working   discord_nickname         :: let their nickname be {nick} :: risky
+
 expr  working   secret_called    :: the secret called {which} :: risky
 
 # ---------------------------------------------------------------------------
@@ -990,6 +1027,40 @@ explain discord_name     :: The name of whoever said it, as it is shown on the s
 explain discord_is_bot   :: Whether whoever said it is a bot rather than a person. Worth checking before answering, so that two bots do not talk to each other all night.
 explain discord_channel  :: The name of the channel the message was said in.
 explain discord_server   :: The name of the server the message was said in.
+explain discord_listen_any       :: This waits until anything at all happens that the bot can see: somebody speaking, a command, a button pressed, a reaction added, somebody arriving or leaving. What it was can be asked for afterwards.
+explain discord_watch_people     :: Say this before logging in if the bot needs to know when people arrive and leave. It asks Discord for more than it otherwise would, which has to be allowed for the bot first: turn on Server Members Intent where you got the token.
+explain discord_was_message      :: Whether the last thing that happened was somebody saying something.
+explain discord_was_command      :: Whether the last thing that happened was somebody using one of the bot's slash commands.
+explain discord_was_button       :: Whether the last thing that happened was somebody pressing one of the bot's buttons.
+explain discord_was_reaction     :: Whether the last thing that happened was somebody putting an emoji on a message.
+explain discord_joined           :: Whether the last thing that happened was somebody arriving in the server.
+explain discord_left             :: Whether the last thing that happened was somebody leaving the server.
+explain discord_id               :: The number Discord knows this person by. Unlike a name it never changes, so it is the one to write down.
+explain discord_people_here      :: How many people are in the server the last thing happened in.
+explain discord_channels_here    :: The names of every channel in the server, as a list.
+explain discord_their_roles      :: The names of every role this person has, as a list.
+explain discord_offer_command    :: This tells Discord about a slash command, so that typing a slash in the message box offers it. The description is what people see beside it. Offered to every server the bot is in, which is what makes it appear straight away rather than in an hour.
+explain discord_offer_command_taking :: The same, for a command that wants something typed after it. The list holds the names of the things it takes, and what somebody gave for one is asked for afterwards.
+explain discord_command_used     :: The name of the slash command that was just used, without the slash.
+explain discord_command_gave     :: What somebody typed for one of the things a command takes. Empty if they gave nothing for it.
+explain discord_reply_quietly    :: This answers so that only the person who asked can see it. Everybody else sees nothing at all, which is the kind thing to do with a long answer or a private one.
+explain discord_announce         :: This says something in a named channel rather than in the one the last thing happened in. It might not work out, because there may be no channel of that name, or the bot may not be allowed to speak in it.
+explain discord_correct          :: This changes the last thing the bot said, in place, so that nobody has to read two messages to get one answer.
+explain discord_delete           :: This takes the message away. It might not work out, because the bot may not be allowed to.
+explain discord_react            :: This puts an emoji on the message, which is a quieter way of answering than saying something.
+explain discord_typing           :: This shows the three dots that mean somebody is writing, so that a slow answer does not look like no answer. It stops by itself after a few seconds, or when something is said.
+explain discord_card             :: This sends a card: a bordered box with a heading and some words in it, which stands out from ordinary talk.
+explain discord_card_full        :: The same, from a lookup, for a card with more to it. The keys it looks for are title, words, colour, footer, image and link; anything else in the lookup is ignored.
+explain discord_buttons          :: This says something with buttons under it, one for each piece of text in the list. Pressing one is a thing that happens, and which button it was can be asked for.
+explain discord_button_pressed   :: The words written on the button that was just pressed.
+explain discord_emoji_used       :: The emoji that was just put on a message.
+explain discord_give_role        :: This gives somebody a role. It might not work out, because there may be no role of that name, or the bot's own role may sit below it.
+explain discord_take_role        :: This takes a role away from somebody. It might not work out, for the same reasons as giving one.
+explain discord_has_role         :: Whether this person has a role of that name.
+explain discord_kick             :: This removes somebody from the server. They can come back if they are invited again. It might not work out, because the bot may not be allowed to.
+explain discord_ban              :: This removes somebody from the server and stops them coming back. It might not work out, because the bot may not be allowed to.
+explain discord_quieten          :: This stops somebody speaking for a while, without removing them. Discord allows up to twenty-eight days.
+explain discord_nickname         :: This changes what somebody is called on this server only. It might not work out, because nobody can rename the owner of a server.
 explain secret_called    :: A secret kept outside the program, such as a password or a token. Two places are looked in: the surroundings the program was started in, and then a file called .env in the folder it is being run from. The surroundings win, so a secret handed over as you start it beats one written down. It might not work out, because there may be no secret of that name anywhere. Keeping it out here is what lets a program be shown to somebody, or published, without handing them the keys to it.
 explain not_decoded    :: Writing that hides what it says is decoded on sight, so that a program means what it looks like it means. This says that one piece of writing is to be left exactly as it is, letter for letter. It is the only way to keep something unreadable, and it shows in the file, which is the point of it.
 explain write_text     :: This writes words onto the canvas itself, so a picture can say something without the terminal saying it. Where the letter leaves a dot blank, the picture underneath still shows.
@@ -1030,3 +1101,53 @@ english my             :: determiner   :: Belonging to me.
 english they           :: pronoun      :: The people or person being spoken about.
 english said           :: verb         :: Spoke; put into words. Also, the words themselves.
 english name           :: noun         :: What somebody or something is called.
+english whatever       :: pronoun      :: Anything at all of the kind being spoken about.
+english happens        :: verb         :: Takes place; occurs.
+english watch          :: verb         :: To look at something over a period of time, to see what it does.
+english joining        :: verb         :: Coming to be part of a group.
+english leaving        :: verb         :: Going away from a place or a group.
+english somebody       :: pronoun      :: A person, without saying which.
+english joined         :: verb         :: Came to be part of a group.
+english id             :: noun         :: Short for identity: a number or a name that stands for one particular thing and no other.
+english people         :: noun         :: More than one person.
+english roles          :: noun         :: The parts people play; on Discord, the labels that decide what somebody may do.
+english role           :: noun         :: The part somebody plays, and what they are allowed to do.
+english offer          :: verb         :: To hold something out for somebody to take or use if they wish.
+english command        :: noun         :: An order; here, something a bot can be told to do.
+english description    :: noun         :: Words that say what something is like.
+english taking         :: verb         :: Receiving or accepting; here, what a command needs given to it.
+english gave           :: verb         :: Handed over.
+english quietly        :: adverb       :: Without noise, and without others noticing.
+english announce       :: verb         :: To say something publicly, so that everybody hears it.
+english correct        :: verb         :: To put right something that was wrong.
+english delete         :: verb         :: To remove something so that it is no longer there.
+english react          :: verb         :: To respond to something, often without words.
+english emoji          :: noun         :: A small picture standing for a feeling or a thing.
+english typing         :: verb         :: Writing with a keyboard.
+english card           :: noun         :: A stiff piece of paper; on a screen, a bordered box holding one thing.
+english titled         :: verb         :: Given a name at the top.
+english footer         :: noun         :: The small writing along the bottom of something.
+english image          :: noun         :: A picture.
+english link           :: noun         :: A connection; on a screen, something you press to be taken elsewhere.
+english present        :: verb         :: To put something in front of somebody so they can consider it.
+english buttons        :: noun         :: Things you press to make something happen.
+english button         :: noun         :: A thing you press to make something happen.
+english labels         :: noun         :: The words written on things, saying what they are.
+english pressed        :: verb         :: Pushed down on.
+english ban            :: verb         :: To forbid somebody from a place, for good.
+english quieten        :: verb         :: To make quiet; to stop somebody speaking for a while.
+english minutes        :: noun         :: Lengths of time; sixty seconds each.
+english nickname       :: noun         :: A name somebody is called instead of their real one.
+english nick           :: noun         :: Short for nickname.
+english details        :: noun         :: The small parts that together make up the whole of something.
+english word           :: noun         :: A single unit of language.
+english which          :: determiner   :: Asking or saying what particular one, out of a known set.
+english post           :: verb         :: To send something out where others can see it.
+english them           :: pronoun      :: The people or things being spoken about.
+english channels       :: noun         :: Ways through which things travel; on Discord, the rooms of a server.
+english saying         :: verb         :: Speaking; putting into words.
+english made           :: verb         :: Formed or built out of something.
+english was            :: verb         :: The past of to be: existed, or happened.
+english reaction       :: noun         :: A response to something; on Discord, an emoji put on a message.
+english used           :: verb         :: Put to a purpose.
+english start          :: verb         :: To begin.

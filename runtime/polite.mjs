@@ -935,22 +935,6 @@ export function waitFor(seconds) {
 }
 
 // ---------------------------------------------------------------------------
-// Discord
-//
-// A bot here is a loop rather than a pile of handlers: listen, look at what was said, answer.
-// `listen for the next message` is where it waits, and because everything the emitter writes is
-// awaited anyway, waiting costs nothing and blocks nothing.
-//
-// discord.js is brought in only when a program actually logs in, so a program that never mentions
-// Discord never needs it installed.
-// ---------------------------------------------------------------------------
-
-let bot = null;
-let inbox = [];
-let listeners = [];
-let heard = null;
-
-// ---------------------------------------------------------------------------
 // Secrets kept outside the program
 //
 // The same two places the reference runner looks in, in the same order, read by the same rules --
@@ -1044,8 +1028,44 @@ export function secretCalled(name) {
       `in this folder does not mention it.`
   );
 }
+
+// ---------------------------------------------------------------------------
+// Discord
+//
+// A bot here is a loop rather than a pile of handlers: listen, look at what happened, answer.
+// Everything the emitter writes is awaited anyway, so waiting costs nothing and blocks nothing.
+//
+// One queue holds everything that happens -- somebody speaking, a command, a button, a reaction,
+// somebody arriving or leaving -- and the two listening words pull from it. Whatever came out last
+// is what all the asking words are about, so `their name` means the same thing whether the last
+// thing was a message or a button.
+//
+// discord.js is brought in only when a program actually logs in, so a program that never mentions
+// Discord never needs it installed.
+// ---------------------------------------------------------------------------
+
+let bot = null;
+let discordjs = null;
+let inbox = [];
+let listeners = [];
+let happening = null;
+let lastSent = null;
+let watchingPeople = false;
+
+export function discordWatchPeople() {
+  if (bot) {
+    nope("say this before logging in, because it changes what Discord is asked for.");
+  }
+  watchingPeople = true;
+}
+
+function arrived(thing) {
+  const next = listeners.shift();
+  if (next) next(thing);
+  else inbox.push(thing);
+}
+
 export async function discordLogIn(token) {
-  let discordjs;
   try {
     discordjs = await import("discord.js");
   } catch {
@@ -1055,25 +1075,47 @@ export async function discordLogIn(token) {
   }
   const { Client, GatewayIntentBits, Partials } = discordjs;
 
+  const intents = [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildMessageReactions,
+  ];
+  // Asked for only when a program says it wants it, because Discord refuses the whole connection
+  // when a bot asks for something it has not been allowed, and no bot should pay that price for a
+  // thing it never uses.
+  if (watchingPeople) intents.push(GatewayIntentBits.GuildMembers);
+
   bot = new Client({
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent,
-      GatewayIntentBits.DirectMessages,
-    ],
-    partials: [Partials.Channel],
+    intents,
+    partials: [Partials.Channel, Partials.Message, Partials.Reaction],
   });
 
   bot.on("messageCreate", (message) => {
-    // A bot that hears itself answers itself, and then answers that, and so on until somebody
-    // pulls the plug. It never hears itself. Other bots it does hear, so that `they are a bot`
-    // is a question the program can actually answer.
+    // A bot that hears itself answers itself, and then answers that, until somebody pulls the
+    // plug. It never hears itself. Other bots it does hear, so `they are a bot` is worth asking.
     if (bot.user && message.author.id === bot.user.id) return;
-    const next = listeners.shift();
-    if (next) next(message);
-    else inbox.push(message);
+    arrived({ kind: "message", message });
   });
+
+  bot.on("interactionCreate", (interaction) => {
+    if (interaction.isChatInputCommand()) arrived({ kind: "command", interaction });
+    else if (interaction.isButton()) arrived({ kind: "button", interaction });
+  });
+
+  bot.on("messageReactionAdd", async (reaction, user) => {
+    if (bot.user && user.id === bot.user.id) return;
+    try {
+      if (reaction.partial) await reaction.fetch();
+    } catch {
+      return;
+    }
+    arrived({ kind: "reaction", reaction, user });
+  });
+
+  bot.on("guildMemberAdd", (member) => arrived({ kind: "joined", member }));
+  bot.on("guildMemberRemove", (member) => arrived({ kind: "left", member }));
 
   await new Promise((ready, failed) => {
     bot.once("clientReady", () => ready());
@@ -1082,6 +1124,14 @@ export async function discordLogIn(token) {
     bot.login(showable(token)).catch((e) => failed(e));
   }).catch((e) => {
     const why = e && e.message ? e.message : String(e);
+    if (/disallowed intents/i.test(why)) {
+      nope(
+        "Discord refused because this bot has not been allowed everything it asked for. Where you " +
+          "got the token, turn on Message Content Intent" +
+          (watchingPeople ? " and Server Members Intent" : "") +
+          "."
+      );
+    }
     if (/token/i.test(why)) {
       nope("Discord would not take that token. Check it is the bot's token, and the current one.");
     }
@@ -1095,63 +1145,460 @@ function mustBeLoggedIn() {
   if (!bot) nope("log in to Discord before trying to talk to it.");
 }
 
-export async function discordNext() {
+// ---- listening ------------------------------------------------------------
+
+async function pull() {
   mustBeLoggedIn();
-  heard = inbox.length
-    ? inbox.shift()
-    : await new Promise((arrived) => listeners.push(arrived));
+  return inbox.length ? inbox.shift() : await new Promise((it) => listeners.push(it));
 }
 
-function mustHaveHeard() {
-  mustBeLoggedIn();
-  if (!heard) nope("nothing has been heard yet, so there is nothing to answer.");
-  return heard;
+export async function discordNext() {
+  for (;;) {
+    const thing = await pull();
+    // Only messages are wanted here, so anything else is let go of rather than piling up.
+    if (thing.kind === "message") {
+      happening = thing;
+      return;
+    }
+  }
 }
+
+export async function discordListenAny() {
+  happening = await pull();
+}
+
+// ---- what happened --------------------------------------------------------
+
+const was = (kind) => () => happening !== null && happening.kind === kind;
+
+export const discordWasMessage = was("message");
+export const discordWasCommand = was("command");
+export const discordWasButton = was("button");
+export const discordWasReaction = was("reaction");
+export const discordJoined = was("joined");
+export const discordLeft = was("left");
+
+/// Whoever the last thing was about, whatever kind of thing it was.
+function actor() {
+  if (!happening) return null;
+  switch (happening.kind) {
+    case "message":
+      return happening.message.author;
+    case "command":
+    case "button":
+      return happening.interaction.user;
+    case "reaction":
+      return happening.user;
+    case "joined":
+    case "left":
+      return happening.member.user;
+    default:
+      return null;
+  }
+}
+
+function member() {
+  if (!happening) return null;
+  switch (happening.kind) {
+    case "message":
+      return happening.message.member;
+    case "command":
+    case "button":
+      return happening.interaction.member;
+    case "joined":
+    case "left":
+      return happening.member;
+    case "reaction":
+      return happening.reaction.message.guild?.members?.cache?.get(happening.user.id) ?? null;
+    default:
+      return null;
+  }
+}
+
+function guild() {
+  if (!happening) return null;
+  switch (happening.kind) {
+    case "message":
+      return happening.message.guild;
+    case "command":
+    case "button":
+      return happening.interaction.guild;
+    case "reaction":
+      return happening.reaction.message.guild;
+    case "joined":
+    case "left":
+      return happening.member.guild;
+    default:
+      return null;
+  }
+}
+
+function where() {
+  if (!happening) return null;
+  switch (happening.kind) {
+    case "message":
+      return happening.message.channel;
+    case "command":
+    case "button":
+      return happening.interaction.channel;
+    case "reaction":
+      return happening.reaction.message.channel;
+    default:
+      return null;
+  }
+}
+
+function theMessage() {
+  if (!happening) return null;
+  if (happening.kind === "message") return happening.message;
+  if (happening.kind === "reaction") return happening.reaction.message;
+  return null;
+}
+
+function interaction() {
+  if (!happening) return null;
+  return happening.kind === "command" || happening.kind === "button"
+    ? happening.interaction
+    : null;
+}
+
+// ---- asking about it ------------------------------------------------------
+
+export function discordSaid() {
+  const m = theMessage();
+  return m ? m.content : "";
+}
+export function discordName() {
+  return member()?.displayName ?? actor()?.username ?? "";
+}
+export function discordId() {
+  return actor()?.id ?? "";
+}
+export function discordIsBot() {
+  return actor()?.bot === true;
+}
+export function discordChannel() {
+  const c = where();
+  if (!c) return "";
+  return c.name ?? "a private message";
+}
+export function discordServer() {
+  return guild()?.name ?? "no server";
+}
+export function discordPeopleHere() {
+  return guild()?.memberCount ?? 0;
+}
+export function discordChannelsHere() {
+  const g = guild();
+  if (!g) return [];
+  return [...g.channels.cache.values()].map((c) => c.name).filter(Boolean);
+}
+export function discordTheirRoles() {
+  const m = member();
+  if (!m) return [];
+  return [...m.roles.cache.values()].map((r) => r.name).filter((n) => n !== "@everyone");
+}
+export function discordCommandUsed() {
+  const i = interaction();
+  return i && i.commandName ? i.commandName : "";
+}
+export function discordCommandGave(which) {
+  const i = interaction();
+  if (!i || !i.options) return "";
+  const found = i.options.get(showable(which));
+  return found && found.value !== undefined && found.value !== null ? String(found.value) : "";
+}
+export function discordButtonPressed() {
+  const i = interaction();
+  return i && i.customId ? i.customId : "";
+}
+export function discordEmojiUsed() {
+  if (!happening || happening.kind !== "reaction") return "";
+  return happening.reaction.emoji.name ?? "";
+}
+export function discordHasRole(role) {
+  const m = member();
+  if (!m) return false;
+  const wanted = showable(role).toLowerCase();
+  return [...m.roles.cache.values()].some((r) => r.name.toLowerCase() === wanted);
+}
+
+// ---- answering ------------------------------------------------------------
 
 async function trying(what, doing) {
   try {
     return await doing();
   } catch (e) {
     const why = e && e.message ? e.message : String(e);
-    if (/permission|missing access|forbidden/i.test(why)) {
-      nope(`I am not allowed to ${what} there. The bot needs permission in that channel.`);
+    if (/permission|missing access|forbidden|50013|50001/i.test(why)) {
+      nope(`I am not allowed to ${what}. The bot needs permission for that here.`);
+    }
+    if (/10062|unknown interaction/i.test(why)) {
+      nope(
+        `I could not ${what}, because Discord only waits three seconds for an answer to a ` +
+          `command or a button, and longer than that had passed.`
+      );
+    }
+    if (/hierarchy|50028|higher/i.test(why)) {
+      nope(`I could not ${what}, because that person's roles sit above the bot's own.`);
     }
     nope(`I could not ${what}: ${why}`);
   }
 }
 
+async function speak(what, body, quietly) {
+  mustBeLoggedIn();
+  const i = interaction();
+  if (i) {
+    return await trying(what, async () => {
+      const said = i.replied || i.deferred
+        ? await i.followUp({ ...body, ephemeral: quietly === true })
+        : await i.reply({ ...body, ephemeral: quietly === true, withResponse: true });
+      lastSent = i;
+      return said;
+    });
+  }
+  if (quietly) {
+    nope(
+      "only an answer to a command or a button can be quiet, because there is nobody in " +
+        "particular to be quiet towards otherwise."
+    );
+  }
+  const c = where();
+  if (!c) nope("there is nowhere to say that: nothing has happened yet that had a channel.");
+  return await trying(what, async () => {
+    lastSent = await c.send(body);
+    return lastSent;
+  });
+}
+
 export async function discordReply(text) {
-  const message = mustHaveHeard();
-  await trying("reply", () => message.reply(showable(text)));
+  mustBeLoggedIn();
+  const m = theMessage();
+  if (m && !interaction()) {
+    return await trying("reply", async () => {
+      lastSent = await m.reply(showable(text));
+    });
+  }
+  await speak("reply", { content: showable(text) }, false);
 }
 
 export async function discordSend(text) {
-  const message = mustHaveHeard();
-  await trying("send that", () => message.channel.send(showable(text)));
+  await speak("send that", { content: showable(text) }, false);
+}
+
+export async function discordReplyQuietly(text) {
+  await speak("reply quietly", { content: showable(text) }, true);
+}
+
+export async function discordAnnounce(text, channelName) {
+  mustBeLoggedIn();
+  const g = guild();
+  if (!g) nope("there is no server to announce in.");
+  const wanted = showable(channelName).replace(/^#/, "").toLowerCase();
+  const found = [...g.channels.cache.values()].find(
+    (c) => c.name && c.name.toLowerCase() === wanted && typeof c.send === "function"
+  );
+  if (!found) {
+    nope(`there is no channel called ${showable(channelName)} that I can speak in.`);
+  }
+  await trying(`announce that in ${showable(channelName)}`, async () => {
+    lastSent = await found.send(showable(text));
+  });
+}
+
+export async function discordCorrect(text) {
+  mustBeLoggedIn();
+  if (!lastSent) nope("I have not said anything yet, so there is nothing to correct.");
+  const it = lastSent;
+  await trying("correct that", async () => {
+    if (typeof it.editReply === "function") await it.editReply({ content: showable(text) });
+    else await it.edit(showable(text));
+  });
+}
+
+export async function discordDelete() {
+  mustBeLoggedIn();
+  const m = theMessage();
+  if (!m) nope("there is no message to delete.");
+  await trying("delete that", () => m.delete());
+}
+
+export async function discordReact(emoji) {
+  mustBeLoggedIn();
+  const m = theMessage();
+  if (!m) nope("there is no message to react to.");
+  await trying("react to that", () => m.react(showable(emoji)));
+}
+
+export async function discordTyping() {
+  mustBeLoggedIn();
+  const c = where();
+  if (!c || typeof c.sendTyping !== "function") return;
+  await trying("start typing", () => c.sendTyping());
+}
+
+// ---- cards ----------------------------------------------------------------
+
+function colourOf(said) {
+  const text = showable(said).trim();
+  if (/^#?[0-9a-f]{6}$/i.test(text)) return parseInt(text.replace("#", ""), 16);
+  const named = {
+    red: 0xd23b3b, green: 0x3faa63, blue: 0x3d7ad2, yellow: 0xe8c53d,
+    orange: 0xe08a2e, purple: 0x8a4fbf, pink: 0xe08ab0, grey: 0x808080,
+    gray: 0x808080, black: 0x111111, white: 0xffffff,
+  };
+  return named[text.toLowerCase()] ?? null;
+}
+
+function buildCard(details) {
+  const { EmbedBuilder } = discordjs;
+  const card = new EmbedBuilder();
+  const get = (k) => (details.has(k) ? showable(details.get(k)) : null);
+
+  const title = get("title");
+  if (title) card.setTitle(title);
+  const words = get("words");
+  if (words) card.setDescription(words);
+  const colour = get("colour") ?? get("color");
+  if (colour !== null) {
+    const c = colourOf(colour);
+    if (c !== null) card.setColor(c);
+  }
+  const footer = get("footer");
+  if (footer) card.setFooter({ text: footer });
+  const image = get("image");
+  if (image) card.setImage(image);
+  const link = get("link");
+  if (link) card.setURL(link);
+  return card;
+}
+
+export async function discordCard(title, words) {
+  mustBeLoggedIn();
+  const details = new Map([["title", showable(title)], ["words", showable(words)]]);
+  await speak("post that card", { embeds: [buildCard(details)] }, false);
+}
+
+export async function discordCardFull(details) {
+  mustBeLoggedIn();
+  if (!(details instanceof Map)) nope("a card is made of a lookup.");
+  await speak("post that card", { embeds: [buildCard(details)] }, false);
+}
+
+// ---- buttons --------------------------------------------------------------
+
+export async function discordButtons(text, labels) {
+  mustBeLoggedIn();
+  const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = discordjs;
+  const wanted = (Array.isArray(labels) ? labels : []).map(showable).filter((l) => l !== "");
+  if (!wanted.length) nope("a button needs something written on it.");
+  if (wanted.length > 5) nope("Discord allows five buttons in a row, and that is more than five.");
+
+  const row = new ActionRowBuilder().addComponents(
+    // What is written on a button is also how it is known afterwards, so that a program never has
+    // to keep a second list of hidden names beside the visible ones.
+    wanted.map((label) =>
+      new ButtonBuilder().setCustomId(label).setLabel(label).setStyle(ButtonStyle.Primary)
+    )
+  );
+  await speak("present that", { content: showable(text), components: [row] }, false);
+}
+
+// ---- slash commands -------------------------------------------------------
+
+async function offer(word, description, things) {
+  mustBeLoggedIn();
+  const name = showable(word).trim().toLowerCase().replace(/^\//, "");
+  if (!/^[-_\p{L}\p{N}]{1,32}$/u.test(name)) {
+    nope(`${showable(word)} is not a name Discord will take for a command.`);
+  }
+  const shape = {
+    name,
+    description: showable(description).slice(0, 100) || "A command.",
+    options: things.map((t) => ({
+      name: showable(t).trim().toLowerCase(),
+      description: `What to use for ${showable(t)}.`,
+      type: 3, // a piece of text
+      required: false,
+    })),
+  };
+
+  // Offered to each server the bot is in rather than to Discord at large, because a command
+  // offered at large can take an hour to appear and one offered to a server appears at once.
+  const guilds = [...bot.guilds.cache.values()];
+  if (!guilds.length) {
+    nope("this bot is not in any server yet, so there is nowhere to offer a command.");
+  }
+  await trying(`offer the command ${name}`, async () => {
+    for (const g of guilds) await g.commands.create(shape);
+  });
+}
+
+export async function discordOfferCommand(word, description) {
+  await offer(word, description, []);
+}
+
+export async function discordOfferCommandTaking(word, things, description) {
+  await offer(word, description, Array.isArray(things) ? things : []);
+}
+
+// ---- roles and keeping order ----------------------------------------------
+
+function mustHaveMember(what) {
+  mustBeLoggedIn();
+  const m = member();
+  if (!m) nope(`there is nobody here to ${what}.`);
+  return m;
+}
+
+function roleCalled(name) {
+  const g = guild();
+  if (!g) nope("there is no server, so there are no roles.");
+  const wanted = showable(name).toLowerCase();
+  const found = [...g.roles.cache.values()].find((r) => r.name.toLowerCase() === wanted);
+  if (!found) nope(`there is no role called ${showable(name)} in this server.`);
+  return found;
+}
+
+export async function discordGiveRole(role) {
+  const m = mustHaveMember("give a role to");
+  const r = roleCalled(role);
+  await trying(`give them ${r.name}`, () => m.roles.add(r));
+}
+
+export async function discordTakeRole(role) {
+  const m = mustHaveMember("take a role from");
+  const r = roleCalled(role);
+  await trying(`take ${r.name} from them`, () => m.roles.remove(r));
+}
+
+export async function discordKick() {
+  const m = mustHaveMember("remove");
+  await trying("remove them", () => m.kick());
+}
+
+export async function discordBan() {
+  const m = mustHaveMember("ban");
+  await trying("ban them", () => m.ban());
+}
+
+export async function discordQuieten(minutes) {
+  const m = mustHaveMember("quieten");
+  const many = Number(minutes);
+  if (!(many > 0)) nope("quietening somebody wants a number of minutes above nought.");
+  if (many > 40320) nope("Discord will not quieten anybody for more than twenty-eight days.");
+  await trying("quieten them", () => m.timeout(Math.round(many * 60 * 1000)));
+}
+
+export async function discordNickname(nick) {
+  const m = mustHaveMember("rename");
+  await trying("change their nickname", () => m.setNickname(showable(nick)));
 }
 
 export async function discordStatus(text) {
   mustBeLoggedIn();
   await trying("set my status", async () => bot.user.setActivity(showable(text)));
-}
-
-export function discordSaid() {
-  return heard ? heard.content : "";
-}
-export function discordName() {
-  if (!heard) return "";
-  return heard.member?.displayName ?? heard.author.username;
-}
-export function discordIsBot() {
-  return heard ? heard.author.bot === true : false;
-}
-export function discordChannel() {
-  if (!heard) return "";
-  return heard.channel?.name ?? "a private message";
-}
-export function discordServer() {
-  if (!heard) return "";
-  return heard.guild?.name ?? "no server";
 }
 
 // ---------------------------------------------------------------------------

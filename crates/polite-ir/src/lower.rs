@@ -511,6 +511,83 @@ impl Lower<'_, '_> {
                 }
             }
 
+            Form::DiscordListenAny => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordListenAny, slots);
+            }
+            Form::DiscordWatchPeople => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.emit(Instr::Call { dst: None, which: Builtin::DiscordWatchPeople, args: slots });
+            }
+            Form::DiscordOfferCommand => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordOfferCommand, slots);
+            }
+            Form::DiscordOfferCommandTaking => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordOfferCommandTaking, slots);
+            }
+            Form::DiscordReplyQuietly => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordReplyQuietly, slots);
+            }
+            Form::DiscordAnnounce => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordAnnounce, slots);
+            }
+            Form::DiscordCorrect => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordCorrect, slots);
+            }
+            Form::DiscordDelete => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordDelete, slots);
+            }
+            Form::DiscordReact => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordReact, slots);
+            }
+            Form::DiscordTyping => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordTyping, slots);
+            }
+            Form::DiscordCard => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordCard, slots);
+            }
+            Form::DiscordCardFull => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordCardFull, slots);
+            }
+            Form::DiscordButtons => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordButtons, slots);
+            }
+            Form::DiscordGiveRole => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordGiveRole, slots);
+            }
+            Form::DiscordTakeRole => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordTakeRole, slots);
+            }
+            Form::DiscordKick => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordKick, slots);
+            }
+            Form::DiscordBan => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordBan, slots);
+            }
+            Form::DiscordQuieten => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordQuieten, slots);
+            }
+            Form::DiscordNickname => {
+                let slots: Vec<Slot> = args.iter().map(|a| self.value(*a)).collect();
+                self.try_call(None, Builtin::DiscordNickname, slots);
+            }
+
             // Every one of these might not work out: a connection can refuse, drop, or be
             // told no by the other end, and none of that is the program's fault.
             Form::DiscordLogIn
@@ -1377,6 +1454,21 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
 
+        Form::DiscordWasMessage => Builtin::DiscordWasMessage,
+        Form::DiscordWasCommand => Builtin::DiscordWasCommand,
+        Form::DiscordWasButton => Builtin::DiscordWasButton,
+        Form::DiscordWasReaction => Builtin::DiscordWasReaction,
+        Form::DiscordJoined => Builtin::DiscordJoined,
+        Form::DiscordLeft => Builtin::DiscordLeft,
+        Form::DiscordId => Builtin::DiscordId,
+        Form::DiscordPeopleHere => Builtin::DiscordPeopleHere,
+        Form::DiscordChannelsHere => Builtin::DiscordChannelsHere,
+        Form::DiscordTheirRoles => Builtin::DiscordTheirRoles,
+        Form::DiscordCommandUsed => Builtin::DiscordCommandUsed,
+        Form::DiscordCommandGave => Builtin::DiscordCommandGave,
+        Form::DiscordButtonPressed => Builtin::DiscordButtonPressed,
+        Form::DiscordEmojiUsed => Builtin::DiscordEmojiUsed,
+        Form::DiscordHasRole => Builtin::DiscordHasRole,
         Form::DiscordSaid => Builtin::DiscordSaid,
         Form::DiscordName => Builtin::DiscordName,
         Form::DiscordIsBot => Builtin::DiscordIsBot,

@@ -762,7 +762,41 @@ impl Runner<'_> {
             // Talking to Discord means a network, a gateway and a library, none of which this
             // runner has or wants. It works when the program is written out as JavaScript, and
             // saying exactly that is more use than a shrug.
-            Builtin::DiscordLogIn
+            | Builtin::DiscordListenAny
+            | Builtin::DiscordWatchPeople
+            | Builtin::DiscordWasMessage
+            | Builtin::DiscordWasCommand
+            | Builtin::DiscordWasButton
+            | Builtin::DiscordWasReaction
+            | Builtin::DiscordJoined
+            | Builtin::DiscordLeft
+            | Builtin::DiscordId
+            | Builtin::DiscordPeopleHere
+            | Builtin::DiscordChannelsHere
+            | Builtin::DiscordTheirRoles
+            | Builtin::DiscordOfferCommand
+            | Builtin::DiscordOfferCommandTaking
+            | Builtin::DiscordCommandUsed
+            | Builtin::DiscordCommandGave
+            | Builtin::DiscordReplyQuietly
+            | Builtin::DiscordAnnounce
+            | Builtin::DiscordCorrect
+            | Builtin::DiscordDelete
+            | Builtin::DiscordReact
+            | Builtin::DiscordTyping
+            | Builtin::DiscordCard
+            | Builtin::DiscordCardFull
+            | Builtin::DiscordButtons
+            | Builtin::DiscordButtonPressed
+            | Builtin::DiscordEmojiUsed
+            | Builtin::DiscordGiveRole
+            | Builtin::DiscordTakeRole
+            | Builtin::DiscordHasRole
+            | Builtin::DiscordKick
+            | Builtin::DiscordBan
+            | Builtin::DiscordQuieten
+            | Builtin::DiscordNickname
+            | Builtin::DiscordLogIn
             | Builtin::DiscordNext
             | Builtin::DiscordReply
             | Builtin::DiscordSend

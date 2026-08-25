@@ -852,6 +852,132 @@ impl<'a> Checker<'a> {
                 }
             }
 
+            Form::DiscordListenAny => {
+                let _ = args;
+            }
+            Form::DiscordWatchPeople => {
+                let _ = args;
+            }
+            Form::DiscordOfferCommand => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+                if let Some(x) = args.get(1) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[1], want, "some text");
+                }
+            }
+            // `offer the command {word} taking {things} for {description}` — the list sits in the
+            // middle, because putting it last would have made one pattern the front of another and
+            // left the language guessing which was meant.
+            Form::DiscordOfferCommandTaking => {
+                if let Some(x) = args.first() {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "the name of a command");
+                }
+                if let Some(x) = args.get(1) {
+                    let text = self.types.text;
+                    let want = self.types.list_of(text);
+                    self.want(*x, arg_ty[1], want, "a list of what it takes");
+                }
+                if let Some(x) = args.get(2) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[2], want, "a description");
+                }
+            }
+            Form::DiscordReplyQuietly => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+            Form::DiscordAnnounce => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+                if let Some(x) = args.get(1) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[1], want, "some text");
+                }
+            }
+            Form::DiscordCorrect => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+            Form::DiscordDelete => {
+                let _ = args;
+            }
+            Form::DiscordReact => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+            Form::DiscordTyping => {
+                let _ = args;
+            }
+            Form::DiscordCard => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+                if let Some(x) = args.get(1) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[1], want, "some text");
+                }
+            }
+            Form::DiscordCardFull => {
+                if let Some(x) = args.get(0) {
+                    let text = self.types.text;
+                    let want = self.types.lookup_of(text);
+                    self.want(*x, arg_ty[0], want, "a lookup");
+                }
+            }
+            Form::DiscordButtons => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+                if let Some(x) = args.get(1) {
+                    let text = self.types.text;
+                    let want = self.types.list_of(text);
+                    self.want(*x, arg_ty[1], want, "a list of text");
+                }
+            }
+            Form::DiscordGiveRole => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+            Form::DiscordTakeRole => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+            Form::DiscordKick => {
+                let _ = args;
+            }
+            Form::DiscordBan => {
+                let _ = args;
+            }
+            Form::DiscordQuieten => {
+                if let Some(x) = args.get(0) {
+                    self.want_number(*x, arg_ty[0], "a number");
+                }
+            }
+            Form::DiscordNickname => {
+                if let Some(x) = args.get(0) {
+                    let want = self.types.text;
+                    self.want(*x, arg_ty[0], want, "some text");
+                }
+            }
+
             // Talking to Discord. Everything crossing this line is text.
             Form::DiscordLogIn | Form::DiscordReply | Form::DiscordSend | Form::DiscordStatus => {
                 if let Some(a) = args.first() {
@@ -1603,6 +1729,66 @@ impl<'a> Checker<'a> {
                     self.want(e, t, text, "some writing");
                 }
                 text
+            }
+
+            Form::DiscordWasMessage => {
+                self.types.yes_no
+            }
+            Form::DiscordWasCommand => {
+                self.types.yes_no
+            }
+            Form::DiscordWasButton => {
+                self.types.yes_no
+            }
+            Form::DiscordWasReaction => {
+                self.types.yes_no
+            }
+            Form::DiscordJoined => {
+                self.types.yes_no
+            }
+            Form::DiscordLeft => {
+                self.types.yes_no
+            }
+            Form::DiscordId => {
+                self.types.text
+            }
+            Form::DiscordPeopleHere => {
+                self.types.whole
+            }
+            Form::DiscordChannelsHere => {
+                {
+                let text = self.types.text;
+                self.types.list_of(text)
+            }
+            }
+            Form::DiscordTheirRoles => {
+                {
+                let text = self.types.text;
+                self.types.list_of(text)
+            }
+            }
+            Form::DiscordCommandUsed => {
+                self.types.text
+            }
+            Form::DiscordCommandGave => {
+                if let Some((e, t)) = arg(0) {
+                    let want = self.types.text;
+                    self.want(e, t, want, "some text");
+                }
+                self.types.text
+            }
+            Form::DiscordButtonPressed => {
+                self.types.text
+            }
+            Form::DiscordEmojiUsed => {
+                self.types.text
+            }
+            Form::DiscordHasRole => {
+                if let Some((e, t)) = arg(0) {
+                    let want = self.types.text;
+                    self.want(e, t, want, "some text");
+                }
+                self.types.yes_no
             }
 
             Form::DiscordSaid | Form::DiscordName | Form::DiscordChannel | Form::DiscordServer => {

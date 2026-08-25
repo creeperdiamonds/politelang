@@ -1,0 +1,148 @@
+-- A BOT THAT HELPS RUN A SERVER
+--
+-- The first bot, hello-bot, only listens for people talking. This one listens for everything:
+-- slash commands, buttons, reactions, and people arriving and leaving. It is still a loop.
+--
+--     polite build examples/discord/club-bot.polite
+--     cd examples/discord
+--     npm install discord.js
+--     node club-bot.mjs
+--
+-- It needs two things turned on where you got the token, under Privileged Gateway Intents:
+-- Message Content Intent, and Server Members Intent for the arriving and leaving.
+--
+-- One thing worth knowing: the words that act on a person -- giving a role, quietening, renaming --
+-- all act on whoever the last thing that happened was about. There is no way to reach across and
+-- act on somebody else, which is deliberate: a bot that can only act on the person in front of it
+-- is a much harder bot to turn into a weapon.
+--
+-- Written in PoliteLang by Creeperdiamonds Studios.
+
+
+please define the welcome card:
+    remember card is an empty lookup
+    put "Welcome" for "title" in card
+    put "Have a look at the rules, say hello, and make yourself at home." for "words" in card
+    put "green" for "colour" in card
+    put "Posted by a bot written in English" for "footer" in card
+    give back card
+thank you for defining
+
+
+please define the menu:
+    remember buttons is an empty list
+    add "Rules" to buttons
+    add "Roles" to buttons
+    add "Who is here" to buttons
+    give back buttons
+thank you for defining
+
+
+please show ""
+please show "  A BOT THAT HELPS RUN A SERVER"
+please show ""
+
+-- Said before logging in, because it changes what Discord is asked for.
+please watch people joining and leaving
+
+please try to:
+    log in to discord with the secret called "DISCORD_TOKEN"
+    let my status be "keeping the place tidy"
+
+    offer the command "hello" for "I will say hello back"
+
+    remember takes is an empty list
+    add "sides" to takes
+    offer the command "roll" taking takes for "Roll a die with however many sides you like"
+
+    show "  Commands offered. They appear straight away."
+otherwise if it does not work out:
+    show "  I could not start, because {what went wrong}"
+    show ""
+    stop everything
+thank you for trying
+
+please show "  Listening. Press control and C to stop."
+please show ""
+
+please keep going forever:
+    -- Everything to do with one happening sits in here, so that one thing going wrong costs that
+    -- one thing and not the whole evening.
+    try to:
+        listen for whatever happens next
+
+        check if somebody joined:
+            show "  {their name} arrived."
+            try to:
+                announce "Welcome, {their name}. There are {the people in the server} of us now." in the channel called "general"
+            otherwise if it does not work out:
+                show "    (no general channel to welcome them in)"
+            thank you for trying
+
+        otherwise if somebody left:
+            show "  {their name} left."
+
+        otherwise if it was a command:
+            remember which is the command they used
+            check if which is "hello":
+                reply with "Hello, {their name}. Good to see you."
+            otherwise if which is "roll":
+                remember asked is what they gave for "sides"
+                remember sides is the number in asked or 6
+                check if sides is under 2:
+                    change sides to 6
+                thanks
+                reply with "A die of {sides} sides came up {a random whole number from 1 to sides}."
+            otherwise:
+                reply quietly with "I do not know that one."
+            thank you for checking
+
+        otherwise if it was a button:
+            remember pressed is the button they pressed
+            check if pressed is "Rules":
+                reply quietly with "Be kind. Stay on topic. That is the whole of it."
+            otherwise if pressed is "Roles":
+                reply quietly with "You have: {the join of the roles they have with ", "}."
+            otherwise:
+                reply quietly with "There are {the people in the server} of us, across {the number of items in the channels in the server} channels."
+            thank you for checking
+
+        otherwise if it was a reaction:
+            show "  {their name} put {the emoji they used} on something."
+
+        otherwise if it was a message:
+            remember spoken is what they said
+            remember said is the small letters of the trimmed version of spoken
+            show "  {their name} in {the channel it came from}: {spoken}"
+
+            check if they are a bot:
+                show "    (a bot, so I left it alone)"
+            otherwise if said is "!menu":
+                present "What would you like to know?" with buttons the menu
+            otherwise if said is "!welcome":
+                post a card made of the welcome card
+            otherwise if said is "!about":
+                post a card titled "About me" saying "I am a Discord bot written entirely in English sentences, in a language called PoliteLang."
+            otherwise if said is "!here":
+                reply with "There are {the people in the server} of us in {the server it came from}."
+            otherwise if said is "!me":
+                reply with "You are {their name}, and Discord knows you as {their id}. Your roles: {the join of the roles they have with ", "}."
+            otherwise if said is "!join":
+                check if they have the role called "Member":
+                    reply with "You already have that one."
+                otherwise:
+                    give them the role called "Member"
+                    reply with "Done. You are a Member now."
+                thank you for checking
+            otherwise if said mentions "thank":
+                react with "💛"
+            otherwise if said is "!slowly":
+                start typing
+                wait for 2 seconds
+                reply with "There. Worth waiting for, I hope."
+            thank you for checking
+        thank you for checking
+    otherwise if it does not work out:
+        show "    (that one did not work out: {what went wrong})"
+    thank you for trying
+thank you for repeating

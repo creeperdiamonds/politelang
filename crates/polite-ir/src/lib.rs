@@ -106,6 +106,41 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    DiscordListenAny,
+    DiscordWatchPeople,
+    DiscordWasMessage,
+    DiscordWasCommand,
+    DiscordWasButton,
+    DiscordWasReaction,
+    DiscordJoined,
+    DiscordLeft,
+    DiscordId,
+    DiscordPeopleHere,
+    DiscordChannelsHere,
+    DiscordTheirRoles,
+    DiscordOfferCommand,
+    DiscordOfferCommandTaking,
+    DiscordCommandUsed,
+    DiscordCommandGave,
+    DiscordReplyQuietly,
+    DiscordAnnounce,
+    DiscordCorrect,
+    DiscordDelete,
+    DiscordReact,
+    DiscordTyping,
+    DiscordCard,
+    DiscordCardFull,
+    DiscordButtons,
+    DiscordButtonPressed,
+    DiscordEmojiUsed,
+    DiscordGiveRole,
+    DiscordTakeRole,
+    DiscordHasRole,
+    DiscordKick,
+    DiscordBan,
+    DiscordQuieten,
+    DiscordNickname,
+
     DiscordLogIn,
     DiscordNext,
     DiscordReply,
@@ -297,6 +332,24 @@ impl Builtin {
                 | Builtin::NamedColour
                 | Builtin::SaveCanvas
                 | Builtin::PutInWindow
+                | Builtin::DiscordListenAny
+                | Builtin::DiscordOfferCommand
+                | Builtin::DiscordOfferCommandTaking
+                | Builtin::DiscordReplyQuietly
+                | Builtin::DiscordAnnounce
+                | Builtin::DiscordCorrect
+                | Builtin::DiscordDelete
+                | Builtin::DiscordReact
+                | Builtin::DiscordTyping
+                | Builtin::DiscordCard
+                | Builtin::DiscordCardFull
+                | Builtin::DiscordButtons
+                | Builtin::DiscordGiveRole
+                | Builtin::DiscordTakeRole
+                | Builtin::DiscordKick
+                | Builtin::DiscordBan
+                | Builtin::DiscordQuieten
+                | Builtin::DiscordNickname
                 | Builtin::DiscordLogIn
                 | Builtin::DiscordNext
                 | Builtin::DiscordReply
