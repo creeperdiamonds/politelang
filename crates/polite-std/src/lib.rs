@@ -431,6 +431,281 @@ pub fn lookup_keys(map: &BTreeMap<String, Value>) -> Vec<Value> {
 // Numbers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Arithmetic in full
+//
+// Angles are in radians throughout, the way mathematics does it, with `in degrees` and
+// `in radians` there for turning one into the other.
+// ---------------------------------------------------------------------------
+
+pub const PI: f64 = std::f64::consts::PI;
+pub const E: f64 = std::f64::consts::E;
+
+pub fn sine(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().sin())
+}
+
+pub fn cosine(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().cos())
+}
+
+pub fn tangent(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().tan())
+}
+
+pub fn arc_sine(v: &Value) -> Answer<Value> {
+    let n = v.as_decimal();
+    if !(-1.0..=1.0).contains(&n) {
+        return Err(format!(
+            "no angle has a sine of {n}, because a sine is never outside minus one to one"
+        ));
+    }
+    Ok(Value::Decimal(n.asin()))
+}
+
+pub fn arc_cosine(v: &Value) -> Answer<Value> {
+    let n = v.as_decimal();
+    if !(-1.0..=1.0).contains(&n) {
+        return Err(format!(
+            "no angle has a cosine of {n}, because a cosine is never outside minus one to one"
+        ));
+    }
+    Ok(Value::Decimal(n.acos()))
+}
+
+pub fn arc_tangent(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().atan())
+}
+
+pub fn angle_over(up: &Value, across: &Value) -> Value {
+    Value::Decimal(up.as_decimal().atan2(across.as_decimal()))
+}
+
+pub fn to_degrees(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().to_degrees())
+}
+
+pub fn to_radians(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().to_radians())
+}
+
+pub fn hyperbolic_sine(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().sinh())
+}
+
+pub fn hyperbolic_cosine(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().cosh())
+}
+
+pub fn hyperbolic_tangent(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().tanh())
+}
+
+pub fn natural_logarithm(v: &Value) -> Answer<Value> {
+    let n = v.as_decimal();
+    if n <= 0.0 {
+        return Err(format!(
+            "{n} has no logarithm, because nothing raised to a power gives zero or less"
+        ));
+    }
+    Ok(Value::Decimal(n.ln()))
+}
+
+pub fn common_logarithm(v: &Value) -> Answer<Value> {
+    let n = v.as_decimal();
+    if n <= 0.0 {
+        return Err(format!(
+            "{n} has no logarithm, because nothing raised to a power gives zero or less"
+        ));
+    }
+    Ok(Value::Decimal(n.log10()))
+}
+
+pub fn logarithm_in_base(v: &Value, base: &Value) -> Answer<Value> {
+    let n = v.as_decimal();
+    let b = base.as_decimal();
+    if n <= 0.0 {
+        return Err(format!(
+            "{n} has no logarithm, because nothing raised to a power gives zero or less"
+        ));
+    }
+    if b <= 0.0 || b == 1.0 {
+        return Err(format!(
+            "{b} is no use as a base, because raising it to a power never gets you anywhere"
+        ));
+    }
+    Ok(Value::Decimal(n.log(b)))
+}
+
+pub fn exponential(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().exp())
+}
+
+pub fn cube_root(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().cbrt())
+}
+
+/// Squaring and cubing keep the kind of number they were given, so a whole number stays whole.
+pub fn squared(v: &Value) -> Answer<Value> {
+    match v {
+        Value::Decimal(d) => Ok(Value::Decimal(d * d)),
+        other => {
+            let n = other.as_whole();
+            n.checked_mul(n)
+                .map(Value::Whole)
+                .ok_or_else(|| format!("{n} squared is larger than I can hold"))
+        }
+    }
+}
+
+pub fn cubed(v: &Value) -> Answer<Value> {
+    match v {
+        Value::Decimal(d) => Ok(Value::Decimal(d * d * d)),
+        other => {
+            let n = other.as_whole();
+            n.checked_mul(n)
+                .and_then(|s| s.checked_mul(n))
+                .map(Value::Whole)
+                .ok_or_else(|| format!("{n} cubed is larger than I can hold"))
+        }
+    }
+}
+
+pub fn whole_part(v: &Value) -> Value {
+    Value::Whole(v.as_decimal().trunc() as i64)
+}
+
+pub fn fraction_part(v: &Value) -> Value {
+    Value::Decimal(v.as_decimal().fract())
+}
+
+pub fn sign(v: &Value) -> Value {
+    let n = v.as_decimal();
+    Value::Whole(if n > 0.0 {
+        1
+    } else if n < 0.0 {
+        -1
+    } else {
+        0
+    })
+}
+
+pub fn rounded_to(v: &Value, places: &Value) -> Value {
+    let p = places.as_whole().clamp(0, 15) as i32;
+    let scale = 10f64.powi(p);
+    Value::Decimal((v.as_decimal() * scale).round() / scale)
+}
+
+pub fn kept_between(v: &Value, low: &Value, high: &Value) -> Value {
+    let (mut a, mut b) = (low.as_decimal(), high.as_decimal());
+    if a > b {
+        std::mem::swap(&mut a, &mut b);
+    }
+    let n = v.as_decimal();
+    if n < a {
+        low_or_high(low, high, a, b, a)
+    } else if n > b {
+        low_or_high(low, high, a, b, b)
+    } else {
+        v.clone()
+    }
+}
+
+/// Give back whichever end was reached, keeping the kind of number it was written as.
+fn low_or_high(low: &Value, high: &Value, a: f64, b: f64, wanted: f64) -> Value {
+    let end = if wanted == a { low } else { high };
+    let _ = b;
+    end.clone()
+}
+
+pub fn greatest_common_factor(a: &Value, b: &Value) -> Value {
+    let mut x = a.as_whole().saturating_abs();
+    let mut y = b.as_whole().saturating_abs();
+    while y != 0 {
+        let t = x % y;
+        x = y;
+        y = t;
+    }
+    Value::Whole(x)
+}
+
+pub fn smallest_common_multiple(a: &Value, b: &Value) -> Answer<Value> {
+    let x = a.as_whole().saturating_abs();
+    let y = b.as_whole().saturating_abs();
+    if x == 0 || y == 0 {
+        return Err("zero has no multiples to speak of".to_string());
+    }
+    let g = match greatest_common_factor(a, b) {
+        Value::Whole(g) => g,
+        _ => 1,
+    };
+    match (x / g).checked_mul(y) {
+        Some(v) => Ok(Value::Whole(v)),
+        None => Err(format!(
+            "the smallest common multiple of {x} and {y} is larger than I can hold"
+        )),
+    }
+}
+
+pub fn factorial(v: &Value) -> Answer<Value> {
+    let n = v.as_whole();
+    if n < 0 {
+        return Err(format!(
+            "{n} has no factorial, because you cannot count up to it from one"
+        ));
+    }
+    let mut total: i64 = 1;
+    for k in 2..=n {
+        total = match total.checked_mul(k) {
+            Some(v) => v,
+            None => {
+                return Err(format!(
+                    "the factorial of {n} is larger than I can hold; twenty is as far as I go"
+                ))
+            }
+        };
+    }
+    Ok(Value::Whole(total))
+}
+
+pub fn median(items: &[Value]) -> Answer<Value> {
+    if items.is_empty() {
+        return Err("the list is empty, so it has no middle".to_string());
+    }
+    let mut numbers: Vec<f64> = items.iter().map(|v| v.as_decimal()).collect();
+    numbers.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let middle = numbers.len() / 2;
+    let value = if numbers.len() % 2 == 1 {
+        numbers[middle]
+    } else {
+        (numbers[middle - 1] + numbers[middle]) / 2.0
+    };
+    Ok(Value::Decimal(value))
+}
+
+pub fn spread(items: &[Value]) -> Answer<Value> {
+    if items.is_empty() {
+        return Err("the list is empty, so it has no spread".to_string());
+    }
+    let numbers: Vec<f64> = items.iter().map(|v| v.as_decimal()).collect();
+    let mean = numbers.iter().sum::<f64>() / numbers.len() as f64;
+    let variance = numbers.iter().map(|n| (n - mean) * (n - mean)).sum::<f64>()
+        / numbers.len() as f64;
+    Ok(Value::Decimal(variance.sqrt()))
+}
+
+pub fn as_percentage_of(part: &Value, whole: &Value) -> Answer<Value> {
+    let w = whole.as_decimal();
+    if w == 0.0 {
+        return Err("nothing is a share of zero".to_string());
+    }
+    Ok(Value::Decimal(part.as_decimal() / w * 100.0))
+}
+
+pub fn percent_of(percent: &Value, value: &Value) -> Value {
+    Value::Decimal(percent.as_decimal() / 100.0 * value.as_decimal())
+}
+
 pub fn remainder(a: &Value, b: &Value) -> Answer<Value> {
     let d = b.as_whole();
     if d == 0 {
@@ -754,6 +1029,95 @@ mod tests {
     fn repeating_text_will_not_eat_the_machine() {
         let big = text_repeated("hello", 1_000_000_000);
         assert!(big.len() <= 64 * 1024 * 1024 + 8);
+    }
+
+    #[test]
+    fn the_shape_of_a_circle_comes_out_right() {
+        // sine of a quarter turn is one, and the angle whose sine is one is a quarter turn.
+        let quarter = Value::Decimal(PI / 2.0);
+        assert!((sine(&quarter).as_decimal() - 1.0).abs() < 1e-12);
+        let back = arc_sine(&Value::Whole(1)).unwrap();
+        assert!((back.as_decimal() - PI / 2.0).abs() < 1e-12);
+        assert!((to_degrees(&quarter).as_decimal() - 90.0).abs() < 1e-12);
+        assert!((to_radians(&Value::Whole(180)).as_decimal() - PI).abs() < 1e-12);
+    }
+
+    #[test]
+    fn an_impossible_angle_is_refused_gently() {
+        let reason = arc_sine(&Value::Whole(2)).unwrap_err();
+        assert!(reason.contains("never outside minus one to one"));
+        assert!(polite_diag::find_blame_word(&reason).is_none());
+    }
+
+    #[test]
+    fn logarithms_undo_powers() {
+        let v = natural_logarithm(&Value::Decimal(E)).unwrap();
+        assert!((v.as_decimal() - 1.0).abs() < 1e-12);
+        let v = common_logarithm(&Value::Whole(1000)).unwrap();
+        assert!((v.as_decimal() - 3.0).abs() < 1e-12);
+        let v = logarithm_in_base(&Value::Whole(8), &Value::Whole(2)).unwrap();
+        assert!((v.as_decimal() - 3.0).abs() < 1e-12);
+        assert!(natural_logarithm(&Value::Whole(0)).is_err());
+        assert!(logarithm_in_base(&Value::Whole(8), &Value::Whole(1)).is_err());
+    }
+
+    #[test]
+    fn squaring_a_whole_number_keeps_it_whole() {
+        assert!(matches!(squared(&Value::Whole(7)), Ok(Value::Whole(49))));
+        assert!(matches!(cubed(&Value::Whole(3)), Ok(Value::Whole(27))));
+        // And it says so rather than wrapping round to a wrong answer.
+        assert!(squared(&Value::Whole(i64::MAX)).is_err());
+    }
+
+    #[test]
+    fn factors_and_multiples_work_the_way_school_says() {
+        assert_eq!(greatest_common_factor(&Value::Whole(12), &Value::Whole(18)).as_whole(), 6);
+        assert_eq!(
+            smallest_common_multiple(&Value::Whole(4), &Value::Whole(6))
+                .unwrap()
+                .as_whole(),
+            12
+        );
+        assert!(smallest_common_multiple(&Value::Whole(0), &Value::Whole(6)).is_err());
+    }
+
+    #[test]
+    fn factorials_stop_before_they_go_wrong() {
+        assert_eq!(factorial(&Value::Whole(5)).unwrap().as_whole(), 120);
+        assert_eq!(factorial(&Value::Whole(0)).unwrap().as_whole(), 1);
+        assert!(factorial(&Value::Whole(21)).is_err());
+        assert!(factorial(&Value::Whole(0 - 1)).is_err());
+    }
+
+    #[test]
+    fn the_middle_and_the_spread_agree_with_the_textbook() {
+        let items: Vec<Value> = [2, 4, 4, 4, 5, 5, 7, 9].iter().map(|n| Value::Whole(*n)).collect();
+        assert_eq!(median(&items).unwrap().as_decimal(), 4.5);
+        assert!((spread(&items).unwrap().as_decimal() - 2.0).abs() < 1e-12);
+        assert!(median(&[]).is_err());
+    }
+
+    #[test]
+    fn rounding_to_places_and_keeping_within_ends() {
+        assert_eq!(
+            rounded_to(&Value::Decimal(3.14159), &Value::Whole(2)).as_decimal(),
+            3.14
+        );
+        assert_eq!(kept_between(&Value::Whole(15), &Value::Whole(1), &Value::Whole(10)).as_whole(), 10);
+        assert_eq!(kept_between(&Value::Whole(0 - 5), &Value::Whole(1), &Value::Whole(10)).as_whole(), 1);
+        assert_eq!(kept_between(&Value::Whole(5), &Value::Whole(1), &Value::Whole(10)).as_whole(), 5);
+    }
+
+    #[test]
+    fn percentages_go_both_ways() {
+        assert_eq!(
+            as_percentage_of(&Value::Whole(25), &Value::Whole(200))
+                .unwrap()
+                .as_decimal(),
+            12.5
+        );
+        assert_eq!(percent_of(&Value::Whole(15), &Value::Whole(200)).as_decimal(), 30.0);
+        assert!(as_percentage_of(&Value::Whole(1), &Value::Whole(0)).is_err());
     }
 
     #[test]

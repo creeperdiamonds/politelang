@@ -171,6 +171,35 @@ thank you for defining
 please show greet with "Creeperdiamonds Studios" and "Good morning"
 ```
 
+**Arithmetic, in full.** Trigonometry, logarithms, powers and roots, statistics, percentages:
+
+```polite
+please show the number pi rounded to 5 decimal places      -- 3.14159
+please show the sine of the number pi divided by 2 or 0    -- 1.0
+please show 180 in radians rounded to 5 decimal places     -- 3.14159
+please show the logarithm of 8 in base 2 or 0              -- 3.0
+please show the factorial of 10 or 0                       -- 3628800
+please show the greatest common factor of 12 and 18        -- 6
+please show the median of marks or 0
+please show the spread of marks or 0
+please show 25 as a percentage of 200 or 0                 -- 12.5
+please show 15 percent of 200                              -- 30.0
+please show 15 kept between 1 and 10                       -- 10
+```
+
+Every one of these that *can* fail says so and makes you say what happens instead — there is no
+angle whose sine is 2, no logarithm of zero, and no share of nothing.
+
+**A note on how phrases that follow a value read.** Some belong to the number right beside them,
+and some are said about the whole sum. Which is which is written in the vocabulary table rather
+than guessed at, and both read the way English does:
+
+```polite
+please show 2 plus 3 squared                 -- 11, because squaring belongs to the three
+please show (2 plus 3) squared               -- 25
+please show 3 plus 40 kept between 1 and 10  -- 10, because keeping is said about the sum
+```
+
 **And a good deal more**, because a large vocabulary is the whole point. `polite words` lists
 every one of them, and `polite explain` says what any of them means:
 
@@ -337,8 +366,9 @@ The same table generates the editor highlighting, the documentation, the typo su
 test per row. And **`polite check-vocabulary` runs on every build**, refusing any two phrases that
 could both match the same sentence, because the language must never guess which one you meant.
 
-That claim has been paid for once already: the vocabulary grew from 88 phrases to 117 in a single
-sitting — a third again as many words — and the measured cost of matching them did not move.
+That claim has been paid for twice already: the vocabulary went from 88 phrases to 117, and then
+to 150 when the whole of arithmetic went in — nearly double, in an afternoon — and the measured
+cost of matching them did not move.
 
 ---
 
@@ -352,14 +382,14 @@ Measured there, by `polite bench`:
 
 | | measured | budget |
 |---|---|---|
-| check a 1,000 line program | **5.7 ms** | < 10 ms |
-| checking throughput | **176,000 lines/sec** | ≥ 150,000 |
+| check a 1,000 line program | **5.1 ms** | < 10 ms |
+| checking throughput | **175,000–195,000 lines/sec** | ≥ 150,000 |
 | compiler memory per line | **181 bytes** | < 2 KB |
 | compile and run `hello` | **0.03 ms** | < 3 ms |
 | 300,000 turn numeric loop | **10.5 ms** | — |
 | the same loop in CPython | 43.8 ms | — |
 | **times faster than CPython** | **4.3×** | ≥ 2× |
-| **parse slowdown at 40× the vocabulary** | **0.4–1.0%** | < 5% |
+| **parse slowdown at 40× the vocabulary** | **0.2–1.0%** | < 5% |
 | `polite` binary, stripped | **768 KB** | < 3 MB |
 
 That last row is the one that matters most, because it tests a *claim* rather than a speed: the
@@ -379,7 +409,7 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 
 **Working today**
 
-- The four rules, and 117 phrases across 80 meanings
+- The four rules, and 150 phrases across 113 meanings
 - Full type inference — you never write a type, and mistakes are caught before the program runs
 - The `or` / `try` / `I am sure` system, and riskiness that spreads by itself
 - Actions, including multi-word names, recursion, and calling before defining
@@ -389,7 +419,9 @@ tenth, beyond a small slack so that a number sitting near zero is not judged by 
 - **Borrowing between files**, with sharing, private names, and circles caught before anything runs
 - `run`, `check`, `words`, `explain`, `check-vocabulary`, `bench`, `grammar`
 - VS Code highlighting, snippets and block-aware indentation
-- 73 tests: a corpus of 19 programs, 20 pinned messages, a generated test per vocabulary row, and
+- **Arithmetic in full** — trigonometry, logarithms, powers and roots, rounding of every kind,
+  factors and factorials, medians and spread, percentages
+- 84 tests: a corpus of 20 programs, 20 pinned messages, a generated test per vocabulary row, and
   the ambiguity check
 
 **Designed, written down, not built yet** — and named here rather than left to be discovered:

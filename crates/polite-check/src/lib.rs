@@ -1430,6 +1430,100 @@ impl<'a> Checker<'a> {
                 self.types.whole
             }
 
+            // Constants.
+            Form::NumberPi | Form::NumberE => self.types.decimal,
+
+            // One number in, one decimal out. Most of arithmetic is this shape.
+            Form::SineOf
+            | Form::CosineOf
+            | Form::TangentOf
+            | Form::ArcSineOf
+            | Form::ArcCosineOf
+            | Form::ArcTangentOf
+            | Form::ToDegrees
+            | Form::ToRadians
+            | Form::HyperbolicSine
+            | Form::HyperbolicCosine
+            | Form::HyperbolicTangent
+            | Form::NaturalLogarithm
+            | Form::CommonLogarithm
+            | Form::ExponentialOf
+            | Form::CubeRootOf
+            | Form::FractionPartOf => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.decimal
+            }
+
+            // Two numbers in, one decimal out.
+            Form::AngleOver | Form::LogarithmInBase | Form::AsPercentageOf | Form::PercentOf => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                self.types.decimal
+            }
+
+            // These keep the kind of number they were given: a whole number squared is still whole.
+            Form::Squared | Form::Cubed => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                    self.types.widen(t, t)
+                } else {
+                    self.types.whole
+                }
+            }
+
+            Form::KeptBetween => {
+                for k in 0..3 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                match (arg(0), arg(1)) {
+                    (Some((_, a)), Some((_, b))) => self.types.widen(a, b),
+                    _ => self.types.whole,
+                }
+            }
+
+            Form::RoundedTo => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a number");
+                    }
+                }
+                self.types.decimal
+            }
+
+            // Whole numbers out.
+            Form::WholePartOf | Form::SignOf | Form::FactorialOf => {
+                if let Some((e, t)) = arg(0) {
+                    self.want_number(e, t, "a number");
+                }
+                self.types.whole
+            }
+
+            Form::GreatestCommonFactor | Form::SmallestCommonMultiple => {
+                for k in 0..2 {
+                    if let Some((e, t)) = arg(k) {
+                        self.want_number(e, t, "a whole number");
+                    }
+                }
+                self.types.whole
+            }
+
+            // A list of numbers in, one decimal out.
+            Form::MedianOf | Form::SpreadOf => {
+                if let Some((e, t)) = arg(0) {
+                    let whole = self.types.whole;
+                    let list = self.types.list_of(whole);
+                    self.want(e, t, list, "a list of numbers");
+                }
+                self.types.decimal
+            }
+
             Form::LookupCount => {
                 if let Some((e, t)) = arg(0) {
                     let value = self.types.fresh();

@@ -1,0 +1,83 @@
+-- What PoliteLang can do with numbers.
+
+-- The four everyday ones, in words or in symbols. Both mean the same thing.
+please show 7 plus 3
+please show 7 + 3
+please show 7 minus 3
+please show 7 times 3
+please show 7 divided by 2 or 0
+
+-- Dividing might not work out, because nothing can be shared into zero parts.
+please show 7 divided by 0 or 0
+please show the remainder of 17 divided by 5 or 0
+
+-- Powers and roots.
+please show 2 to the power of 10
+please show the square root of 144 or 0
+please show the square root of 0 minus 4 or 0
+
+-- Rounding, three ways.
+please show the rounded version of 3.6
+please show the rounded down version of 3.9
+please show the rounded up version of 3.1
+
+-- Comparing, and picking.
+please show the smaller of 12 and 7
+please show the larger of 12 and 7
+please show the size of 0 minus 9
+please show 15 divides evenly by 5
+
+-- Whole and decimal numbers mix freely, and mixing gives a decimal.
+please show 1 plus 0.5
+please show 10 divided by 4 or 0
+
+-- Working on a whole list of numbers at once.
+please remember scores is an empty list
+please for every n in the pieces of "88 74 91 63 100" split by " ":
+    add the number in n or 0 to scores
+thank you for repeating
+
+please show "there are {the number of items in scores} scores"
+please show "they add up to {the total of scores}"
+please show "the average is {the average of scores or 0}"
+please show "the best is {the biggest of scores or 0}"
+please show "the worst is {the smallest of scores or 0}"
+please show "in order: {the join of the sorted version of scores with ", "}"
+
+-- Building something up, the way you would on paper.
+please define add up to with a limit:
+    remember total is 0
+    repeat for every n from 1 to limit:
+        add n to total
+    thanks
+    give back total
+thank you for defining
+
+please show "1 to 100 adds up to {add up to with 100}"
+
+-- Enough arithmetic to be dangerous: is a number prime?
+please define is prime with a number:
+    check if number is under 2:
+        give back no
+    thanks
+    remember divisor is 2
+    repeat while divisor times divisor is at most number:
+        check if number divides evenly by divisor:
+            give back no
+        thanks
+        add 1 to divisor
+    thanks
+    give back yes
+thank you for defining
+
+please remember primes is an empty list
+please repeat for every n from 1 to 40:
+    check if is prime with n:
+        add n to primes
+    thanks
+thanks
+
+please show "primes under 40: {the join of primes with ", "}"
+
+-- And chance, when you want it.
+please show a random whole number from 1 to 6

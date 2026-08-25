@@ -127,6 +127,47 @@ forms! {
     AppendFile => "append_file",
     StopEverything => "stop_everything",
 
+    NumberPi => "number_pi",
+    NumberE => "number_e",
+
+    SineOf => "sine_of",
+    CosineOf => "cosine_of",
+    TangentOf => "tangent_of",
+    ArcSineOf => "arc_sine_of",
+    ArcCosineOf => "arc_cosine_of",
+    ArcTangentOf => "arc_tangent_of",
+    AngleOver => "angle_over",
+    ToDegrees => "to_degrees",
+    ToRadians => "to_radians",
+
+    HyperbolicSine => "hyperbolic_sine",
+    HyperbolicCosine => "hyperbolic_cosine",
+    HyperbolicTangent => "hyperbolic_tangent",
+
+    NaturalLogarithm => "natural_logarithm",
+    CommonLogarithm => "common_logarithm",
+    LogarithmInBase => "logarithm_in_base",
+    ExponentialOf => "exponential_of",
+
+    CubeRootOf => "cube_root_of",
+    Squared => "squared",
+    Cubed => "cubed",
+
+    WholePartOf => "whole_part_of",
+    FractionPartOf => "fraction_part_of",
+    SignOf => "sign_of",
+    RoundedTo => "rounded_to",
+    KeptBetween => "kept_between",
+
+    GreatestCommonFactor => "greatest_common_factor",
+    SmallestCommonMultiple => "smallest_common_multiple",
+    FactorialOf => "factorial_of",
+
+    MedianOf => "median_of",
+    SpreadOf => "spread_of",
+    AsPercentageOf => "as_percentage_of",
+    PercentOf => "percent_of",
+
     UseModule => "use_module",
     Share => "share",
 }
@@ -209,6 +250,14 @@ pub struct Phrase {
     pub pieces: Vec<Piece>,
     /// Spec 7.5: whether this operation might not work out.
     pub risky: bool,
+    /// For a phrase that follows a value: whether it binds to the value immediately to its left,
+    /// rather than to everything worked out so far.
+    ///
+    /// `2 plus 3 squared` is eleven, because squaring belongs to the three. But
+    /// `2 plus 3 kept between 1 and 4` is four, because keeping something between two ends is
+    /// something you say about the whole sum. Both read correctly in English, and which one a
+    /// phrase means is written down here rather than guessed at.
+    pub tight: bool,
     /// Line in the vocabulary file, so problems point at the right row.
     pub line: u32,
     /// The pattern exactly as written, for documentation and messages.
@@ -391,17 +440,25 @@ impl Vocabulary {
                 }
             };
 
-            let risky = match extra {
-                None => false,
-                Some("risky") => true,
-                Some(other) => {
-                    problems.push(LoadProblem {
-                        line,
-                        message: format!("`{other}` is not something a row can say. Only `risky`."),
-                    });
-                    continue;
+            let mut risky = false;
+            let mut tight = false;
+            let mut bad_word: Option<String> = None;
+            for word in extra.unwrap_or("").split_whitespace() {
+                match word {
+                    "risky" => risky = true,
+                    "tight" => tight = true,
+                    other => bad_word = Some(other.to_string()),
                 }
-            };
+            }
+            if let Some(other) = bad_word {
+                problems.push(LoadProblem {
+                    line,
+                    message: format!(
+                        "`{other}` is not something a row can say. Only `risky` and `tight`."
+                    ),
+                });
+                continue;
+            }
 
             let (pieces, literals) = match parse_pattern(pattern) {
                 Ok(v) => v,
@@ -419,12 +476,21 @@ impl Vocabulary {
                 continue;
             }
 
+            if tight && !matches!(pieces.first(), Some(Piece::Hole { .. })) {
+                problems.push(LoadProblem {
+                    line,
+                    message: "only a phrase that follows a value can be tight".into(),
+                });
+                continue;
+            }
+
             phrases.push(Phrase {
                 kind,
                 tier,
                 form,
                 pieces,
                 risky,
+                tight,
                 line,
                 pattern: pattern.into(),
                 literals,
@@ -685,6 +751,29 @@ mod tests {
         assert_eq!(literals.len(), 2);
         assert!(matches!(&pieces[1], Piece::Hole { takes_name: true, .. }));
         assert!(matches!(&pieces[3], Piece::Hole { takes_name: false, .. }));
+    }
+
+    /// The tightness of a phrase decides how `2 plus 3 squared` reads, so it is worth a test.
+    #[test]
+    fn tightness_is_read_from_the_row() {
+        let v = Vocabulary::load(
+            "expr everyday squared :: {value} squared :: tight\nexpr everyday is_empty :: {value} is empty\n",
+        )
+        .unwrap();
+        let squared = v.phrases().iter().find(|p| p.pattern.contains("squared")).unwrap();
+        let empty = v.phrases().iter().find(|p| p.pattern.contains("empty")).unwrap();
+        assert!(squared.tight);
+        assert!(!empty.tight);
+    }
+
+    #[test]
+    fn only_a_following_phrase_can_be_tight() {
+        let problems = match Vocabulary::load("expr everyday show :: the thing {value} :: tight\n") {
+            Ok(_) => panic!("a tight phrase that does not follow a value should be refused"),
+            Err(problems) => problems,
+        };
+        assert_eq!(problems.len(), 1);
+        assert!(problems[0].message.contains("follows a value"));
     }
 
     #[test]

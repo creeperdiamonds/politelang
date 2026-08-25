@@ -586,6 +586,57 @@ impl Runner<'_> {
             Builtin::DividesEvenly => Some(std_lib::divides_evenly(&a0(), &a1())),
             Builtin::DivideNumbers => Some(std_lib::divide(&a0(), &a1())?),
 
+            Builtin::Pi => Some(Value::Decimal(std_lib::PI)),
+            Builtin::EulerE => Some(Value::Decimal(std_lib::E)),
+
+            Builtin::Sine => Some(std_lib::sine(&a0())),
+            Builtin::Cosine => Some(std_lib::cosine(&a0())),
+            Builtin::Tangent => Some(std_lib::tangent(&a0())),
+            Builtin::ArcSine => Some(std_lib::arc_sine(&a0())?),
+            Builtin::ArcCosine => Some(std_lib::arc_cosine(&a0())?),
+            Builtin::ArcTangent => Some(std_lib::arc_tangent(&a0())),
+            Builtin::AngleOver => Some(std_lib::angle_over(&a0(), &a1())),
+            Builtin::ToDegrees => Some(std_lib::to_degrees(&a0())),
+            Builtin::ToRadians => Some(std_lib::to_radians(&a0())),
+
+            Builtin::HyperbolicSine => Some(std_lib::hyperbolic_sine(&a0())),
+            Builtin::HyperbolicCosine => Some(std_lib::hyperbolic_cosine(&a0())),
+            Builtin::HyperbolicTangent => Some(std_lib::hyperbolic_tangent(&a0())),
+
+            Builtin::NaturalLogarithm => Some(std_lib::natural_logarithm(&a0())?),
+            Builtin::CommonLogarithm => Some(std_lib::common_logarithm(&a0())?),
+            Builtin::LogarithmInBase => Some(std_lib::logarithm_in_base(&a0(), &a1())?),
+            Builtin::Exponential => Some(std_lib::exponential(&a0())),
+
+            Builtin::CubeRoot => Some(std_lib::cube_root(&a0())),
+            Builtin::Squared => Some(std_lib::squared(&a0())?),
+            Builtin::Cubed => Some(std_lib::cubed(&a0())?),
+
+            Builtin::WholePart => Some(std_lib::whole_part(&a0())),
+            Builtin::FractionPart => Some(std_lib::fraction_part(&a0())),
+            Builtin::Sign => Some(std_lib::sign(&a0())),
+            Builtin::RoundedTo => Some(std_lib::rounded_to(&a0(), &a1())),
+            Builtin::KeptBetween => Some(std_lib::kept_between(&a0(), &a1(), &a2())),
+
+            Builtin::GreatestCommonFactor => Some(std_lib::greatest_common_factor(&a0(), &a1())),
+            Builtin::SmallestCommonMultiple => {
+                Some(std_lib::smallest_common_multiple(&a0(), &a1())?)
+            }
+            Builtin::Factorial => Some(std_lib::factorial(&a0())?),
+
+            Builtin::Median => {
+                let items = as_list(&a0())?;
+                let v = std_lib::median(&items.borrow())?;
+                Some(v)
+            }
+            Builtin::Spread => {
+                let items = as_list(&a0())?;
+                let v = std_lib::spread(&items.borrow())?;
+                Some(v)
+            }
+            Builtin::AsPercentageOf => Some(std_lib::as_percentage_of(&a0(), &a1())?),
+            Builtin::PercentOf => Some(std_lib::percent_of(&a0(), &a1())),
+
             Builtin::TextSlice => Some(Value::text(std_lib::text_slice(
                 &a0().as_text(),
                 a1().as_whole(),

@@ -104,6 +104,47 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    Pi,
+    EulerE,
+
+    Sine,
+    Cosine,
+    Tangent,
+    ArcSine,
+    ArcCosine,
+    ArcTangent,
+    AngleOver,
+    ToDegrees,
+    ToRadians,
+
+    HyperbolicSine,
+    HyperbolicCosine,
+    HyperbolicTangent,
+
+    NaturalLogarithm,
+    CommonLogarithm,
+    LogarithmInBase,
+    Exponential,
+
+    CubeRoot,
+    Squared,
+    Cubed,
+
+    WholePart,
+    FractionPart,
+    Sign,
+    RoundedTo,
+    KeptBetween,
+
+    GreatestCommonFactor,
+    SmallestCommonMultiple,
+    Factorial,
+
+    Median,
+    Spread,
+    AsPercentageOf,
+    PercentOf,
+
     ListRest,
     ListFirstFew,
     ListAverage,
@@ -134,6 +175,16 @@ impl Builtin {
                 | Builtin::TextLetter
                 | Builtin::Remainder
                 | Builtin::ListAverage
+                | Builtin::ArcSine
+                | Builtin::ArcCosine
+                | Builtin::NaturalLogarithm
+                | Builtin::CommonLogarithm
+                | Builtin::LogarithmInBase
+                | Builtin::SmallestCommonMultiple
+                | Builtin::Factorial
+                | Builtin::Median
+                | Builtin::Spread
+                | Builtin::AsPercentageOf
         )
     }
 }

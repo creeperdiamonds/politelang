@@ -1139,7 +1139,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_cmp(&mut self, ctx: Ctx, stops: &[Sym]) -> ExprId {
-        let lhs = self.parse_add(ctx, stops);
+        let lhs = self.parse_following(ctx, stops);
         if stops.contains(&self.keys.is) {
             return lhs;
         }
@@ -1153,7 +1153,7 @@ impl<'a> Parser<'a> {
         };
         if let Some(op) = sym_op {
             self.bump();
-            let rhs = self.parse_add(ctx, stops);
+            let rhs = self.parse_following(ctx, stops);
             return self.binary(op, lhs, rhs);
         }
 
@@ -1207,8 +1207,21 @@ impl<'a> Parser<'a> {
                 span,
             );
         }
-        let rhs = self.parse_add(ctx, stops);
+        let rhs = self.parse_following(ctx, stops);
         self.binary(BinOp::Is, lhs, rhs)
+    }
+
+    /// Phrases that follow a value and speak about the whole of it.
+    ///
+    /// `2 plus 3 kept between 1 and 4` is four: the keeping is something you say about the sum,
+    /// not about the three. Which phrases read this way is written in the vocabulary table, so
+    /// this never has to be guessed at.
+    fn parse_following(&mut self, ctx: Ctx, stops: &[Sym]) -> ExprId {
+        let mut lhs = self.parse_add(ctx, stops);
+        while let Some(next) = self.match_infix(lhs, stops, false) {
+            lhs = next;
+        }
+        lhs
     }
 
     fn parse_add(&mut self, ctx: Ctx, stops: &[Sym]) -> ExprId {
@@ -1283,51 +1296,53 @@ impl<'a> Parser<'a> {
         self.parse_postfix(ctx, stops)
     }
 
-    /// Infix phrases from the table: `{list} contains {value}`, `{value} mentions {part}`.
+    /// Phrases that follow a value and belong to just that value: `{value} squared`.
     fn parse_postfix(&mut self, ctx: Ctx, stops: &[Sym]) -> ExprId {
         let mut lhs = self.parse_primary(ctx, stops);
-        loop {
-            let key = match self.tok() {
-                Tok::Word(w) if !stops.contains(&w) => w,
-                _ => break,
-            };
-            let vocab = self.vocab;
-            let candidates: &[u32] = vocab.infix_with(self.word_text(key));
-            if candidates.is_empty() {
-                break;
-            }
-            let save = self.pos;
-            let mut matched = false;
-            for &pid in candidates {
-                let pieces: &[Piece] = &vocab.phrase(pid).pieces;
-                let form = vocab.phrase(pid).form;
-                let mut names = Vec::new();
-                let mut args = vec![lhs];
-                if self
-                    .match_pieces_from(pieces, 1, Ctx::TIGHT, &mut names, &mut args)
-                    .is_some()
-                {
-                    let span = self.ast.expr(lhs).span.join(self.span());
-                    let range = self.ast.push_args(&args);
-                    lhs = self.ast.push_expr(
-                        ExprKind::Phrase {
-                            form,
-                            phrase: pid,
-                            args: range,
-                        },
-                        span,
-                    );
-                    matched = true;
-                    break;
-                }
-                self.pos = save;
-            }
-            if !matched {
-                break;
-            }
+        while let Some(next) = self.match_infix(lhs, stops, true) {
+            lhs = next;
         }
-        let _ = ctx;
         lhs
+    }
+
+    /// Try every phrase of the given tightness that could follow the value just read.
+    fn match_infix(&mut self, lhs: ExprId, stops: &[Sym], tight: bool) -> Option<ExprId> {
+        let key = match self.tok() {
+            Tok::Word(w) if !stops.contains(&w) => w,
+            _ => return None,
+        };
+        let vocab = self.vocab;
+        let candidates: &[u32] = vocab.infix_with(self.word_text(key));
+        if candidates.is_empty() {
+            return None;
+        }
+        let save = self.pos;
+        for &pid in candidates {
+            if vocab.phrase(pid).tight != tight {
+                continue;
+            }
+            let pieces: &[Piece] = &vocab.phrase(pid).pieces;
+            let form = vocab.phrase(pid).form;
+            let mut names = Vec::new();
+            let mut args = vec![lhs];
+            if self
+                .match_pieces_from(pieces, 1, Ctx::TIGHT, &mut names, &mut args)
+                .is_some()
+            {
+                let span = self.ast.expr(lhs).span.join(self.span());
+                let range = self.ast.push_args(&args);
+                return Some(self.ast.push_expr(
+                    ExprKind::Phrase {
+                        form,
+                        phrase: pid,
+                        args: range,
+                    },
+                    span,
+                ));
+            }
+            self.pos = save;
+        }
+        None
     }
 
     fn parse_primary(&mut self, ctx: Ctx, stops: &[Sym]) -> ExprId {

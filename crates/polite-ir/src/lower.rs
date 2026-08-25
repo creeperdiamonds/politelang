@@ -1254,6 +1254,47 @@ fn builtin_for(form: Form) -> Option<Builtin> {
         Form::RoundedDown => Builtin::RoundedDown,
         Form::RoundedUp => Builtin::RoundedUp,
 
+        Form::NumberPi => Builtin::Pi,
+        Form::NumberE => Builtin::EulerE,
+
+        Form::SineOf => Builtin::Sine,
+        Form::CosineOf => Builtin::Cosine,
+        Form::TangentOf => Builtin::Tangent,
+        Form::ArcSineOf => Builtin::ArcSine,
+        Form::ArcCosineOf => Builtin::ArcCosine,
+        Form::ArcTangentOf => Builtin::ArcTangent,
+        Form::AngleOver => Builtin::AngleOver,
+        Form::ToDegrees => Builtin::ToDegrees,
+        Form::ToRadians => Builtin::ToRadians,
+
+        Form::HyperbolicSine => Builtin::HyperbolicSine,
+        Form::HyperbolicCosine => Builtin::HyperbolicCosine,
+        Form::HyperbolicTangent => Builtin::HyperbolicTangent,
+
+        Form::NaturalLogarithm => Builtin::NaturalLogarithm,
+        Form::CommonLogarithm => Builtin::CommonLogarithm,
+        Form::LogarithmInBase => Builtin::LogarithmInBase,
+        Form::ExponentialOf => Builtin::Exponential,
+
+        Form::CubeRootOf => Builtin::CubeRoot,
+        Form::Squared => Builtin::Squared,
+        Form::Cubed => Builtin::Cubed,
+
+        Form::WholePartOf => Builtin::WholePart,
+        Form::FractionPartOf => Builtin::FractionPart,
+        Form::SignOf => Builtin::Sign,
+        Form::RoundedTo => Builtin::RoundedTo,
+        Form::KeptBetween => Builtin::KeptBetween,
+
+        Form::GreatestCommonFactor => Builtin::GreatestCommonFactor,
+        Form::SmallestCommonMultiple => Builtin::SmallestCommonMultiple,
+        Form::FactorialOf => Builtin::Factorial,
+
+        Form::MedianOf => Builtin::Median,
+        Form::SpreadOf => Builtin::Spread,
+        Form::AsPercentageOf => Builtin::AsPercentageOf,
+        Form::PercentOf => Builtin::PercentOf,
+
         Form::RestOf => Builtin::ListRest,
         Form::FirstFew => Builtin::ListFirstFew,
         Form::AverageOf => Builtin::ListAverage,

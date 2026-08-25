@@ -1,0 +1,92 @@
+-- Everything the language knows about numbers.
+
+-- The two constants, written out so that nobody who remembers a value under one of
+-- those names is quietly overruled.
+please show the number pi rounded to 5 decimal places
+please show the number e rounded to 5 decimal places
+
+-- Trigonometry. Angles are in radians, the way mathematics does it.
+please show the sine of the number pi divided by 2 or 0
+please show the cosine of 0
+please show the tangent of 0
+please show the angle whose sine is 1 or 0
+please show the angle whose cosine is 1 or 0
+please show the angle whose tangent is 0
+please show the angle of 1 over 1
+
+-- Turning one kind of angle into the other.
+please show 180 in radians rounded to 5 decimal places
+please show the number pi in degrees
+please show (the sine of 30 in radians) rounded to 4 decimal places
+
+-- The hyperbolic ones, for hanging chains and for growth.
+please show the hyperbolic sine of 0
+please show the hyperbolic cosine of 0
+please show the hyperbolic tangent of 0
+
+-- Logarithms, and their undoing.
+please show the natural logarithm of the number e or 0
+please show the common logarithm of 1000 or 0
+please show the logarithm of 8 in base 2 or 0
+please show the exponential of 0
+please show the exponential of 1 rounded to 5 decimal places
+
+-- Powers and roots.
+please show 7 squared
+please show 3 cubed
+please show 2.5 squared
+please show the cube root of 27
+please show the square root of 81 or 0
+
+-- Taking a number apart.
+please show the whole part of 3.7
+please show the fraction part of 3.5
+please show the sign of 0 minus 12
+please show the sign of 12
+please show the sign of 0
+please show 3.14159 rounded to 2 decimal places
+
+-- Keeping a number where you want it. Keeping something between two ends is said about the
+-- whole sum, so it does not need brackets to reach across the arithmetic.
+please show 15 kept between 1 and 10
+please show 0 minus 5 kept between 1 and 10
+please show 5 kept between 1 and 10
+please show 3 plus 40 kept between 1 and 10
+
+-- Squaring, on the other hand, belongs to the number right beside it.
+please show 2 plus 3 squared
+please show (2 plus 3) squared
+
+-- Whole numbers, the way school teaches them.
+please show the greatest common factor of 12 and 18
+please show the smallest common multiple of 4 and 6 or 0
+please show the factorial of 10 or 0
+please show the factorial of 21 or 0
+please show the remainder of 17 divided by 5 or 0
+
+-- Statistics.
+please remember marks is an empty list
+please for every m in the pieces of "2 4 4 4 5 5 7 9" split by " ":
+    add the number in m or 0 to marks
+thanks
+
+please show "average {the average of marks or 0}"
+please show "median {the median of marks or 0}"
+please show "spread {the spread of marks or 0}"
+please show "biggest {the biggest of marks or 0}"
+please show "smallest {the smallest of marks or 0}"
+
+-- Percentages, both ways round.
+please show 25 as a percentage of 200 or 0
+please show 15 percent of 200
+
+-- And the ones that cannot work out say so, rather than inventing an answer.
+please show the angle whose sine is 2 or 0 minus 1
+please show the natural logarithm of 0 or 0 minus 1
+please show 5 as a percentage of 0 or 0 minus 1
+
+please try to:
+    show the factorial of 30
+otherwise if it does not work out:
+    show "as expected: {what went wrong}"
+thank you for trying

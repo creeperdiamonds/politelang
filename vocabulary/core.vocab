@@ -207,7 +207,7 @@ expr  everyday  is_empty       :: {value} is empty
 expr  working   remainder_of   :: the remainder of {value} divided by {divisor} :: risky
 expr  everyday  smaller_of     :: the smaller of {first} and {second}
 expr  everyday  larger_of      :: the larger of {first} and {second}
-expr  working   power_of       :: {value} to the power of {power}
+expr  working   power_of       :: {value} to the power of {power} :: tight
 expr  working   rounded_down   :: the rounded down version of {value}
 expr  working   rounded_up     :: the rounded up version of {value}
 
@@ -247,6 +247,55 @@ stmt  everyday  stop_repeating :: enough of that
 block everyday  check          :: if {cond}
 block everyday  loop_each      :: look at every {var} in {list}
 block working   loop_while     :: for as long as {cond}
+
+
+# ---------------------------------------------------------------------------
+# Full arithmetic
+#
+# The two constants are written `the number pi` and `the number e` rather than as bare words, so
+# that nobody who remembers a value under one of those names is quietly overruled by a constant.
+# ---------------------------------------------------------------------------
+
+expr  working   number_pi      :: the number pi
+expr  full      number_e       :: the number e
+
+expr  working   sine_of        :: the sine of {value}
+expr  working   cosine_of      :: the cosine of {value}
+expr  working   tangent_of     :: the tangent of {value}
+expr  full      arc_sine_of    :: the angle whose sine is {value} :: risky
+expr  full      arc_cosine_of  :: the angle whose cosine is {value} :: risky
+expr  full      arc_tangent_of :: the angle whose tangent is {value}
+expr  full      angle_over     :: the angle of {up} over {across}
+expr  working   to_degrees     :: {value} in degrees :: tight
+expr  working   to_radians     :: {value} in radians :: tight
+
+expr  full      hyperbolic_sine    :: the hyperbolic sine of {value}
+expr  full      hyperbolic_cosine  :: the hyperbolic cosine of {value}
+expr  full      hyperbolic_tangent :: the hyperbolic tangent of {value}
+
+expr  working   natural_logarithm  :: the natural logarithm of {value} :: risky
+expr  working   common_logarithm   :: the common logarithm of {value} :: risky
+expr  full      logarithm_in_base  :: the logarithm of {value} in base {base} :: risky
+expr  working   exponential_of     :: the exponential of {value}
+
+expr  working   cube_root_of   :: the cube root of {value}
+expr  everyday  squared        :: {value} squared :: tight
+expr  everyday  cubed          :: {value} cubed :: tight
+
+expr  working   whole_part_of      :: the whole part of {value}
+expr  working   fraction_part_of   :: the fraction part of {value}
+expr  working   sign_of            :: the sign of {value}
+expr  everyday  rounded_to         :: {value} rounded to {places} decimal places
+expr  everyday  kept_between       :: {value} kept between {low} and {high}
+
+expr  working   greatest_common_factor   :: the greatest common factor of {first} and {second}
+expr  working   smallest_common_multiple :: the smallest common multiple of {first} and {second} :: risky
+expr  working   factorial_of             :: the factorial of {value} :: risky
+
+expr  working   median_of          :: the median of {list} :: risky
+expr  full      spread_of          :: the spread of {list} :: risky
+expr  everyday  as_percentage_of   :: {part} as a percentage of {whole} :: risky
+expr  everyday  percent_of         :: {percent} percent of {value} :: tight
 
 # ---------------------------------------------------------------------------
 # Explanations, for `polite explain` (spec 4.4). The English meaning comes first, because
@@ -334,3 +383,36 @@ explain lookup_count   :: This is how many things a lookup is holding.
 explain wait_for       :: To wait is to let time pass without doing anything. This pauses the program for a while.
 explain append_file    :: To append is to add to the end. This puts text at the end of a file, leaving what was already there. It might not work out, because the place may not be writable.
 explain stop_everything :: This ends the whole program at once. Nothing catches it, which is exactly why it is there.
+explain number_pi      :: Pi is how many times across a circle goes into the way round it, a little over three.
+explain number_e       :: The number e is the one that turns up wherever something grows on its own, a little over two and a half.
+explain sine_of        :: The sine of an angle is how far up you have gone, on a circle of size one. Angles here are in radians.
+explain cosine_of      :: The cosine of an angle is how far across you have gone, on a circle of size one. Angles here are in radians.
+explain tangent_of     :: The tangent of an angle is its sine shared by its cosine, which is the steepness of that slope.
+explain arc_sine_of    :: This is the angle whose sine you gave. It might not work out, because no angle has a sine outside minus one to one.
+explain arc_cosine_of  :: This is the angle whose cosine you gave. It might not work out, because no angle has a cosine outside minus one to one.
+explain arc_tangent_of :: This is the angle whose tangent you gave. Every number is the tangent of some angle, so this always works out.
+explain angle_over     :: Given how far up and how far across, this is the angle of the line between them, taking care of which quarter it points into.
+explain to_degrees     :: A full turn is two pi radians, or three hundred and sixty degrees. This changes one into the other.
+explain to_radians     :: A full turn is three hundred and sixty degrees, or two pi radians. This changes one into the other.
+explain hyperbolic_sine    :: The hyperbolic sine is the sine of a hyperbola rather than a circle, which turns up in hanging chains and in growth.
+explain hyperbolic_cosine  :: The hyperbolic cosine is the shape a chain makes when you hold it at both ends and let it hang.
+explain hyperbolic_tangent :: The hyperbolic tangent squashes any number at all into the range between minus one and one.
+explain natural_logarithm  :: The natural logarithm asks what power the number e must be raised to. It might not work out, because nothing raised to a power gives zero or less.
+explain common_logarithm   :: The common logarithm asks what power ten must be raised to. It might not work out, because nothing raised to a power gives zero or less.
+explain logarithm_in_base  :: This asks what power the base must be raised to. It might not work out, because of zero, of numbers below it, and of a base of one.
+explain exponential_of     :: This is the number e raised to the power you gave, which is the undoing of the natural logarithm.
+explain cube_root_of   :: The cube root is the number which, times itself and times itself again, gives you this one. Numbers below zero have one too.
+explain squared        :: To square a number is to multiply it by itself.
+explain cubed          :: To cube a number is to multiply it by itself and by itself again.
+explain whole_part_of      :: The whole part is what is left when the bit after the dot is thrown away, without rounding either way.
+explain fraction_part_of   :: The fraction part is the bit after the dot, on its own.
+explain sign_of            :: The sign is one for a number above zero, minus one for a number below it, and zero for zero itself.
+explain rounded_to         :: This rounds to as many places after the dot as you asked for.
+explain kept_between       :: To keep something between two ends is to bring it back to the nearer end whenever it strays outside them.
+explain greatest_common_factor   :: The greatest common factor is the largest number that goes evenly into both.
+explain smallest_common_multiple :: The smallest common multiple is the smallest number that both go evenly into. It might not work out, because zero has no multiples to speak of.
+explain factorial_of             :: The factorial is every whole number from one up to this one, all multiplied together. It might not work out, because it grows faster than I can hold.
+explain median_of          :: The median is the one in the middle once they are put in order, which is a fairer average when one of them is wildly out. It might not work out, because an empty list has no middle.
+explain spread_of          :: The spread says how far from the average the numbers usually sit. It might not work out, because an empty list has no spread.
+explain as_percentage_of   :: This is how many hundredths of the whole the part comes to. It might not work out, because nothing is a share of zero.
+explain percent_of         :: A percentage is a number of hundredths. This takes that many hundredths of a value.
