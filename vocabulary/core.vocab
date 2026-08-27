@@ -461,6 +461,9 @@ expr  working   discord_server   :: the server it came from
 
 stmt  working   discord_listen_any       :: listen for whatever happens next :: risky
 stmt  working   discord_watch_people     :: watch people joining and leaving
+expr  working   discord_when             :: when it happened
+expr  working   discord_delay            :: the delay to discord
+expr  working   moment_now               :: the moment now
 expr  working   discord_was_message      :: it was a message
 expr  working   discord_was_command      :: it was a command
 expr  working   discord_was_button       :: it was a button
@@ -1029,6 +1032,9 @@ explain discord_channel  :: The name of the channel the message was said in.
 explain discord_server   :: The name of the server the message was said in.
 explain discord_listen_any       :: This waits until anything at all happens that the bot can see: somebody speaking, a command, a button pressed, a reaction added, somebody arriving or leaving. What it was can be asked for afterwards.
 explain discord_watch_people     :: Say this before logging in if the bot needs to know when people arrive and leave. It asks Discord for more than it otherwise would, which has to be allowed for the bot first: turn on Server Members Intent where you got the token.
+explain discord_when             :: The moment the thing that happened was made, counted the same way as `the moment now`. Subtracting it from now says how long ago it was said, which is the whole time somebody waited rather than only the part the bot spent answering.
+explain discord_delay            :: How far away Discord is, in thousandths of a second, measured by the steady beat the connection keeps up. It is the distance to Discord itself, not how long any one message took.
+explain moment_now               :: The moment now, counted in thousandths of a second since the start of 1970. On its own it means little; the use of it is to take it twice and subtract, which says how long something took.
 explain discord_was_message      :: Whether the last thing that happened was somebody saying something.
 explain discord_was_command      :: Whether the last thing that happened was somebody using one of the bot's slash commands.
 explain discord_was_button       :: Whether the last thing that happened was somebody pressing one of the bot's buttons.
@@ -1151,3 +1157,6 @@ english was            :: verb         :: The past of to be: existed, or happene
 english reaction       :: noun         :: A response to something; on Discord, an emoji put on a message.
 english used           :: verb         :: Put to a purpose.
 english start          :: verb         :: To begin.
+english delay          :: noun         :: A wait; the time something takes to arrive.
+english moment         :: noun         :: A very short piece of time; the point in time that is now.
+english happened       :: verb         :: Took place; occurred.

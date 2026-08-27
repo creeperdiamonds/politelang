@@ -35,7 +35,7 @@ please define the help:
     add "Here is everything I know how to do:" to lines
     add "" to lines
     add "  hello           I will say hello back" to lines
-    add "  !ping           I will say pong" to lines
+    add "  !ping           I will say pong, and how many ms it took" to lines
     add "  !where          I will say which channel and server we are in" to lines
     add "  !say <words>    I will say those words" to lines
     add "  !count <words>  I will count the words" to lines
@@ -86,7 +86,18 @@ please keep going forever:
             reply with "Hello, {their name}. I hope your day is going well."
             change answered to answered plus 1
         otherwise if said is "!ping":
+            -- Three different numbers, and they are worth telling apart.
+            --
+            -- The whole wait is measured from when the message was written, which is what the
+            -- person on the other end actually sat through. The answering is only the part the
+            -- bot spent talking to Discord, and is the first thing to look at when a bot feels
+            -- slow. The delay is the connection itself, and belongs to neither of them.
+            remember written is when it happened
+            remember started is the moment now
             reply with "Pong."
+            remember answering is the moment now minus started
+            remember waited is the moment now minus written
+            correct what I said to "Pong. You waited {waited} ms in all: {answering} ms of that was me answering, and Discord is {the delay to discord} ms away."
             change answered to answered plus 1
         otherwise if said is "!help":
             reply with the help

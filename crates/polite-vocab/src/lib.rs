@@ -221,6 +221,9 @@ forms! {
     MatrixInverse => "matrix_inverse",
     IdentityMatrix => "identity_matrix",
 
+    DiscordWhen => "discord_when",
+    DiscordDelay => "discord_delay",
+    MomentNow => "moment_now",
     DiscordListenAny => "discord_listen_any",
     DiscordWatchPeople => "discord_watch_people",
     DiscordWasMessage => "discord_was_message",

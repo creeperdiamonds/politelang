@@ -762,6 +762,8 @@ impl Runner<'_> {
             // Talking to Discord means a network, a gateway and a library, none of which this
             // runner has or wants. It works when the program is written out as JavaScript, and
             // saying exactly that is more use than a shrug.
+            | Builtin::DiscordWhen
+            | Builtin::DiscordDelay
             | Builtin::DiscordListenAny
             | Builtin::DiscordWatchPeople
             | Builtin::DiscordWasMessage
@@ -1010,6 +1012,7 @@ impl Runner<'_> {
             }
             Builtin::FileExists => Some(Value::YesNo(std_lib::file_exists(&a0().as_text()))),
             Builtin::TimeNow => Some(Value::Whole(std_lib::time_now())),
+            Builtin::MomentNow => Some(Value::Whole(std_lib::moment_now())),
         };
         Ok(value)
     }

@@ -106,6 +106,9 @@ pub enum Builtin {
     RoundedDown,
     RoundedUp,
 
+    DiscordWhen,
+    DiscordDelay,
+    MomentNow,
     DiscordListenAny,
     DiscordWatchPeople,
     DiscordWasMessage,

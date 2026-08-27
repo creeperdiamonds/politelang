@@ -1034,6 +1034,17 @@ fn describe_file_problem(path: &str, e: &std::io::Error) -> String {
     }
 }
 
+/// The moment now, counted in thousandths of a second.
+///
+/// `the time now` counts in whole seconds, which is no use for working out how long something
+/// took when the answer is a fraction of one.
+pub fn moment_now() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as i64)
+        .unwrap_or(0)
+}
+
 pub fn time_now() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

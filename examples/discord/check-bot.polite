@@ -1,0 +1,93 @@
+-- DOES ANY OF THIS ACTUALLY WORK?
+--
+-- A bot that logs in, says what it can see, tries the things that do not need anybody else to be
+-- there, and stops. Run this once before writing a bot of your own: if it gets to the end, the
+-- token is right, the connection works, and the bot can speak.
+--
+--     polite build examples/discord/check-bot.polite
+--     cd examples/discord
+--     node check-bot.mjs
+--
+-- The token goes in a file called .env beside this one:
+--
+--     DISCORD_TOKEN=...
+--
+-- It never goes in the program, and .env is never committed.
+--
+-- Nothing here needs anybody to say anything. The parts that do -- hearing a message, a command
+-- being used, a button being pressed -- are what hello-bot and club-bot are for.
+--
+-- Written in PoliteLang by Creeperdiamonds Studios.
+
+
+please show ""
+please show "  CHECKING A DISCORD BOT"
+please show ""
+
+please remember worked is 0
+please remember failed is 0
+
+-- 1. Logging in.
+please try to:
+    log in to discord with the secret called "DISCORD_TOKEN"
+    change worked to worked plus 1
+otherwise if it does not work out:
+    show "  x  logging in: {what went wrong}"
+    show ""
+    show "  Nothing else can be tried until that works."
+    show ""
+    stop everything
+thank you for trying
+please show "  ok logging in"
+
+-- 2. Setting a status.
+please try to:
+    let my status be "being checked over"
+    show "  ok setting a status"
+    change worked to worked plus 1
+otherwise if it does not work out:
+    show "  x  setting a status: {what went wrong}"
+    change failed to failed plus 1
+thank you for trying
+
+-- 3. Offering a slash command. This is also the one that says whether the bot is in a server.
+please try to:
+    offer the command "polite" for "A command offered by a bot written in English"
+    show "  ok offering a slash command"
+    change worked to worked plus 1
+otherwise if it does not work out:
+    show "  x  offering a slash command: {what went wrong}"
+    change failed to failed plus 1
+thank you for trying
+
+-- 4. Saying something out loud. Change the channel name here if yours is called something else.
+please remember room is "general"
+please try to:
+    announce "Checking in. This is a bot written in English, in a language called PoliteLang." in the channel called room
+    show "  ok speaking in #{room}"
+    change worked to worked plus 1
+otherwise if it does not work out:
+    show "  x  speaking in #{room}: {what went wrong}"
+    show "     (change the channel name near the bottom of check-bot.polite if yours differs)"
+    change failed to failed plus 1
+thank you for trying
+
+-- 5. Changing what was just said, which proves the bot can reach its own messages.
+please try to:
+    correct what I said to "Checking in. Everything works. I will be quiet now."
+    show "  ok correcting what it said"
+    change worked to worked plus 1
+otherwise if it does not work out:
+    show "  x  correcting what it said: {what went wrong}"
+    change failed to failed plus 1
+thank you for trying
+
+please show ""
+please check if failed is 0:
+    show "  All {worked} of them worked. The bot is properly connected."
+    show ""
+    show "  Try hello-bot next, and say hello to it."
+otherwise:
+    show "  {worked} worked, {failed} did not. What went wrong is printed above each one."
+thank you for checking
+please show ""

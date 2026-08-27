@@ -927,6 +927,12 @@ export function fileAppend(text, path) {
 export function fileExists(path) {
   return fs.existsSync(path);
 }
+/// The moment now, in thousandths of a second. Taken twice and subtracted, it says how long
+/// something took; on its own it says almost nothing.
+export function momentNow() {
+  return Date.now();
+}
+
 export function timeNow() {
   return Math.floor(Date.now() / 1000);
 }
@@ -1060,6 +1066,9 @@ export function discordWatchPeople() {
 }
 
 function arrived(thing) {
+  // Stamped on the way in, so that things Discord gives no moment of its own for -- a
+  // reaction, somebody arriving -- still have one worth subtracting from.
+  thing.at = Date.now();
   const next = listeners.shift();
   if (next) next(thing);
   else inbox.push(thing);
@@ -1117,11 +1126,38 @@ export async function discordLogIn(token) {
   bot.on("guildMemberAdd", (member) => arrived({ kind: "joined", member }));
   bot.on("guildMemberRemove", (member) => arrived({ kind: "left", member }));
 
+  // Asked rather than waited for. The event that means "connected" was renamed between versions
+  // of discord.js, and listening for both names makes the older one complain every time; asking
+  // the client whether it is ready works whichever version this is, and says nothing.
   await new Promise((ready, failed) => {
-    bot.once("clientReady", () => ready());
-    bot.once("ready", () => ready());
-    bot.once("error", (e) => failed(e));
-    bot.login(showable(token)).catch((e) => failed(e));
+    let looking = null;
+    const stop = () => {
+      if (looking) clearInterval(looking);
+    };
+    const waitedTooLong = 60;
+    let waited = 0;
+
+    bot.once("error", (e) => {
+      stop();
+      failed(e);
+    });
+    bot.login(showable(token)).catch((e) => {
+      stop();
+      failed(e);
+    });
+
+    looking = setInterval(() => {
+      if (typeof bot.isReady === "function" ? bot.isReady() : bot.user) {
+        stop();
+        ready();
+        return;
+      }
+      waited += 0.1;
+      if (waited >= waitedTooLong) {
+        stop();
+        failed(new Error("Discord took the token but never finished connecting."));
+      }
+    }, 100);
   }).catch((e) => {
     const why = e && e.message ? e.message : String(e);
     if (/disallowed intents/i.test(why)) {
@@ -1393,12 +1429,20 @@ export async function discordReplyQuietly(text) {
 
 export async function discordAnnounce(text, channelName) {
   mustBeLoggedIn();
-  const g = guild();
-  if (!g) nope("there is no server to announce in.");
   const wanted = showable(channelName).replace(/^#/, "").toLowerCase();
-  const found = [...g.channels.cache.values()].find(
-    (c) => c.name && c.name.toLowerCase() === wanted && typeof c.send === "function"
-  );
+  const speakable = (c) =>
+    c.name && c.name.toLowerCase() === wanted && typeof c.send === "function";
+
+  // The server the last thing happened in, if anything has; otherwise every server the bot is in,
+  // so that a bot can say something before it has been spoken to. A bot that has to wait to be
+  // talked to before it can announce anything is no use for announcing things.
+  const g = guild();
+  const found = g
+    ? [...g.channels.cache.values()].find(speakable)
+    : [...bot.guilds.cache.values()]
+        .flatMap((each) => [...each.channels.cache.values()])
+        .find(speakable);
+
   if (!found) {
     nope(`there is no channel called ${showable(channelName)} that I can speak in.`);
   }
@@ -1594,6 +1638,30 @@ export async function discordQuieten(minutes) {
 export async function discordNickname(nick) {
   const m = mustHaveMember("rename");
   await trying("change their nickname", () => m.setNickname(showable(nick)));
+}
+
+/// How far away Discord is, by the steady beat the connection keeps up.
+///
+/// Below nought until the first beat has been and gone, which is not a distance, so that is
+/// reported as nought rather than as a number that cannot be true.
+/// The moment the thing that happened was made.
+///
+/// Discord stamps a message and an interaction itself, which is the moment somebody pressed enter
+/// rather than the moment it reached the bot. That difference is the part of the wait a bot
+/// measuring only its own work never sees.
+export function discordWhen() {
+  if (!happening) return 0;
+  const own =
+    (happening.message && happening.message.createdTimestamp) ||
+    (happening.interaction && happening.interaction.createdTimestamp) ||
+    null;
+  return Math.round(own || happening.at || Date.now());
+}
+
+export function discordDelay() {
+  mustBeLoggedIn();
+  const beat = bot.ws && bot.ws.ping;
+  return typeof beat === "number" && beat >= 0 ? Math.round(beat) : 0;
 }
 
 export async function discordStatus(text) {

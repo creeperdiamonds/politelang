@@ -19,3 +19,6 @@ examples/**/*.mjs
 .env
 .env.*
 !.env.example
+
+# What a bot run leaves behind
+*-run.log

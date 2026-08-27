@@ -1791,6 +1791,8 @@ impl<'a> Checker<'a> {
                 self.types.yes_no
             }
 
+            Form::DiscordWhen | Form::DiscordDelay | Form::MomentNow => self.types.whole,
+
             Form::DiscordSaid | Form::DiscordName | Form::DiscordChannel | Form::DiscordServer => {
                 self.types.text
             }
